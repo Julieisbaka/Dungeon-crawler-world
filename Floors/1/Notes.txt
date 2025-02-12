@@ -1,0 +1,10 @@
+Only neighborhood and borrow bosses can spawn on this floor.
+No one on this floor worships the gods.
+Elites do not spawn on this floor.
+hunters are not allowed on this floor.
+Benefactors are not allowed on this floor.
+Following is not allowed on this floor.
+Personal spaces are free on this floor.
+Food is free on this floor.
+You can not get gold on this floor.
+You can not use gold on this floor.

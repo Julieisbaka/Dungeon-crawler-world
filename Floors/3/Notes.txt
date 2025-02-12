@@ -1,0 +1,2 @@
+Class and race selection.
+You can now use skill points to increase your stats.
