@@ -8,4 +8,4 @@ assignees: Julieisbaka
 ---
 
 Thing:
-Importence:
+Importance:
