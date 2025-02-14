@@ -1,10 +1,12 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.tabSize": 2,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "always"
-  },
   "files.eol": "\r\n",
   "javascript.format.enable": false,
-  "typescript.format.enable": false
+  "typescript.format.enable": false,
+  "prettier.useEditorConfig": true,
+  "prettier.embeddedLanguageFormatting": "auto",
+  "prettier.enable": true,
+  "prettier.tabWidth": 2
+
+
 }
