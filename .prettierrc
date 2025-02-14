@@ -7,6 +7,6 @@
   "endOfLine": "crlf",
   "trailingComma": "none",
   "bracketSpacing": true,
-  "insertPragma": true
-
+  "insertPragma": true,
+  "plugins": []
 }

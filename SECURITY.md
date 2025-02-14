@@ -2,8 +2,7 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+We are committed to maintaining the security of our project. Below is a list of versions that are currently supported with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -12,11 +11,25 @@ currently being supported with security updates.
 
 ## Reporting a Vulnerability
 
-To report a vulnerability, please follow these steps:
+If you discover a vulnerability in our project, please follow the steps below to report it responsibly:
 
-1. **Do not disclose it publicly**: Do not create a public issue on GitHub.
-2. **Create a private issue**: Go to the issue section of the GitHub repository and create a private issue.
-3. **Provide details**: Include as much information as possible about the vulnerability, including steps to reproduce it, potential impact, and any suggested fixes.
-4. **Wait for a response**: We will acknowledge your report within 48 hours and provide a detailed response within 7 days, including an initial assessment and any next steps.
+1. **Do not disclose it publicly**: Avoid creating a public issue on GitHub or sharing the vulnerability on social media or other public forums.
+2. **Create a private issue**: Navigate to the issue section of our GitHub repository and create a private issue to report the vulnerability.
+3. **Provide detailed information**: Include as much information as possible about the vulnerability. This should include:
+  - Steps to reproduce the issue
+  - Potential impact of the vulnerability
+  - Any suggested fixes or patches
+4. **Wait for our response**: We will acknowledge your report within 48 hours. Within 7 days, we will provide a detailed response, including an initial assessment and any next steps.
+
+## Security Update Policy
+
+We strive to release security updates promptly. Our policy includes:
+- **Regular security audits**: Conducting regular security audits to identify potential vulnerabilities.
+- **Timely updates**: Releasing security patches as soon as vulnerabilities are confirmed and fixes are available.
+- **Communication**: Informing our users about security updates through our GitHub repository and other communication channels.
+
+## Contact Information
+
+For any security-related inquiries or to report a vulnerability, please contact us at [security@example.com](mailto:security@example.com).
 
 Thank you for helping us keep our project secure.

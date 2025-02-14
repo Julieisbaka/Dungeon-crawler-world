@@ -1,7 +1,5 @@
 {
   "features": {
-    "vscode": "1.60.0",
-    "docker": "0.0.17",
-    "kubernetes": "1.22.0"
+    "prettier": "2.0.0"
   }
 }
