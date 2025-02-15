@@ -1,0 +1,18 @@
+{
+  "graphicsQuality": "medium",
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "frameRate": 60,
+  "vsync": true,
+  "textureQuality": {
+    "terrain": "high",
+    "objects": "medium"
+  },
+  "terrainDetail": {
+    "segments": 128,
+    "displacementScale": 2.0,
+    "noiseScale": 0.1
+  }
+}

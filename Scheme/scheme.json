@@ -110,6 +110,36 @@
             "type": "string",
             "enum": ["easy", "normal", "hard", "nightmare"],
             "$comment": "Dungeon difficulty level"
+        },
+        "graphicsQuality": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "ultra"],
+            "$comment": "Graphics quality settings"
+        },
+        "dungeonParams": {
+            "type": "object",
+            "properties": {
+                "size": { "type": "string", "enum": ["small", "medium", "large"] },
+                "complexity": { "type": "number", "minimum": 0, "maximum": 1 },
+                "connectivity": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+        },
+        "aiBehavior": {
+            "type": "string",
+            "enum": ["passive", "aggressive", "defensive", "strategic"],
+            "$comment": "AI behavior patterns"
+        },
+        "dropRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "$comment": "Loot drop probability"
+        },
+        "soundVolume": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "$comment": "Volume levels for audio"
         }
     }
 }

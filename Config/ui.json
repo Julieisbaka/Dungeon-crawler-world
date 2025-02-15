@@ -1,0 +1,7 @@
+{
+"crosshairStyle": "default",
+"healthBarPosition": "top",
+"tooltipDelay": 0.5,
+"minimapEnabled": true,
+"showHUD": true
+}
