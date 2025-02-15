@@ -74,3 +74,9 @@ if(MSVC)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 endif()
+
+# Add subdirectories
+add_subdirectory(src)
+
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/include)

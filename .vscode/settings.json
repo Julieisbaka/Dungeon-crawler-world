@@ -6,7 +6,11 @@
   "prettier.useEditorConfig": true,
   "prettier.embeddedLanguageFormatting": "auto",
   "prettier.enable": true,
-  "prettier.tabWidth": 2
+  "prettier.tabWidth": 2,
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "C_Cpp.errorSquiggles": "enabled"
 
 
 }

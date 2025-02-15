@@ -5,11 +5,10 @@ class Entity;
 
 class Component {
 public:
-    Component() = default;
     virtual ~Component() = default;
+    virtual void update(float deltaTime) = 0;
 
     virtual void start() {}
-    virtual void update(float deltaTime) {}
     virtual void onEnable() {}
     virtual void onDisable() {}
 

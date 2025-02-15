@@ -1,8 +1,12 @@
 {
-  "name": "(Windows) Attach",
-  "type": "cppvsdbg",
-  "request": "attach",
+  "version": "0.2.0",
   "configurations": [
+    {
+      "name": "(Windows) Attach",
+      "type": "cppvsdbg",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    },
     {
       "type": "cmake",
       "request": "launch",
@@ -11,5 +15,5 @@
       "clean": false,
       "configureAll": false
     }
-  ],
+  ]
 }
