@@ -1469,9 +1469,7 @@
       },
       "newlineSequences": [
         "\r\n",
-        "\n",
-        " ",
-        " "
+        "\n"
       ],
       "columnKind": "utf16CodeUnits",
       "properties": {
