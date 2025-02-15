@@ -2,13 +2,14 @@
   "name": "dungeon-crawler-world",
   "description": "A thrilling adventure game set in a rich fantasy world. Explore dungeons, fight monsters, and uncover hidden treasures as you embark on an epic quest.",
   "authors": "JulieISBaka",
-  "version": "0.0.3.1",
+  "version": "0.0.3.2",
   "scripts": {
     "build": "cmake --build build",
     "configure": "cmake -B build -S .",
     "clean": "rm -rf build"
   },
   "dependencies": {
-    "codeql": "2.6.0"
+    "codeql": "2.6.0",
+    "cmake": "3.21.3"
   }
 }

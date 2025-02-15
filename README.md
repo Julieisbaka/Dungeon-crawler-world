@@ -50,9 +50,23 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For any questions or feedback, please open an issue on GitHub or contact the project maintainers.
 
-
 ## Changelog
 
 ### Added
-- `permissions` section to the `.github/workflows/blank.yml` workflow file to fix the code scanning alert for 'Workflow does not contain permissions'.
+- Input management system with mouse and keyboard support
+- GLM integration for vector mathematics
+- GLFW window management implementation
+
+### Updated
+- Core systems to use modern C++ features
+- Refactored input handling to use Singleton pattern
+
+### Fixed
+- Package dependency issues
+
+### Initial
+- Initial project setup
+- Basic CMake configuration
+- Core game engine structure
+- Build system configuration
 

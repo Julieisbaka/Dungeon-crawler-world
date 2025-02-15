@@ -1,8 +1,6 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "files.eol": "\r\n",
-  "javascript.format.enable": false,
-  "typescript.format.enable": false,
   "prettier.useEditorConfig": true,
   "prettier.embeddedLanguageFormatting": "auto",
   "prettier.enable": true,
@@ -10,8 +8,7 @@
   "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools"
   },
-  "C_Cpp.errorSquiggles": "enabled",
-  "C_Cpp.default.compilerPath": "d:/New folder/Dungeon-crawler-world/CMakeLists.txt"
+  "C_Cpp.default.compilerPath": "../../Dungeon-crawler-world/CMakeLists.txt"
 
 
 }
