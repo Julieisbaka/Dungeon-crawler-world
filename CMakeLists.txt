@@ -4,14 +4,10 @@ project(DungeonCrawlerWorld)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set output directories
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-# Add GLM as a header-only library
-add_library(glm INTERFACE)
-target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm)
+# Set better default paths for Visual Studio
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release)
 
 # Source files
 set(SOURCES
@@ -22,13 +18,12 @@ set(SOURCES
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-# Include directories
+# Include directories - using relative paths for better portability
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "$ENV{USERPROFILE}/vcpkg/installed/x64-windows/include"  # Windows path for vcpkg GLM
+    "/usr/include"  # Linux fallback path
 )
-
-# Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE glm)
 
 # Enable warnings
 if(MSVC)
