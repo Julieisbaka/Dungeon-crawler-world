@@ -4,10 +4,9 @@
   "authors": "JulieISBaka",
   "version": "0.0.3.0",
   "scripts": {
-    "build": "webpack --mode production",
-    "dev": "webpack serve --mode development",
-    "start": "webpack serve --open",
-    "clean": "rimraf dist"
+    "build": "cmake --build build",
+    "configure": "cmake -B build -S .",
+    "clean": "rm -rf build"
   },
   "dependencies": {
     "prettier": "3.5.0"

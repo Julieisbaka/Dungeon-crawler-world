@@ -1,4 +1,15 @@
 {
-  "configurations": [],
-  "compounds": []
+  "name": "(Windows) Attach",
+  "type": "cppvsdbg",
+  "request": "attach",
+  "configurations": [
+    {
+      "type": "cmake",
+      "request": "launch",
+      "name": "CMake: Configure project",
+      "cmakeDebugType": "configure",
+      "clean": false,
+      "configureAll": false
+    }
+  ],
 }
