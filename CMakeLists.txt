@@ -4,12 +4,19 @@ project(DungeonCrawlerWorld)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find GLM package (only required package for now)
-find_package(glm REQUIRED)
+# Set output directories
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Collect source files
-file(GLOB_RECURSE SOURCES
-    "src/*.cpp"
+# Add GLM as a header-only library
+add_library(glm INTERFACE)
+target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm)
+
+# Source files
+set(SOURCES
+    src/game/main.cpp
+    src/physics/PhysicsSystem.cpp
 )
 
 # Create executable
@@ -21,9 +28,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    glm::glm
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE glm)
 
 # Enable warnings
 if(MSVC)
