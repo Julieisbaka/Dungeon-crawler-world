@@ -89,6 +89,27 @@
         "cooldown": {
             "type": "number",
             "$comment": "This is the cooldown period for using the ability."
+        },
+        "movementSpeed": {
+            "type": "number",
+            "$comment": "Movement speed of entities"
+        },
+        "health": {
+            "type": "number",
+            "$comment": "Health points of entities"
+        },
+        "mana": {
+            "type": "number",
+            "$comment": "Mana points for casting abilities"
+        },
+        "inventorySize": {
+            "type": "number",
+            "$comment": "Inventory slots"
+        },
+        "difficulty": {
+            "type": "string",
+            "enum": ["easy", "normal", "hard", "nightmare"],
+            "$comment": "Dungeon difficulty level"
         }
     }
 }
