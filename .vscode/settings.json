@@ -8,7 +8,8 @@
   "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools"
   },
-  "C_Cpp.default.compilerPath": "../../Dungeon-crawler-world/CMakeLists.txt"
+  "C_Cpp.default.compilerPath": "../../Dungeon-crawler-world/CMakeLists.txt",
+  "C_Cpp.errorSquiggles": "enabled"
 
 
 }
