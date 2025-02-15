@@ -9,6 +9,7 @@
     "clean": "rm -rf build"
   },
   "dependencies": {
-    "prettier": "3.5.0"
+    "prettier": "3.5.0",
+    "codeql": "2.6.0"
   }
 }
