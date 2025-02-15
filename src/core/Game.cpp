@@ -1,43 +1,51 @@
-#include "core/Game.hpp"
+#include "../../include/core/Game.hpp"
+#include <chrono>
 
-Game::Game() : window(1920, 1080, "Dungeon Crawler World"), running(true) {
-    renderer.initialize();
-    InputManager::getInstance().initialize(window.getGLFWWindow());
-
-    // Load initial assets
-    auto& assets = AssetManager::getInstance();
-    assets.loadTexture("terrain", "assets/textures/terrain.png");
-    assets.loadModel("player", "assets/models/player.obj");
+Game::Game() : window(1280, 720, "Dungeon Crawler World"), running(true) {
+    // Initialize subsystems
+    InputManager::getInstance().initialize(window.getHandle());
 }
 
-Game::~Game() {
-    renderer.cleanup();
-}
+Game::~Game() = default;
 
 void Game::run() {
-    float lastTime = 0.0f;
+    auto lastFrame = std::chrono::high_resolution_clock::now();
 
     while (running && !window.shouldClose()) {
-        float currentTime = glfwGetTime();
-        float deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
-
+        auto currentFrame = std::chrono::high_resolution_clock::now();
+        float deltaTime = std::chrono::duration<float>(currentFrame - lastFrame).count();
+        lastFrame = currentFrame;
+        
+        // Update game state
         update(deltaTime);
+        
+        // Render frame
         render();
-
-        window.swapBuffers();
-        window.pollEvents();
+        
+        // Update window
+        window.update();
     }
 }
 
 void Game::update(float deltaTime) {
-    gameTime += deltaTime;
+    // Update input system
     InputManager::getInstance().update();
+    
+    // Update physics
     physics.update(deltaTime);
-    world.update(deltaTime);
+    
+    // Update game time
+    gameTime += deltaTime;
+    
+    // Example of handling escape key to exit
+    if (InputManager::getInstance().isKeyPressed(GLFW_KEY_ESCAPE)) {
+        running = false;
+    }
 }
 
 void Game::render() {
-    renderer.clear();
-    world.render(renderer);
+    // Clear frame
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // Rendering will be implemented here
 }
