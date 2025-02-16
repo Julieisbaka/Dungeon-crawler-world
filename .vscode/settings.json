@@ -1,15 +1,7 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "ms-vscode.cpptools",
   "files.eol": "\r\n",
-  "prettier.useEditorConfig": true,
-  "prettier.embeddedLanguageFormatting": "auto",
-  "prettier.enable": true,
-  "prettier.tabWidth": 2,
-  "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
-  },
   "C_Cpp.default.compilerPath": "../../Dungeon-crawler-world/CMakeLists.txt",
-  "C_Cpp.errorSquiggles": "enabled"
-
-
+  "C_Cpp.errorSquiggles": "enabled",
+  "dotnetAcquisitionExtension.enablePreviewFeatures": true
 }

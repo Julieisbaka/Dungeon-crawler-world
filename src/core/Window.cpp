@@ -1,6 +1,7 @@
 // filepath: d:\New folder\Dungeon-crawler-world\src\core\Window.cpp
 #include "../../include/core/Window.hpp"
 #include <stdexcept>
+#include <glad/glad.h>
 
 Window::Window(int width, int height, const char* title)
     : width(width), height(height) {
@@ -19,6 +20,14 @@ Window::Window(int width, int height, const char* title)
     }
 
     glfwMakeContextCurrent(window);
+
+    // Initialize GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        throw std::runtime_error("Failed to initialize GLAD");
+    }
+
     glfwSwapInterval(1); // Enable vsync
 }
 
