@@ -1,9 +1,0 @@
-[{
-  "version": 1,
-  "environmentSetupScript": "${workspaceRoot}/.vscode/setup-env.bat",
-  "preferredGenerator": {
-    "win32": "Visual Studio 17 2022",
-    "linux": "Unix Makefiles",
-    "darwin": "Xcode"
-  }
-}]

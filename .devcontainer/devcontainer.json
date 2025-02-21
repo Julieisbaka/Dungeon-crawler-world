@@ -1,5 +1,6 @@
 {
   "features": {
-    "prettier": "3.5.0"
+    "ghcr.io/devcontainers-extra/features/prettier": "latest"
+
   }
 }

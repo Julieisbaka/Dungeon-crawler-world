@@ -1,7 +1,12 @@
 {
-  "editor.defaultFormatter": "ms-vscode.cpptools",
-  "files.eol": "\r\n",
-  "C_Cpp.default.compilerPath": "../../Dungeon-crawler-world/CMakeLists.txt",
-  "C_Cpp.errorSquiggles": "enabled",
-  "dotnetAcquisitionExtension.enablePreviewFeatures": true
+  "json.format.enable": false,
+  "prettier.enable": true,
+  "prettier.experimentalTernaries": true,
+  "prettier.useEditorConfig": true,
+  "json.schemas": [{
+    "fileMatch": [
+        "/myfile"
+    ],
+    "url": "./Scheme/scheme.json"
+  }]
 }

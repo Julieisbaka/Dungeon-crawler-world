@@ -11,27 +11,6 @@ Welcome to Dungeon Crawler World! This project is a thrilling adventure game whe
 - **Loot**: Find and collect powerful items and equipment.
 - **Progression**: Level up your character and improve your skills.
 
-## Getting Started
-
-To get started with Dungeon Crawler World, follow these steps:
-
-1. Clone the repository:
-  ```sh
-  git clone https://github.com/yourusername/Dungeon-crawler-world.git
-  ```
-2. Navigate to the project directory:
-  ```sh
-  cd Dungeon-crawler-world
-  ```
-3. Install the dependencies:
-  ```sh
-  npm install
-  ```
-4. Start the game:
-  ```sh
-  npm start
-  ```
-
 ## Contributing
 
 We welcome contributions from the community! To contribute, please follow these steps:
@@ -49,24 +28,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For any questions or feedback, please open an issue on GitHub or contact the project maintainers.
-
-## Changelog
-
-### Added
-- Input management system with mouse and keyboard support
-- GLM integration for vector mathematics
-- GLFW window management implementation
-
-### Updated
-- Core systems to use modern C++ features
-- Refactored input handling to use Singleton pattern
-
-### Fixed
-- Package dependency issues
-
-### Initial
-- Initial project setup
-- Basic CMake configuration
-- Core game engine structure
-- Build system configuration
-
