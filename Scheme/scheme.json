@@ -1,145 +1,96 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Contains all properties used for json data files within the dungeon crawler world game.",
-    "description": "Contains all properties used for json data files within the dungeon crawler world game.",
-    "examples": [
-        {
-            "level": 250,
-            "Name": "Grawl",
-            "description": "Example"
-        },
-        {
-            "description": "Example",
-            "name": "Marked for Death"
-        },
-        {
-            "description": "Example",
-            "name": "Fear"
-        },
-        {
-            "name": "Fireball",
-            "description": "Example"
-        }
-    ],
-    "properties": {
-        "prerequisites": {
-            "type": "array",
-            "$comment": "This is a list of all the prerequisites needed to use this ability."
-        },
-        "requirements": {
-            "type": "array",
-            "$comment": "This is a list of all the requirements needed to unlock this ability."
-        },
-        "Abilities": {
-            "type": "array",
-            "$comment": "This is a list of all the abilities available."
-        },
-        "classes": {
-            "type": "array",
-            "$comment": "This is the list of classes provided by the input or connected to the inputs."
-        },
-        "sub_classes": {
-            "type": "array",
-            "$comment": "This is the list of subclasses connected to the input classes."
-        },
-        "description": {
-            "type": "string",
-            "$comment": "This is the description of the thing."
-        },
-        "type": {
-            "type": "string",
-            "enum": [
-                "Null"
-            ],
-            "$comment": "This is the type of the thing."
-        },
-        "damage": {
-            "type": "number",
-            "$comment": "This is the damage dealt by the thing."
-        },
-        "level": {
-            "oneOf": [
-                {
-                    "type": "number",
-                    "$comment": "This is the level of the thing."
-                },
-                {
-                    "type": "string",
-                    "$comment": "This allows for level descriptors like 'high' or 'low'."
-                }
-            ],
-            "$comment": "This is the level of the thing."
-        },
-        "name": {
-            "type": "string",
-            "$comment": "This is the name of the thing."
-        },
-        "range": {
-            "type": "number",
-            "$comment": "This is the range of the ability."
-        },
-        "duration": {
-            "type": "number",
-            "$comment": "This is the duration of the ability."
-        },
-        "cost": {
-            "type": "number",
-            "$comment": "This is the cost of using the ability."
-        },
-        "cooldown": {
-            "type": "number",
-            "$comment": "This is the cooldown period for using the ability."
-        },
-        "movementSpeed": {
-            "type": "number",
-            "$comment": "Movement speed of entities"
-        },
-        "health": {
-            "type": "number",
-            "$comment": "Health points of entities"
-        },
-        "mana": {
-            "type": "number",
-            "$comment": "Mana points for casting abilities"
-        },
-        "inventorySize": {
-            "type": "number",
-            "$comment": "Inventory slots"
-        },
-        "difficulty": {
-            "type": "string",
-            "enum": ["easy", "normal", "hard", "nightmare"],
-            "$comment": "Dungeon difficulty level"
-        },
-        "graphicsQuality": {
-            "type": "string",
-            "enum": ["low", "medium", "high", "ultra"],
-            "$comment": "Graphics quality settings"
-        },
-        "dungeonParams": {
-            "type": "object",
-            "properties": {
-                "size": { "type": "string", "enum": ["small", "medium", "large"] },
-                "complexity": { "type": "number", "minimum": 0, "maximum": 1 },
-                "connectivity": { "type": "number", "minimum": 0, "maximum": 1 }
-            }
-        },
-        "aiBehavior": {
-            "type": "string",
-            "enum": ["passive", "aggressive", "defensive", "strategic"],
-            "$comment": "AI behavior patterns"
-        },
-        "dropRate": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1,
-            "$comment": "Loot drop probability"
-        },
-        "soundVolume": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100,
-            "$comment": "Volume levels for audio"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dungeon crawler world Schema.",
+  "description": "Contains all properties used for json data files within the dungeon crawler world game.",
+  "examples": [
+    {
+      "level": 250,
+      "Name": "Grawl"
     }
+  ],
+  "properties": {
+    "prerequisites": {
+      "type": "array",
+      "$comment": "This is a list of all the prerequisites needed to use this ability."
+    },
+    "requirements": {
+      "type": "array",
+      "$comment": "This is a list of all the requirements needed to unlock this ability."
+    },
+    "Abilities": {
+      "type": "array",
+      "$comment": "This is a list of all the abilities available."
+    },
+    "classes": {
+      "type": "array",
+      "$comment": "This is the list of classes provided by the input or connected to the inputs."
+    },
+    "sub_classes": {
+      "type": "array",
+      "$comment": "This is the list of subclasses connected to the input classes."
+    },
+    "description": {
+      "type": "string",
+      "$comment": "This is the description of the thing."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Null",
+        "None",
+        "Blunt",
+        "Fire",
+        "heat",
+        "poison",
+        "electric",
+        "ranged",
+        "magic",
+        "melee",
+        "sonic",
+        "physic",
+        "direct",
+        "indirect",
+        "dot",
+        "aoe",
+        "heal",
+        "buff",
+        "attack"
+      ],
+      "$comment": "This is the type of the thing."
+    },
+    "level": {
+      "oneOf": [
+        {
+          "type": "number",
+          "$comment": "This is the level of the thing."
+        },
+        {
+          "type": "string",
+          "$comment": "This allows for level descriptors like 'high' or 'low'."
+        }
+      ],
+      "$comment": "This is the level of the thing."
+    },
+    "name": {
+      "type": "string",
+      "$comment": "This is the name of the thing."
+    },
+    "range": {
+      "type": "number",
+      "$comment": "This is the range of the ability."
+    },
+    "duration": {
+      "type": "number",
+      "$comment": "This is the duration of the ability."
+    },
+    "cost": {
+      "type": "number",
+      "$comment": "This is the cost of using the ability."
+    },
+    "cooldown": {
+      "type": "number",
+      "$comment": "This is the cooldown period for using the ability."
+    }
+  },
+  "required": ["name", "description"]
 }

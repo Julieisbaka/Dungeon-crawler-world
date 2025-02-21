@@ -3,10 +3,10 @@
   "prettier.enable": true,
   "prettier.experimentalTernaries": true,
   "prettier.useEditorConfig": true,
-  "json.schemas": [{
-    "fileMatch": [
-        "/myfile"
-    ],
-    "url": "./Scheme/scheme.json"
-  }]
+  "json.schemas": [
+    {
+      "fileMatch": ["/myfile"],
+      "url": "./Scheme/scheme.json"
+    }
+  ]
 }

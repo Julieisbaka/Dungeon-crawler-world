@@ -1,13 +1,6 @@
 # Security Policy
 
-## Supported Versions
-
-We are committed to maintaining the security of our project. Below is a list of versions that are currently supported with security updates:
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0     | :white_check_mark: |
-| 0.9     | :x:                |
+We are committed to maintaining the security of our project.
 
 ## Reporting a Vulnerability
 
@@ -27,9 +20,5 @@ We strive to release security updates promptly. Our policy includes:
 - **Regular security audits**: Conducting regular security audits to identify potential vulnerabilities.
 - **Timely updates**: Releasing security patches as soon as vulnerabilities are confirmed and fixes are available.
 - **Communication**: Informing our users about security updates through our GitHub repository and other communication channels.
-
-## Contact Information
-
-For any security-related inquiries or to report a vulnerability, please contact us at [security@example.com](mailto:security@example.com).
 
 Thank you for helping us keep our project secure.

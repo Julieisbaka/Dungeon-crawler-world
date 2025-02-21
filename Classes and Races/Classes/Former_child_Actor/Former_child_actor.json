@@ -1,10 +1,8 @@
 {
-    "requirements": {
-        "Views": 1000000000000
-    },
-    "Abilities": [
-        "Manager"
-    ],
-    "name": "Former child Actor",
-    "description": ""
+  "requirements": {
+    "Views": 1000000000000
+  },
+  "name": "Former child Actor",
+  "description": "",
+  "Abilities": ["Manager"]
 }

@@ -22,10 +22,7 @@
                 "enabled": true
               },
               "properties": {
-                "tags": [
-                  "expected-extracted-files",
-                  "telemetry"
-                ],
+                "tags": ["expected-extracted-files", "telemetry"],
                 "languageDisplayName": "C++"
               }
             },
@@ -81,10 +78,7 @@
                   "markdown": "# Unneccesary use of advanced configuration\n\n## Description\n\nThe CodeQL workflow does not use any custom settings and could be simplified by switching to the CodeQL default setup.\n\n## Recommendations\n\nIf there is no reason to have a custom configuration switch to the CodeQL default setup.\n\n## References\n\n- [GitHub Docs: Configuring Default Setup for a repository](https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning#configuring-default-setup-for-a-repository)"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "maintainability"
-                  ],
+                  "tags": ["actions", "maintainability"],
                   "description": "Workflows should use CodeQL Action with default setup instead of advanced configuration if there are no customizations",
                   "id": "actions/unnecessary-use-of-advanced-config",
                   "kind": "problem",
@@ -111,11 +105,7 @@
                   "markdown": "# Cache Poisoning in GitHub Actions\n\n## Description\n\nGitHub Actions cache poisoning is a technique that allows an attacker to inject malicious content into the Action's cache from unprivileged workflow, potentially leading to code execution in privileged workflows.\n\nAn attacker with the ability to run code in the context of the default branch (e.g. through Code Injection or Execution of Untrusted Code) can exploit this to:\n\n1. Steal the cache access token and URL.\n2. Overflow the cache to trigger eviction of legitimate entries.\n3. Poison cache entries with malicious payloads.\n4. Achieve code execution in privileged workflows that restore the poisoned cache.\n\nThis allows lateral movement from low-privileged to high-privileged workflows within a repository.\n\n### Cache Structure\n\nIn GitHub Actions, cache scopes are primarily determined by the branch structure. Branches are considered the main security boundary for GitHub Actions caching. This means that cache entries are generally scoped to specific branches.\n\n- **Access to Parent Branch Caches**: Feature branches (or child branches) created off of a parent branch (like `main` or `dev`) can access caches from the parent branch. For instance, a feature branch off of `main` will be able to access the cache from `main`.\n\n- **Sibling Branches**: Sibling branches, meaning branches that are created from the same parent but not from each other, do not share caches. For example, two branches created off of `main` will not be able to access each other’s caches directly.\n\nDue to the above design, if something is cached in the context of the default branch (e.g., `main`), it becomes accessible to any feature branch derived from `main`.\n\n## Recommendations\n\n1. Avoid using caching in workflows that handle sensitive operations like releases.\n2. If caching must be used:\n   - Validate restored cache contents before use.\n   - Use short-lived, workflow-specific cache keys.\n   - Clear caches regularly.\n3. Implement strict isolation between untrusted and privileged workflow execution.\n4. Never run untrusted code in the context of the default branch.\n5. Sign the cache value cryptographically and verify the signature before usage.\n\n## Examples\n\n### Incorrect Usage\n\nThe following workflow runs untrusted code in a non-privileged job but in the context of the default branch.\n\n```yaml\nname: Vulnerable Workflow\non:\n  pull_request_target:\n    branches: [main]\npermissions: {}\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n      - name: Run tests\n        run: ./run_tests.sh\n```\n\n### Correct Usage\n\nThe following workflow runs untrusted code in a non-privileged job and the cache is scoped to the Pull Request branch.\n\n```yaml\nname: Secure Workflow\non:\n  pull_request:\n    branches: [main]\npermissions: {}\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n      - name: Run tests\n        run: ./run_tests.sh\n```\n\n## References\n\n- [The Monsters in Your Build Cache – GitHub Actions Cache Poisoning](https://adnanthekhan.com/2024/05/06/the-monsters-in-your-build-cache-github-actions-cache-poisoning/)\n- [GitHub Actions Caching Documentation](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows)\n- [Cache Poisoning in GitHub Actions](https://scribesecurity.com/blog/github-cache-poisoning/)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-349"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-349"],
                   "description": "The cache can be poisoned by untrusted code, leading to a cache poisoning attack.",
                   "id": "actions/cache-poisoning/poisonable-step",
                   "kind": "path-problem",
@@ -143,11 +133,7 @@
                   "markdown": "# Cache Poisoning in GitHub Actions\n\n## Description\n\nGitHub Actions cache poisoning is a technique that allows an attacker to inject malicious content into the Action's cache from unprivileged workflow, potentially leading to code execution in privileged workflows.\n\nAn attacker with the ability to run code in the context of the default branch (e.g. through Code Injection or Execution of Untrusted Code) can exploit this to:\n\n1. Steal the cache access token and URL.\n2. Overflow the cache to trigger eviction of legitimate entries.\n3. Poison cache entries with malicious payloads.\n4. Achieve code execution in privileged workflows that restore the poisoned cache.\n\nThis allows lateral movement from low-privileged to high-privileged workflows within a repository.\n\n### Cache Structure\n\nIn GitHub Actions, cache scopes are primarily determined by the branch structure. Branches are considered the main security boundary for GitHub Actions caching. This means that cache entries are generally scoped to specific branches.\n\n- **Access to Parent Branch Caches**: Feature branches (or child branches) created off of a parent branch (like `main` or `dev`) can access caches from the parent branch. For instance, a feature branch off of `main` will be able to access the cache from `main`.\n\n- **Sibling Branches**: Sibling branches, meaning branches that are created from the same parent but not from each other, do not share caches. For example, two branches created off of `main` will not be able to access each other’s caches directly.\n\nDue to the above design, if something is cached in the context of the default branch (e.g., `main`), it becomes accessible to any feature branch derived from `main`.\n\n## Recommendations\n\n1. Avoid using caching in workflows that handle sensitive operations like releases.\n2. If caching must be used:\n   - Validate restored cache contents before use.\n   - Use short-lived, workflow-specific cache keys.\n   - Clear caches regularly.\n3. Implement strict isolation between untrusted and privileged workflow execution.\n4. Never run untrusted code in the context of the default branch.\n5. Sign the cache value cryptographically and verify the signature before usage.\n\n## Examples\n\n### Incorrect Usage\n\nThe following workflow is caching an attacker-controlled file (`large_file`) in the context of the default branch.\n\n```yaml\nname: Vulnerable Workflow\non:\n  issue_comment:\n    types: [created]\n\njobs:\n  pr-comment:\n    permissions: read-all\n    runs-on: ubuntu-latest\n    steps:\n      - uses: xt0rted/pull-request-comment-branch@v2\n        id: comment-branch\n      - uses: actions/checkout@v3\n        with:\n          ref: ${{ steps.comment-branch.outputs.head_sha }}\n      - name: Set up Python 3.10\n        uses: actions/setup-python@v5\n      - name: Cache pip dependencies\n        uses: actions/cache@v4\n        id: cache-pip\n        with:\n          path: ~/.cache/pip\n          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}\n          restore-keys: ${{ runner.os }}-pip-\n```\n\n### Correct Usage\n\nThe following workflow checking out untrusted files, but the cache is scoped to the Pull Request.\n\n```yaml\nname: Secure Workflow\non:\n  pull_request:\n\njobs:\n  pr-comment:\n    permissions: read-all\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      - name: Set up Python 3.10\n        uses: actions/setup-python@v5\n      - name: Cache pip dependencies\n        uses: actions/cache@v4\n        id: cache-pip\n        with:\n          path: ~/.cache/pip\n          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}\n          restore-keys: ${{ runner.os }}-pip-\n```\n\nNote, that the example above doesn't allow using secrets if the Pull Request originates from a fork. In case secrets are needed, `pull_request_target` with labels as `safe to test` can be used, but the code in Pull Request must be manually reviewed before applying the label.\n\n```yaml\nname: Secure Workflow\non:\n  pull_request_target:\n    types: [labeled]\n\njobs:\n  pr-comment:\n    if: contains(github.event.pull_request.labels.*.name, 'safe to test')\n    permissions: read-all\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n        with:\n          ref: ${{ github.event.pull_request.head.sha}}\n      - name: Set up Python 3.10\n        uses: actions/setup-python@v5\n      - name: Cache pip dependencies\n        uses: actions/cache@v4\n        id: cache-pip\n        with:\n          path: ~/.cache/pip\n          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}\n          restore-keys: ${{ runner.os }}-pip-\n```\n\n## References\n\n- [The Monsters in Your Build Cache – GitHub Actions Cache Poisoning](https://adnanthekhan.com/2024/05/06/the-monsters-in-your-build-cache-github-actions-cache-poisoning/)\n- [GitHub Actions Caching Documentation](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows)\n- [Cache Poisoning in GitHub Actions](https://scribesecurity.com/blog/github-cache-poisoning/)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-349"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-349"],
                   "description": "The cache can be poisoned by untrusted code, leading to a cache poisoning attack.",
                   "id": "actions/cache-poisoning/direct-cache",
                   "kind": "path-problem",
@@ -208,11 +194,7 @@
                   "markdown": "# Untrusted Checkout TOCTOU (Time-of-check to time-of-use)\n\n## Description\n\nUntrusted Checkout is protected by a security check but the checked-out branch can be changed after the check.\n\n## Recommendations\n\nVerify that the code has not been modified after the security check. This may be achieved differently depending on the type of check:\n\n- Deployment Environment Approval: Make sure to use a non-mutable reference to the code to be executed. For example use a `sha` instead of a `ref`.\n- Label Gates: Make sure to use a non-mutable reference to the code to be executed. For example use a `sha` instead of a `ref`.\n\n## Examples\n\n### Incorrect Usage (Deployment Environment Approval)\n\nThe following workflow uses a Deployment Environment which may be configured to require an approval. However, it check outs the code pointed to by the Pull Request branch reference. At attacker could submit legitimate code for review and then change it once it gets approved.\n\n```yml\non:\n  pull_request_target:\n    types: [Created]\njobs:\n  test:\n    environment: NeedsApproval\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout from PR branch\n        uses: actions/checkout@v4\n        with:\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n          ref: ${{ github.event.pull_request.head.ref }}\n      - run: ./cmd\n```\n\n### Correct Usage (Deployment Environment Approval)\n\nUse immutable references (Commit SHA) to make sure that the reviewed code does not change between the check and the use.\n\n```yml\non:\n  pull_request_target:\n    types: [Created]\njobs:\n  test:\n    environment: NeedsApproval\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout from PR branch\n        uses: actions/checkout@v4\n        with:\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n          ref: ${{ github.event.pull_request.head.sha }}\n      - run: ./cmd\n```\n\n### Incorrect Usage (Label Gates)\n\nThe following workflow uses a Deployment Environment which may be configured to require an approval. However, it check outs the code pointed to by the Pull Request branch reference. At attacker could submit legitimate code for review and then change it once it gets approved.\n\n```yaml\non:\n  pull_request_target:\n    types: [labeled]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    if: contains(github.event.pull_request.labels.*.name, 'safe-to-test')\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.pull_request.head.ref }}\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n      - run: ./cmd\n```\n\n### Correct Usage (Label Gates)\n\nUse immutable references (Commit SHA) to make sure that the reviewed code does not change between the check and the use.\n\n```yaml\non:\n  pull_request_target:\n    types: [labeled]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    if: contains(github.event.pull_request.labels.*.name, 'safe-to-test')\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n      - run: ./cmd\n```\n\n## References\n\n- [ActionsTOCTOU](https://github.com/AdnaneKhan/ActionsTOCTOU)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-367"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-367"],
                   "description": "Untrusted Checkout is protected by a security check but the checked-out branch can be changed after the check.",
                   "id": "actions/untrusted-checkout-toctou/critical",
                   "kind": "path-problem",
@@ -240,11 +222,7 @@
                   "markdown": "# Untrusted Checkout TOCTOU (Time-of-check to time-of-use)\n\n## Description\n\nUntrusted Checkout is protected by a security check but the checked-out branch can be changed after the check.\n\n## Recommendations\n\nVerify that the code has not been modified after the security check. This may be achieved differently depending on the type of check:\n\n- Deployment Environment Approval: Make sure to use a non-mutable reference to the code to be executed. For example use a `sha` instead of a `ref`.\n- Label Gates: Make sure to use a non-mutable reference to the code to be executed. For example use a `sha` instead of a `ref`.\n\n## Examples\n\n### Incorrect Usage (Deployment Environment Approval)\n\nThe following workflow uses a Deployment Environment which may be configured to require an approval. However, it check outs the code pointed to by the Pull Request branch reference. At attacker could submit legitimate code for review and then change it once it gets approved.\n\n```yml\non:\n  pull_request_target:\n    types: [Created]\njobs:\n  test:\n    environment: NeedsApproval\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout from PR branch\n        uses: actions/checkout@v4\n        with:\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n          ref: ${{ github.event.pull_request.head.ref }}\n      - run: ./cmd\n```\n\n### Correct Usage (Deployment Environment Approval)\n\nUse immutable references (Commit SHA) to make sure that the reviewed code does not change between the check and the use.\n\n```yml\non:\n  pull_request_target:\n    types: [Created]\njobs:\n  test:\n    environment: NeedsApproval\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout from PR branch\n        uses: actions/checkout@v4\n        with:\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n          ref: ${{ github.event.pull_request.head.sha }}\n      - run: ./cmd\n```\n\n### Incorrect Usage (Label Gates)\n\nThe following workflow uses a Deployment Environment which may be configured to require an approval. However, it check outs the code pointed to by the Pull Request branch reference. At attacker could submit legitimate code for review and then change it once it gets approved.\n\n```yaml\non:\n  pull_request_target:\n    types: [labeled]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    if: contains(github.event.pull_request.labels.*.name, 'safe-to-test')\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.pull_request.head.ref }}\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n      - run: ./cmd\n```\n\n### Correct Usage (Label Gates)\n\nUse immutable references (Commit SHA) to make sure that the reviewed code does not change between the check and the use.\n\n```yaml\non:\n  pull_request_target:\n    types: [labeled]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    if: contains(github.event.pull_request.labels.*.name, 'safe-to-test')\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n          repository: ${{ github.event.pull_request.head.repo.full_name }}\n      - run: ./cmd\n```\n\n## References\n\n- [ActionsTOCTOU](https://github.com/AdnaneKhan/ActionsTOCTOU)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-367"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-367"],
                   "description": "Untrusted Checkout is protected by a security check but the checked-out branch can be changed after the check.",
                   "id": "actions/untrusted-checkout-toctou/high",
                   "kind": "problem",
@@ -338,11 +316,7 @@
                   "markdown": "# Excessive Secrets Exposure\n\n## Description\n\nWhen the workflow runner cannot determine what secrets are needed to run the workflow, it will pass all the available secrets to the runner including organization and repository secrets. This violates the least privileged principle and increases the impact of a potential vulnerability affecting the workflow.\n\n## Recommendations\n\nOnly pass those secrets that are needed by the workflow. Avoid using expressions such as `toJSON(secrets)` or dynamically accessed secrets such as `secrets[format('GH_PAT_%s', matrix.env)]` since the workflow will need to receive all secrets to decide at runtime which one needs to be used.\n\n## Examples\n\n### Incorrect Usage\n\n```yaml\nenv:\n  ALL_SECRETS: ${{ toJSON(secrets) }}\n```\n\n```yaml\nstrategy:\n  matrix:\n    env: [PROD, DEV]\nenv:\n  GH_TOKEN: ${{ secrets[format('GH_PAT_%s', matrix.env)] }}\n```\n\n### Correct Usage\n\n```yaml\nenv:\n  NEEDED_SECRET: ${{ secrets.GH_PAT }}\n```\n\n```yaml\nstrategy:\n  matrix:\n    env: [PROD, DEV]\n---\nif: matrix.env == \"PROD\"\nenv:\n  GH_TOKEN: ${{ secrets.GH_PAT_PROD }}\n---\nif: matrix.env == \"DEV\"\nenv:\n  GH_TOKEN: ${{ secrets.GH_PAT_DEV }}\n```\n\n## References\n\n- [Using secrets in GitHub Actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#using-encrypted-secrets-in-a-workflow)\n- [Job uses all secrets](https://github.com/boostsecurityio/poutine/blob/main/docs/content/en/rules/job_all_secrets.md)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-312"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-312"],
                   "description": "All organization and repository secrets are passed to the workflow runner.",
                   "id": "actions/excessive-secrets-exposure",
                   "kind": "problem",
@@ -368,11 +342,7 @@
                   "markdown": "# Storage of sensitive information in GitHub Actions artifact\n\n## Description\n\nSensitive information included in a GitHub Actions artifact can allow an attacker to access the sensitive information if the artifact is published.\n\n## Recommendation\n\nOnly store information that is meant to be publicly available in a GitHub Actions artifact.\n\n## Example\n\nThe following example uses `actions/checkout` to checkout code which stores the GITHUB_TOKEN in the \\`.git/config\\` file and then stores the contents of the \\`.git\\` repository into the artifact:\n\n```yaml\nname: secrets-in-artifacts\non:\n  pull_request:\njobs:\n  a-job: # VULNERABLE\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: \"Upload artifact\"\n        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2\n        with:\n          name: file\n          path: .\n```\n\nThe issue has been fixed below, where the `actions/upload-artifact` uses a version (v4+) which does not include hidden files or directories into the artifact.\n\n```yaml\nname: secrets-in-artifacts\non:\n  pull_request:\njobs:\n  a-job: # NOT VULNERABLE\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: \"Upload artifact\"\n        uses: actions/upload-artifact@v4\n        with:\n          name: file\n          path: .\n```\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-312"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-312"],
                   "description": "Including sensitive information in a GitHub Actions artifact can\n              expose it to an attacker.",
                   "id": "actions/secrets-in-artifacts",
                   "kind": "problem",
@@ -400,11 +370,7 @@
                   "markdown": "# Unmasked Secret Exposure\n\n## Description\n\nSecrets derived from other secrets are not know to the workflow runner and therefore not masked unless explicitly registered.\n\n## Recommendations\n\nAvoid defining non-plain secrets. For example, do not define a new secret containing a JSON object and then read properties out of it from the workflow since these read values will not be masked by the workflow runner.\n\n## Examples\n\n### Incorrect Usage\n\n```yaml\n- env:\n    username: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}\n    password: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}\n  run: |\n    echo \"$username\"\n    echo \"$password\"\n```\n\n### Correct Usage\n\n```yaml\n- env:\n    username: ${{ secrets.AZURE_CREDENTIALS_CLIENT_ID }}\n    password: ${{ secrets.AZURE_CREDENTIALS_CLIENT_SECRET }}\n  run: |\n    echo \"$username\"\n    echo \"$password\"\n```\n\n## References\n\n- [Using secrets in GitHub Actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#using-encrypted-secrets-in-a-workflow)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-312"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-312"],
                   "description": "Secrets derived from other secrets are not masked by the workflow runner.",
                   "id": "actions/unmasked-secret-exposure",
                   "kind": "problem",
@@ -432,11 +398,7 @@
                   "markdown": "# Execution of Untrusted Checked-out Code\n\n## Description\n\nGitHub workflows can be triggered through various repository events, including incoming pull requests (PRs) or comments on Issues/PRs. A potentially dangerous misuse of the triggers such as `pull_request_target` or `issue_comment` followed by an explicit checkout of untrusted code (Pull Request HEAD) may lead to repository compromise if untrusted code gets executed in a privileged job.\n\n## Recommendations\n\n- Avoid using `pull_request_target` unless necessary.\n- Employ unprivileged `pull_request` workflows followed by `workflow_run` for privileged operations.\n- Use labels like `safe to test` to vet PRs and manage the execution context appropriately.\n\nThe best practice is to handle the potentially untrusted pull request via the **pull_request** trigger so that it is isolated in an unprivileged environment. The workflow processing the pull request should then store any results like code coverage or failed/passed tests in artifacts and exit. A second privileged workflow with the access to repository secrets, triggered by the completion of the first workflow using `workflow_run` trigger event, downloads the artifacts and make any necessary modifications to the repository or interact with third party services that require repository secrets (e.g. API tokens).\n\nThe artifacts downloaded from the first workflow should be considered untrusted and must be verified.\n\n## Examples\n\n### Incorrect Usage\n\nThe following workflow checks-out untrusted code in a privileged context and runs user-controlled code (in this case package.json scripts) which will grant privileged access to the attacker:\n\n```yaml\non: pull_request_target\n\njobs:\n  build:\n    name: Build and test\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n\n      - uses: actions/setup-node@v1\n      - run: |\n          npm install\n          npm build\n\n      - uses: completely/fakeaction@v2\n        with:\n          arg1: ${{ secrets.supersecret }}\n\n      - uses: fakerepo/comment-on-pr@v1\n        with:\n          message: |\n            Thank you!\n```\n\n### Correct Usage\n\nAn example shows how to use two workflows: one for processing the untrusted PR and the other for using the results in a safe context.\n\n**ReceivePR.yml** (untrusted PR handling with artifact creation):\n\n```yaml\nname: Receive PR\non:\n  pull_request:\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n      - name: Build\n        run: /bin/bash ./build.sh\n      - name: Save PR number\n        run: |\n          mkdir -p ./pr\n          echo ${{ github.event.number }} > ./pr/NR\n      - uses: actions/upload-artifact@v2\n        with:\n          name: pr\n          path: pr/\n```\n\n**CommentPR.yml** (processing artifacts with privileged access):\n\n```yaml\nname: Comment on the pull request\non:\n  workflow_run:\n    workflows: [\"Receive PR\"]\n    types:\n      - completed\njobs:\n  upload:\n    runs-on: ubuntu-latest\n    if: >\n      github.event.workflow_run.event == 'pull_request' &&\n      github.event.workflow_run.conclusion == 'success'\n    steps:\n      - name: \"Download artifact\"\n        uses: actions/github-script@v3.1.0\n        with:\n          script: |\n            var artifacts = await github.actions.listWorkflowRunArtifacts({\n                owner: context.repo.owner,\n                repo: context.repo.repo,\n                run_id: ${{github.event.workflow_run.id }},\n            });\n            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {\n              return artifact.name == \"pr\";\n            })[0];\n            var download = await github.actions.downloadArtifact({\n                owner: context.repo.owner,\n                repo: context.repo.repo,\n                artifact_id: matchArtifact.id,\n                archive_format: 'zip',\n            });\n            var fs = require('fs');\n            fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));\n      - run: |\n          mkdir -p tmp\n          unzip -d tmp/ pr.zip\n      - name: \"Comment on PR\"\n        uses: actions/github-script@v3\n        with:\n          github-token: ${{ secrets.GITHUB_TOKEN }}\n          script: |\n            var fs = require('fs');\n            var issue_number = Number(fs.readFileSync('./tmp/NR'));\n            // Verify that the file contains a numeric value\n            const contains_numeric = /\\d/.test(issue_number);\n            if (contains_numeric) {\n                await github.issues.createComment({\n                  owner: context.repo.owner,\n                  repo: context.repo.repo,\n                  issue_number: issue_number,\n                  body: 'Everything is OK. Thank you for the PR!'\n                });\n            }\n```\n\n## References\n\n- [Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-829"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-829"],
                   "description": "Privileged workflows have read/write access to the base repository and access to secrets.\n              By explicitly checking out and running the build script from a fork the untrusted code is running in an environment\n              that is able to push to the base repository and to access secrets.",
                   "id": "actions/untrusted-checkout/critical",
                   "kind": "path-problem",
@@ -464,11 +426,7 @@
                   "markdown": "# Unpinned tag for 3rd party Action in workflow\n\n## Description\n\nUsing a tag for a 3rd party Action that is not pinned to a commit can lead to executing an untrusted Action through a supply chain attack.\n\n## Recommendations\n\nPinning an action to a full length commit SHA is currently the only way to use a non-immutable action as an immutable release. Pinning to a particular SHA helps mitigate the risk of a bad actor adding a backdoor to the action's repository, as they would need to generate a SHA-1 collision for a valid Git object payload. When selecting a SHA, you should verify it is from the action's repository and not a repository fork.\n\n## Examples\n\n### Incorrect Usage\n\n```yaml\n- uses: tj-actions/changed-files@v44\n```\n\n### Correct Usage\n\n```yaml\n- uses: tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c # v44\n```\n\n## References\n\n- [Using third-party actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "security",
-                    "actions",
-                    "external/cwe/cwe-829"
-                  ],
+                  "tags": ["security", "actions", "external/cwe/cwe-829"],
                   "description": "Using a tag for a non-immutable Action that is not pinned to a commit can lead to executing an untrusted Action through a supply chain attack.",
                   "id": "actions/unpinned-tag",
                   "kind": "problem",
@@ -496,11 +454,7 @@
                   "markdown": "# Artifact poisoning\n\n## Description\n\nThe workflow downloads artifacts that may be poisoned by an attacker in previously triggered workflows. If the contents of these artifacts are not correctly extracted, stored and verified, they may lead to repository compromise if untrusted code gets executed in a privileged job.\n\n## Recommendations\n\n- Always consider artifacts content as untrusted.\n- Extract the contents of artifacts to a temporary folder so they cannot override existing files.\n- Verify the contents of the artifacts downloaded. If an artifact is expected to contain a numeric value, verify it before using it.\n\n## Examples\n\n### Incorrect Usage\n\nThe following workflow downloads an artifact that can potentially be controlled by an attacker and then runs a script from the runner workspace. Because the `dawidd6/action-download-artifact` by default downloads and extracts the contents of the artifacts overriding existing files, an attacker will be able to override the contents of `cmd.sh` and gain code execution when this file gets executed.\n\n```yaml\nname: Insecure Workflow\n\non:\n  workflow_run:\n    workflows: [\"Prev\"]\n    types:\n      - completed\n\njobs:\n  Download:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n      - uses: dawidd6/action-download-artifact@v2\n        with:\n          name: pr_number\n      - name: Run command\n        run: |\n          sh cmd.sh\n```\n\n### Correct Usage\n\nThe following example, correctly creates a temporary directory and extracts the contents of the artifact there before calling `cmd.sh`.\n\n```yaml\nname: Insecure Workflow\n\non:\n  workflow_run:\n    workflows: [\"Prev\"]\n    types:\n      - completed\n\njobs:\n  Download:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n      - run: mkdir -p ${{ runner.temp }}/artifacts/\n      - uses: dawidd6/action-download-artifact@v2\n        with:\n          name: pr_number\n          path: ${{ runner.temp }}/artifacts/\n\n      - name: Run command\n        run: |\n          sh cmd.sh\n```\n\n## References\n\n- [Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-829"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-829"],
                   "description": "An attacker may be able to poison the workflow's artifacts and influence on consequent steps.",
                   "id": "actions/artifact-poisoning/critical",
                   "kind": "path-problem",
@@ -528,11 +482,7 @@
                   "markdown": "# Execution of Untrusted Checked-out Code\n\n## Description\n\nGitHub workflows can be triggered through various repository events, including incoming pull requests (PRs) or comments on Issues/PRs. A potentially dangerous misuse of the triggers such as `pull_request_target` or `issue_comment` followed by an explicit checkout of untrusted code (Pull Request HEAD) may lead to repository compromise if untrusted code gets executed in a privileged job.\n\n## Recommendations\n\n- Avoid using `pull_request_target` unless necessary.\n- Employ unprivileged `pull_request` workflows followed by `workflow_run` for privileged operations.\n- Use labels like `safe to test` to vet PRs and manage the execution context appropriately.\n\nThe best practice is to handle the potentially untrusted pull request via the **pull_request** trigger so that it is isolated in an unprivileged environment. The workflow processing the pull request should then store any results like code coverage or failed/passed tests in artifacts and exit. A second privileged workflow with the access to repository secrets, triggered by the completion of the first workflow using `workflow_run` trigger event, downloads the artifacts and make any necessary modifications to the repository or interact with third party services that require repository secrets (e.g. API tokens).\n\nThe artifacts downloaded from the first workflow should be considered untrusted and must be verified.\n\n## Examples\n\n### Incorrect Usage\n\nThe following workflow checks-out untrusted code in a privileged context and runs user-controlled code (in this case package.json scripts) which will grant privileged access to the attacker:\n\n```yaml\non: pull_request_target\n\njobs:\n  build:\n    name: Build and test\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n\n      - uses: actions/setup-node@v1\n      - run: |\n          npm install\n          npm build\n\n      - uses: completely/fakeaction@v2\n        with:\n          arg1: ${{ secrets.supersecret }}\n\n      - uses: fakerepo/comment-on-pr@v1\n        with:\n          message: |\n            Thank you!\n```\n\n### Correct Usage\n\nAn example shows how to use two workflows: one for processing the untrusted PR and the other for using the results in a safe context.\n\n**ReceivePR.yml** (untrusted PR handling with artifact creation):\n\n```yaml\nname: Receive PR\non:\n  pull_request:\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n      - name: Build\n        run: /bin/bash ./build.sh\n      - name: Save PR number\n        run: |\n          mkdir -p ./pr\n          echo ${{ github.event.number }} > ./pr/NR\n      - uses: actions/upload-artifact@v2\n        with:\n          name: pr\n          path: pr/\n```\n\n**CommentPR.yml** (processing artifacts with privileged access):\n\n```yaml\nname: Comment on the pull request\non:\n  workflow_run:\n    workflows: [\"Receive PR\"]\n    types:\n      - completed\njobs:\n  upload:\n    runs-on: ubuntu-latest\n    if: >\n      github.event.workflow_run.event == 'pull_request' &&\n      github.event.workflow_run.conclusion == 'success'\n    steps:\n      - name: \"Download artifact\"\n        uses: actions/github-script@v3.1.0\n        with:\n          script: |\n            var artifacts = await github.actions.listWorkflowRunArtifacts({\n                owner: context.repo.owner,\n                repo: context.repo.repo,\n                run_id: ${{github.event.workflow_run.id }},\n            });\n            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {\n              return artifact.name == \"pr\";\n            })[0];\n            var download = await github.actions.downloadArtifact({\n                owner: context.repo.owner,\n                repo: context.repo.repo,\n                artifact_id: matchArtifact.id,\n                archive_format: 'zip',\n            });\n            var fs = require('fs');\n            fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));\n      - run: |\n          mkdir -p tmp\n          unzip -d tmp/ pr.zip\n      - name: \"Comment on PR\"\n        uses: actions/github-script@v3\n        with:\n          github-token: ${{ secrets.GITHUB_TOKEN }}\n          script: |\n            var fs = require('fs');\n            var issue_number = Number(fs.readFileSync('./tmp/NR'));\n            // Verify that the file contains a numeric value\n            const contains_numeric = /\\d/.test(issue_number);\n            if (contains_numeric) {\n                await github.issues.createComment({\n                  owner: context.repo.owner,\n                  repo: context.repo.repo,\n                  issue_number: issue_number,\n                  body: 'Everything is OK. Thank you for the PR!'\n                });\n            }\n```\n\n## References\n\n- [Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-829"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-829"],
                   "description": "Privileged workflows have read/write access to the base repository and access to secrets.\n              By explicitly checking out and running the build script from a fork the untrusted code is running in an environment\n              that is able to push to the base repository and to access secrets.",
                   "id": "actions/untrusted-checkout/high",
                   "kind": "problem",
@@ -624,11 +574,7 @@
                   "markdown": "# Improper Access Control\n\n## Description\n\nSometimes labels are used to approve GitHub Actions. An authorization check may not be properly implemented, allowing an attacker to mutate the code after it has been reviewed and approved by label.\n\n## Recommendations\n\nWhen using labels, make sure that the code cannot be modified after it has been reviewed and the label has been set.\n\n## Examples\n\n### Incorrect Usage\n\nThe following example shows a job that requires the label `safe to test` to be set before running untrusted code. There are two problems with the code:\n\n1. The workflow gets triggered on `synchronize` activity type and, therefore, it will get triggered every time there is a change in the Pull Request. An attacker can modify the code of the Pull Request after the code has been reviewed and the label has been set. The workflow will be triggered every time a new change is added to the Pull Request.\n2. The workflow uses `ref: ${{ github.event.pull_request.head.ref }}` for checkout, which is a branch name of the Pull Request. There is a window of opportunity for the attacker to modify their branch after the Pull Request is labeled, but before the workflow starts and runs the checkout.\n\n```yaml\non:\n  pull_request_target:\n    types: [opened, synchronize]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repo for OWNER TEST\n        uses: actions/checkout@v3\n        if: contains(github.event.pull_request.labels.*.name, 'safe to test')\n        with:\n          ref: ${{ github.event.pull_request.head.ref }}\n      - run: ./cmd\n```\n\n### Correct Usage\n\nMake sure that the workflow only gets triggered when the label is set and use an immutable commit (`github.event.pull_request.head.sha`) instead of a mutable reference.\n\n```yaml\non:\n  pull_request_target:\n    types: [labeled]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repo for OWNER TEST\n        uses: actions/checkout@v3\n        if: contains(github.event.pull_request.labels.*.name, 'safe to test')\n        with:\n          ref: ${{ github.event.pull_request.head.sha}}\n      - run: ./cmd\n```\n\n## References\n\n- [Events that trigger workflows](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request_target)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-285"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-285"],
                   "description": "The access control mechanism is not properly implemented, allowing untrusted code to be executed in a privileged context.",
                   "id": "actions/improper-access-control",
                   "kind": "problem",
@@ -656,11 +602,7 @@
                   "markdown": "# Use of Actions with known vulnerabilities\n\n## Description\n\nThe security of the workflow and the repository could be compromised by GitHub Actions workflows that utilize GitHub Actions with known vulnerabilities.\n\n## Recommendations\n\nEither remove the component from the workflow or upgrade it to a version that is not vulnerable.\n\n## References\n\n- [GitHub Docs: Keeping your actions up to date with Dependabot](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot)\n"
                 },
                 "properties": {
-                  "tags": [
-                    "actions",
-                    "security",
-                    "external/cwe/cwe-1395"
-                  ],
+                  "tags": ["actions", "security", "external/cwe/cwe-1395"],
                   "description": "The workflow is using an action with known vulnerabilities.",
                   "id": "actions/vulnerable-action",
                   "kind": "problem",
@@ -744,9 +686,7 @@
                   "text": "The QL pack root directory."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackRoot"
-                  ]
+                  "tags": ["CodeQL/LocalPackRoot"]
                 }
               },
               {
@@ -755,9 +695,7 @@
                   "text": "The QL pack definition file."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackDefinitionFile"
-                  ]
+                  "tags": ["CodeQL/LocalPackDefinitionFile"]
                 }
               }
             ]
@@ -772,9 +710,7 @@
                   "text": "The QL pack root directory."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackRoot"
-                  ]
+                  "tags": ["CodeQL/LocalPackRoot"]
                 }
               },
               {
@@ -783,9 +719,7 @@
                   "text": "The QL pack definition file."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackDefinitionFile"
-                  ]
+                  "tags": ["CodeQL/LocalPackDefinitionFile"]
                 }
               }
             ]
@@ -800,9 +734,7 @@
                   "text": "The QL pack root directory."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackRoot"
-                  ]
+                  "tags": ["CodeQL/LocalPackRoot"]
                 }
               },
               {
@@ -811,9 +743,7 @@
                   "text": "The QL pack definition file."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackDefinitionFile"
-                  ]
+                  "tags": ["CodeQL/LocalPackDefinitionFile"]
                 }
               }
             ]
@@ -828,9 +758,7 @@
                   "text": "The QL pack root directory."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackRoot"
-                  ]
+                  "tags": ["CodeQL/LocalPackRoot"]
                 }
               },
               {
@@ -839,9 +767,7 @@
                   "text": "The QL pack definition file."
                 },
                 "properties": {
-                  "tags": [
-                    "CodeQL/LocalPackDefinitionFile"
-                  ]
+                  "tags": ["CodeQL/LocalPackDefinitionFile"]
                 }
               }
             ]
@@ -1467,10 +1393,7 @@
       "automationDetails": {
         "id": "/language:actions/"
       },
-      "newlineSequences": [
-        "\r\n",
-        "\n"
-      ],
+      "newlineSequences": ["\r\n", "\n"],
       "columnKind": "utf16CodeUnits",
       "properties": {
         "semmle.formatSpecifier": "sarif-latest",

@@ -1,5 +1,3 @@
 {
-    "sub_classes": [
-        "Necro_bard"
-    ]
+  "sub_classes": ["Necro_bard"]
 }

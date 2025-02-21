@@ -1,15 +1,8 @@
-# **README.MD**
+# **README**
 
 ## Dungeon Crawler World
 
 Welcome to Dungeon Crawler World! This project is a thrilling adventure game where players explore dungeons, fight monsters, and collect treasures.
-
-## Features
-
-- **Exploration**: Navigate through randomly generated dungeons.
-- **Combat**: Engage in turn-based battles with various monsters.
-- **Loot**: Find and collect powerful items and equipment.
-- **Progression**: Level up your character and improve your skills.
 
 ## Contributing
 

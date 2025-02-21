@@ -1,6 +1,18 @@
 {
   "features": {
     "ghcr.io/devcontainers-extra/features/prettier": "latest"
-
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode-remote.remote-containers",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "prettier.experimentalTernaries": true,
+        "prettier.useEditorConfig": true,
+        "prettier.enable": true
+      }
+    }
   }
 }

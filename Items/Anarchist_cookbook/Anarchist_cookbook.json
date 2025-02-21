@@ -1,8 +1,7 @@
 {
-  "name": "Anarchist's Cookbook",
-  "description": "",
   "requirements": {
     "class": "Compensated_anarchist"
-
-  }
+  },
+  "name": "Anarchist's Cookbook",
+  "description": "It looks like an ordinary book filed with recipes."
 }
