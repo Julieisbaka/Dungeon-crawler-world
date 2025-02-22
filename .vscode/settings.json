@@ -3,10 +3,8 @@
   "prettier.enable": true,
   "prettier.experimentalTernaries": true,
   "prettier.useEditorConfig": true,
-  "json.schemas": [
-    {
-      "fileMatch": ["/myfile"],
-      "url": "./Scheme/scheme.json"
-    }
-  ]
+  "git.enabled": true,
+  "prettier.insertPragma": true,
+  "json.validate.enable": true,
+  "editor.formatOnSave": true
 }

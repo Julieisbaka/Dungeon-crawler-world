@@ -1,11 +1,11 @@
 {
+  "$schema": "https://json.schemastore.org/package",
   "name": "dungeon-crawler-world",
   "description": "A thrilling adventure game set in a rich fantasy world. Explore dungeons, fight monsters, and uncover hidden treasures as you embark on an epic quest.",
   "author": "JulieISBaka",
-  "version": "0.0.3.7",
+  "version": "0.0.3.8",
   "license": "MIT",
   "devDependencies": {
-    "prettier": "2.4.0",
-    "codeql": "2.20.4"
+    "prettier": "2.8.8"
   }
 }

@@ -1,3 +1,8 @@
+<!-- @format -->
+
+<!-- markdownlint-enable MD000 -->
+<!-- markdownlint-enable-file MD000 -->
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge

@@ -1,3 +1,8 @@
+<!-- @format -->
+
+<!-- markdownlint-enable MD000 -->
+<!-- markdownlint-enable-file MD000 -->
+
 # **README**
 
 Reading the contents of any code in this repository **WILL SPOIL THE GAME.**

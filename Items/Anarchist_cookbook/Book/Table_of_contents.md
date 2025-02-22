@@ -1,3 +1,8 @@
+<!-- @format -->
+
+<!-- markdownlint-enable MD000 -->
+<!-- markdownlint-enable-file MD000 -->
+
 # Table of contents
 
 1. [Cover](Cover.md)

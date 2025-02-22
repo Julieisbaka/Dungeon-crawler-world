@@ -1,3 +1,8 @@
+<!-- @format -->
+
+<!-- markdownlint-enable MD000 -->
+<!-- markdownlint-enable-file MD000 -->
+
 # MIT License
 
 Copyright (c) 2025 Julie - Mathman
