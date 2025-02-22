@@ -4,5 +4,5 @@
   },
   "name": "Former child Actor",
   "description": "",
-  "Abilities": ["Manager"]
+  "Abilities": ["Manager", "child actor"]
 }

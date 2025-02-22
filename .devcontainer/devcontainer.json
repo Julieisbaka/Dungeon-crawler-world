@@ -1,18 +1,26 @@
 {
+  "name": "Dungeon-crawler-world",
   "features": {
-    "ghcr.io/devcontainers-extra/features/prettier": "latest"
+    "ghcr.io/devcontainers-extra/features/prettier": "latest",
+    "ghcr.io/devcontainers-extra/features/schemacrawler-sdkman": "latest",
+    "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest"
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-vscode-remote.remote-containers",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig",
+        "DavidAnson.vscode-markdownlint"
       ],
       "settings": {
         "prettier.experimentalTernaries": true,
         "prettier.useEditorConfig": true,
-        "prettier.enable": true
-      }
+        "prettier.enable": true,
+        "json.format.enable": false,
+        "editor.formatOnSave": true
+      },
+      "devPort": 9000
     }
   }
 }
