@@ -11,27 +11,30 @@
   "properties": {
     "prerequisites": {
       "type": "array",
-      "$comment": "This is a list of all the prerequisites needed to use this ability."
+      "enum": ["Charisma"],
+      "description": "This is a list of all the prerequisites needed to use this ability."
     },
     "requirements": {
       "type": "array",
-      "$comment": "This is a list of all the requirements needed to unlock this ability."
+      "enum": ["classes", "Views"],
+      "description": "This is a list of all the requirements needed to unlock this ability.",
+      "$comment": "This property is currently broken, and I am trying to get it working again as fast as possible."
     },
-    "Abilities": {
+    "abilities": {
       "type": "array",
-      "$comment": "This is a list of all the abilities available."
+      "description": "This is a list of all the abilities available."
     },
     "classes": {
       "type": "array",
-      "$comment": "This is the list of classes provided by the input or connected to the inputs."
+      "description": "This is the list of classes provided by the input or connected to the inputs."
     },
     "sub_classes": {
       "type": "array",
-      "$comment": "This is the list of subclasses connected to the input classes."
+      "description": "This is the list of subclasses connected to the input classes."
     },
     "description": {
       "type": "string",
-      "$comment": "This is the description of the thing."
+      "description": "This is the description of the thing."
     },
     "type": {
       "type": "string",
@@ -56,40 +59,40 @@
         "buff",
         "attack"
       ],
-      "$comment": "This is the type of the thing."
+      "description": "This is the type of the thing."
     },
     "level": {
       "oneOf": [
         {
           "type": "number",
-          "$comment": "This is the level of the thing."
+          "description": "This is the level of the thing."
         },
         {
           "type": "string",
-          "$comment": "This allows for level descriptors like 'high' or 'low'."
+          "description": "This allows for level descriptors like 'high' or 'low'."
         }
       ],
-      "$comment": "This is the level of the thing."
+      "description": "This is the level of the thing."
     },
     "name": {
       "type": "string",
-      "$comment": "This is the name of the thing."
+      "description": "This is the name of the thing."
     },
     "range": {
       "type": "number",
-      "$comment": "This is the range of the ability."
+      "description": "This is the range of the ability."
     },
     "duration": {
       "type": "number",
-      "$comment": "This is the duration of the ability."
+      "description": "This is the duration of the ability."
     },
     "cost": {
       "type": "number",
-      "$comment": "This is the cost of using the ability."
+      "description": "This is the cost of using the ability."
     },
     "cooldown": {
       "type": "number",
-      "$comment": "This is the cooldown period for using the ability."
+      "description": "This is the cooldown period for using the ability."
     }
   }
 }

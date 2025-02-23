@@ -11,7 +11,8 @@
         "ms-vscode-remote.remote-containers",
         "esbenp.prettier-vscode",
         "EditorConfig.EditorConfig",
-        "DavidAnson.vscode-markdownlint"
+        "DavidAnson.vscode-markdownlint",
+        "streetsidesoftware.code-spell-checker"
       ],
       "settings": {
         "prettier.useEditorConfig": true,
