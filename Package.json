@@ -7,6 +7,6 @@
   "license": "MIT",
   "devDependencies": {
     "prettier": "2.8.8",
-    "markdownlint-cli2": "0.27.1"
+    "markdownlint-cli2": "0.17.2"
   }
 }

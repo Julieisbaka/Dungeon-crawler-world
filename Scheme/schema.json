@@ -16,7 +16,10 @@
     },
     "requirements": {
       "type": "array",
-      "enum": ["classes", "Views"],
+      "items": {
+      "type": "string",
+      "enum": ["classes", "Views", "abilities", "sub_classes"]
+      },
       "description": "This is a list of all the requirements needed to unlock this ability.",
       "$comment": "This property is currently broken, and I am trying to get it working again as fast as possible."
     },

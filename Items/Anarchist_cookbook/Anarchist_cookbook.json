@@ -1,6 +1,6 @@
 {
   "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
-  "requirements": [], // Class of compensated anarchist or one of its subclasses this comment is temporary
+  "requirements": [{"classes": "compensated_anarchist"}],
   "name": "Anarchist's Cookbook",
   "description": "It looks like an ordinary book filled with recipes."
 }

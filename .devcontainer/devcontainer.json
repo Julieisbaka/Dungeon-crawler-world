@@ -3,7 +3,9 @@
   "name": "Dungeon-crawler-world",
   "features": {
     "ghcr.io/devcontainers-extra/features/prettier": "latest",
-    "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest"
+    "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest",
+    "ghcr.io/devcontainers-extra/features/code-spell-checker": "latest",
+    "ghcr.io/devcontainers-extra/features/editorconfig": "latest"
   },
   "customizations": {
     "vscode": {

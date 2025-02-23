@@ -1,8 +1,10 @@
 {
   "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
-  "requirements": {
-    "Views": 1000000000000
-  },
+  "requirements": [
+    {
+      "Views": 1000000000000
+    }
+  ],
   "name": "Former child Actor",
   "description": "",
   "abilities": ["Manager", "child actor"]
