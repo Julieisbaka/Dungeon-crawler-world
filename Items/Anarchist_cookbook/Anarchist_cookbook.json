@@ -1,4 +1,4 @@
-{
+{"$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "requirements": {
     "class": "Compensated_anarchist"
   },

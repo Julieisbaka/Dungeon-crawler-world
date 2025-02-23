@@ -1,4 +1,5 @@
 {
-    "name": "Marked for Death",
-    "description": ""
+  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
+  "name": "Marked for Death",
+  "description": ""
 }

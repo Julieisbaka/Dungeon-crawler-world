@@ -1,1 +1,5 @@
-{ "name": "Child actor", "description": "" }
+{
+  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
+  "name": "Child actor",
+  "description": ""
+}

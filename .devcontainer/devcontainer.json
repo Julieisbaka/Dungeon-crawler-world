@@ -3,7 +3,6 @@
   "name": "Dungeon-crawler-world",
   "features": {
     "ghcr.io/devcontainers-extra/features/prettier": "latest",
-    "ghcr.io/devcontainers-extra/features/schemacrawler-sdkman": "latest",
     "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest"
   },
   "customizations": {
@@ -15,15 +14,22 @@
         "DavidAnson.vscode-markdownlint"
       ],
       "settings": {
-        "prettier.experimentalTernaries": true,
         "prettier.useEditorConfig": true,
-        "prettier.enable": true,
+        "prettier.insertPragma": true,
+        "prettier.experimentalTernaries": true,
+        "prettier.tabWidth": 2,
+        "prettier.useTabs": false,
+        "prettier.endOfLine": "crlf",
+        "prettier.trailingComma": "none",
+        "prettier.bracketSpacing": true,
+        "prettier.embeddedLanguageFormatting": "auto",
         "json.format.enable": false,
-        "editor.formatOnSave": true,
-        "git.enabled": true,
-        "prettier.insertPragma": true
-      },
-      "devPort": 9000
+        "json.schemas": [{
+          "url": "/Dungeon-crawler-world/Scheme/schema.json"
+        }],
+        "json.validate.enable": true
+
+      }
     }
   }
 }

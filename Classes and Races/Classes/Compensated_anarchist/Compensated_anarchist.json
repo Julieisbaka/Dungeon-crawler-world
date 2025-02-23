@@ -1,4 +1,5 @@
 {
+  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "Requirements": {
     "Views": 500000000000
   },

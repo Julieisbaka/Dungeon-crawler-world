@@ -1,4 +1,5 @@
 {
+  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "name": "Moonshine Dust",
   "description": ""
 }

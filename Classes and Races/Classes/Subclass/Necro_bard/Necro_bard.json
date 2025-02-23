@@ -1,4 +1,5 @@
 {
+  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "name": "Necro Bard",
   "description": "A bard who uses necromancy to enhance their performances and control the undead."
 }

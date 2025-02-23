@@ -1,10 +1,16 @@
 {
-  "json.format.enable": false,
-  "prettier.enable": true,
-  "prettier.experimentalTernaries": true,
   "prettier.useEditorConfig": true,
-  "git.enabled": true,
   "prettier.insertPragma": true,
-  "json.validate.enable": true,
-  "editor.formatOnSave": true
+  "prettier.experimentalTernaries": true,
+  "prettier.tabWidth": 2,
+  "prettier.useTabs": false,
+  "prettier.endOfLine": "crlf",
+  "prettier.trailingComma": "none",
+  "prettier.bracketSpacing": true,
+  "prettier.embeddedLanguageFormatting": "auto",
+  "json.format.enable": false,
+  "json.schemas": [{
+    "url": "/Dungeon-crawler-world/Scheme/schema.json"
+  }],
+  "json.validate.enable": true
 }

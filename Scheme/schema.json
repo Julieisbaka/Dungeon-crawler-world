@@ -91,6 +91,5 @@
       "type": "number",
       "$comment": "This is the cooldown period for using the ability."
     }
-  },
-  "required": ["name", "description"]
+  }
 }

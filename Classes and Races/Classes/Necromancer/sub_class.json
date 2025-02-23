@@ -1,3 +1,4 @@
 {
+  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "sub_classes": ["Necro_bard"]
 }
