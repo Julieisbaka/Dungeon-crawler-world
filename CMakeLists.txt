@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Set the project name and version
-project(DungeonCrawlerWorld VERSION 0.0.3.9)
+project(DungeonCrawlerWorld VERSION 0.0.4.0)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
