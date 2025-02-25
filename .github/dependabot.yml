@@ -6,7 +6,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pnpm" # Specify pnpm as the package ecosystem
+  - package-ecosystem: "nuget" # Specify nuget as the package ecosystem
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"

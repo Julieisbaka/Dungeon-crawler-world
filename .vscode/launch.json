@@ -9,7 +9,6 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
             "externalConsole": false,
             "preLaunchTask": "CMake: build",
             "logging": {
@@ -19,7 +18,7 @@
         },
         {
             "name": "(Windows) Attach",
-            "type": "cppvsdbg",
+            "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
         }
