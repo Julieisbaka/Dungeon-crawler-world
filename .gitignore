@@ -3,3 +3,5 @@ dist/
 .cache/
 *.log
 build/
+/.vs/Dungeon-crawler-world/v17/DocumentLayout.json
+/.vs/Dungeon-crawler-world/v17
