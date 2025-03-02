@@ -24,6 +24,32 @@ On this floor the enemies that spawn will be low level and easy to kill mobs.
 **Gods:**
 None
 
+## **Floor 6**
+
+Hunters can now spawn.
+
+**Floor themes:**
+
+1. Country boss.
+2. World quest.
+
+**Modifiers:**
+
+1. Blood bar.
+
+## **Floor 7**
+
+**Floor themes:**
+
+1. Maze.
+2. Memories.
+3. Key.
+4. World quest.
+
+**Modifiers:**
+
+1. Insta - win.
+
 ## **Floor 8**
 
 The bosses that are allowed to spawn on this floor are country bosses and below.
