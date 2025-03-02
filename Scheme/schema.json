@@ -2,12 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Dungeon crawler world Schema.",
   "description": "Contains all properties used for json data files within the dungeon crawler world game.",
-  "examples": [
-    {
-      "level": 250,
-      "Name": "Grawl"
-    }
-  ],
   "properties": {
     "prerequisites": {
       "type": "array",
