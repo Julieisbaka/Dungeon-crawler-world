@@ -6,12 +6,7 @@ labels: bug
 assignees: ""
 ---
 
-<!-- @format -->
-
-<!-- markdownlint-enable MD000 -->
-<!-- markdownlint-enable-file MD000 -->
-
-**Describe the bug** <!--ignore-->
+**Describe the bug** <!--Ignore-->
 
 A clear and concise description of what the bug is.
 

@@ -6,11 +6,6 @@ labels: enhancement
 assignees: ""
 ---
 
-<!-- @format -->
-
-<!-- markdownlint-enable MD000 -->
-<!-- markdownlint-enable-file MD000 -->
-
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is.
 Ex. I'm always frustrated when [...]
