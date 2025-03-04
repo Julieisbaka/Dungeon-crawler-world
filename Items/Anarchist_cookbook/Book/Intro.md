@@ -1,8 +1,3 @@
-<!-- @format -->
-
-<!-- markdownlint-enable MD000 -->
-<!-- markdownlint-enable-file MD000 -->
-
 # Introduction
 
 _Burn it down, burn it all down._

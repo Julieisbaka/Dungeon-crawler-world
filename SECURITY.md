@@ -1,8 +1,3 @@
-<!-- @format -->
-
-<!-- markdownlint-enable MD000 -->
-<!-- markdownlint-enable-file MD000 -->
-
 # Security Policy
 
 We are committed to maintaining the security of our project.

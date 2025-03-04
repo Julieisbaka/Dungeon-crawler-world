@@ -3,7 +3,7 @@
   "name": "dungeon-crawler-world",
   "description": "A thrilling adventure game set in a rich fantasy world. Explore dungeons, fight monsters, and uncover hidden treasures as you embark on an epic quest.",
   "author": "JulieISBaka",
-  "version": "0.0.4.2",
+  "version": "0.0.4.3",
   "license": "MIT",
   "devDependencies": {
     "prettier": "4.0.0-alpha.10",
