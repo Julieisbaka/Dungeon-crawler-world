@@ -11,11 +11,21 @@
     "requirements": {
       "type": "array",
       "items": {
-      "type": "string",
-      "enum": ["classes", "Views", "abilities", "sub_classes"]
+      "type": "object",
+      "properties": {
+        "property": {
+        "type": "string",
+        "enum": ["classes", "views", "abilities", "sub_classes", "description", "type", "level", "name", "range", "duration", "cost", "cooldown"],
+        "description": "The property that is required."
+        },
+        "value": {
+        "type": ["string", "number"],
+        "description": "The value that the property must have."
+        }
       },
-      "description": "This is a list of all the requirements needed to unlock this ability.",
-      "$comment": "This property is currently broken, and I am trying to get it working again as fast as possible."
+      "$comment": "This property is currently broken. It is not working as intended."
+      },
+      "description": "This is a list of all the requirements needed to unlock this ability."
     },
     "abilities": {
       "type": "array",
@@ -91,5 +101,8 @@
       "type": "number",
       "description": "This is the cooldown period for using the ability."
     }
+  },
+  "dependencies": {
+    
   }
 }

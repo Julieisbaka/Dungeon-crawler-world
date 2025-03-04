@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fireball Animation Preview</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #1a1a1a;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            background: #ff4400;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ff6622;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>Fireball Preview</h3>
+        <p>Click anywhere to cast fireball<br>or use the test button below</p>
+        <button onclick="testFireball()">Cast Test Fireball</button>
+    </div>
+
+    <script src="Fireball_level1_animation.js" type="module"></script>
+    <script>
+        // Initialize the spell
+        window.addEventListener('load', () => {
+            initFireballSpell('body');
+        });
+
+        // Test function that casts fireball to random position
+        function testFireball() {
+            const targetX = Math.random() * window.innerWidth;
+            const targetY = Math.random() * window.innerHeight;
+            castFireball(
+                window.innerWidth / 2,
+                window.innerHeight - 50,
+                targetX,
+                targetY
+            );
+        }
+    </script>
+</body>
+</html>
