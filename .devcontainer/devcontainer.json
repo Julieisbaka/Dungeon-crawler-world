@@ -30,7 +30,9 @@
             "url": "/Dungeon-crawler-world/Scheme/schema.json"
           }
         ],
-        "json.validate.enable": true
+        "json.validate.enable": true,
+        "cSpell.words": ["Necro"]
+
       }
     }
   }
