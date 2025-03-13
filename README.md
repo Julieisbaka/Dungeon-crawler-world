@@ -4,7 +4,8 @@ Reading the contents of any code in this repository **WILL SPOIL THE GAME.**
 
 ## Dungeon Crawler World
 
-Welcome to Dungeon Crawler World! This project is a thrilling adventure game where players explore dungeons, fight monsters, and collect treasures.
+Welcome to Dungeon Crawler World! This project is a thrilling adventure game where players explore dungeons, fight monsters,
+and collect treasures.
 
 ## Contributing
 

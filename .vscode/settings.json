@@ -1,6 +1,6 @@
 {
   "prettier.useEditorConfig": true,
-  "prettier.insertPragma": true,
+  "prettier.insertPragma": false,
   "prettier.experimentalTernaries": true,
   "prettier.tabWidth": 2,
   "prettier.useTabs": false,
@@ -9,8 +9,10 @@
   "prettier.bracketSpacing": true,
   "prettier.embeddedLanguageFormatting": "auto",
   "json.format.enable": false,
-  "json.schemas": [{
-    "url": "/Dungeon-crawler-world/Scheme/schema.json"
-  }],
+  "json.schemas": [
+    {
+      "url": "/Dungeon-crawler-world/Scheme/schema.json"
+    }
+  ],
   "json.validate.enable": true
 }

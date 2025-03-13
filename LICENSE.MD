@@ -1,10 +1,10 @@
 # Adopted from the MIT License
 
-Copyright (c) 2025 Julie - Mathman
+Copyright (c) 2025 JulieISBaka - Mathman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including with limitation the rights
+in the Software with restriction, including with limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:

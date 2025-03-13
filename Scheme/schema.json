@@ -11,19 +11,32 @@
     "requirements": {
       "type": "array",
       "items": {
-      "type": "object",
-      "properties": {
-        "property": {
-        "type": "string",
-        "enum": ["classes", "views", "abilities", "sub_classes", "description", "type", "level", "name", "range", "duration", "cost", "cooldown"],
-        "description": "The property that is required."
+        "type": "object",
+        "properties": {
+          "property": {
+            "type": "string",
+            "enum": [
+              "classes",
+              "views",
+              "abilities",
+              "sub_classes",
+              "description",
+              "type",
+              "level",
+              "name",
+              "range",
+              "duration",
+              "cost",
+              "cooldown"
+            ],
+            "description": "The property that is required."
+          },
+          "value": {
+            "type": ["string", "number"],
+            "description": "The value that the property must have."
+          }
         },
-        "value": {
-        "type": ["string", "number"],
-        "description": "The value that the property must have."
-        }
-      },
-      "$comment": "This property is currently broken. It is not working as intended."
+        "$comment": "This property is currently broken. It is not working as intended."
       },
       "description": "This is a list of all the requirements needed to unlock this ability."
     },
@@ -102,7 +115,6 @@
       "description": "This is the cooldown period for using the ability."
     }
   },
-  "dependencies": {
-    
-  }
+  "dependencies": {}
 }
+

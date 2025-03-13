@@ -1,5 +1,5 @@
 ## Terrain Generation
-- Use perlin noise with frequency = 0.05 for base terrain
+- Use Perlin noise with frequency ~= 0.05 for base terrain
 - Elevation range: 0 - 100 units
 
 ## Structure Distribution
@@ -13,7 +13,7 @@ The player must find a tutorial guild to begin the game.
 The tutorial guild consists of you, your teammates, and a game guide.
 
 1. Floor one has no theme.
-2. All personal spaces on floor one are free.
+2. All personal spaces on floor one are free, but they don't last.
 3. All food on floor one is free.
 4. The player can not obtain or use gold on floor one.
 5. Only burrow bosses and below can be found here.

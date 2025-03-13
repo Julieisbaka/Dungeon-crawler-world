@@ -2,5 +2,5 @@
   "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "name": "Child actor",
   "description": "",
-  "requirements": [{"classes": "Former_Child_actor"}]
+  "requirements": [{ "classes": "Former_Child_actor" }]
 }
