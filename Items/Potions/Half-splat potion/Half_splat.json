@@ -1,5 +1,4 @@
 {
-  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "name": "Half-splat potion",
   "description": "Allows you to Survive a fall at 5% of your max HP."
 }

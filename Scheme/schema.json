@@ -1,11 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Dungeon crawler world Schema.",
-  "description": "Contains all properties used for json data files within the dungeon crawler world game.",
+  "title": "Dungeon crawler world Schema",
+  "description": "Contains all properties used for json data files within the dungeon crawler world fan-made game.",
+  "type": "object",
   "properties": {
     "prerequisites": {
       "type": "array",
-      "enum": ["Charisma"],
+      "items": {
+        "type": "string",
+        "enum": [
+          "Charisma",
+          "Strength",
+          "Intelligence",
+          "Dexterity",
+          "Constitution",
+          "Wisdom"
+        ]
+      },
       "description": "This is a list of all the prerequisites needed to use this ability."
     },
     "requirements": {
@@ -42,6 +53,43 @@
     },
     "abilities": {
       "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Null",
+              "None",
+              "Blunt",
+              "Fire",
+              "heat",
+              "poison",
+              "electric",
+              "ranged",
+              "magic",
+              "melee",
+              "sonic",
+              "physic",
+              "direct",
+              "indirect",
+              "dot",
+              "aoe",
+              "heal",
+              "buff",
+              "attack"
+            ]
+          },
+          "cost": { "type": "number" },
+          "cooldown": { "type": "number" },
+          "range": { "type": "number" },
+          "duration": { "type": "number" }
+        },
+        "required": ["name", "type"]
+      },
       "description": "This is a list of all the abilities available."
     },
     "classes": {
@@ -50,6 +98,9 @@
     },
     "sub_classes": {
       "type": "array",
+      "items": {
+        "type": "string"
+      },
       "description": "This is the list of subclasses connected to the input classes."
     },
     "description": {
@@ -85,36 +136,46 @@
       "oneOf": [
         {
           "type": "number",
+          "minimum": 0,
           "description": "This is the level of the thing."
         },
         {
           "type": "string",
-          "description": "This allows for level descriptors like 'high' or 'low'."
+          "enum": ["x", "?", "unknown"],
+          "description": "This allows for variable and unknown level descriptions."
         }
       ],
       "description": "This is the level of the thing."
     },
     "name": {
       "type": "string",
+      "minLength": 1,
       "description": "This is the name of the thing."
     },
     "range": {
       "type": "number",
+      "minimum": 0,
       "description": "This is the range of the ability."
     },
     "duration": {
       "type": "number",
+      "minimum": 0,
       "description": "This is the duration of the ability."
     },
     "cost": {
       "type": "number",
+      "minimum": 0,
       "description": "This is the cost of using the ability."
     },
     "cooldown": {
       "type": "number",
+      "minimum": 0,
       "description": "This is the cooldown period for using the ability."
     }
   },
-  "dependencies": {}
+  "additionalProperties": false,
+  "required": ["name"],
+  "dependencies": {},
+  "definitions": {}
 }
 

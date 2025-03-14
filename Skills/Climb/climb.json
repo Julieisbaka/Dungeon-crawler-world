@@ -1,5 +1,5 @@
 {
-  "$schema": "/Dungeon-crawler-world/Scheme/schema.json",
   "name": "climb",
   "description": "You can climb stuff."
 }
+

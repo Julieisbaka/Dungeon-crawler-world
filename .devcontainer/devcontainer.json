@@ -27,18 +27,9 @@
         "json.format.enable": false,
         "json.schemas": [
           {
-            "url": "/Dungeon-crawler-world/Scheme/schema.json",
+            "url": "raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/main/Scheme/schema.json",
             "fileMatch": ["**/*.json"]
-          },
-          {
-            "url": "/user.schema.json",
-            "fileMatch": ["**/*.json"]
-          },
-          {
-            "url": "JulieISBaka/Dungeon-crawler-world/Scheme/schema.json",
-            "fileMatch": ["**/*.json"]
-          },
-          { "url": "./Scheme/schema.json", "fileMatch": ["**/*.json"] }
+          }
         ],
         "json.validate.enable": true,
         "cSpell.words": [
@@ -51,7 +42,8 @@
           "Grawl",
           "Mathman",
           "Necro",
-          "Perlin"
+          "Perlin",
+          "Julieisbaka"
         ]
       }
     }
