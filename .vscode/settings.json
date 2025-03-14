@@ -11,9 +11,30 @@
   "json.format.enable": false,
   "json.schemas": [
     {
-      "url": "/Dungeon-crawler-world/Scheme/schema.json"
-    }
+      "url": "/Dungeon-crawler-world/Scheme/schema.json",
+      "fileMatch": ["**/*.json"]
+    },
+    {
+      "url": "/user.schema.json",
+      "fileMatch": ["**/*.json"]
+    },
+    {
+      "url": "JulieISBaka/Dungeon-crawler-world/Scheme/schema.json",
+      "fileMatch": ["**/*.json"]
+    },
+    { "url": "./Scheme/schema.json", "fileMatch": ["**/*.json"] }
   ],
   "json.validate.enable": true,
-  "cSpell.words": ["Necro"]
+  "cSpell.words": [
+    "Anson",
+    "Baka",
+    "cooldown",
+    "devcontainers",
+    "Dewatta",
+    "esbenp",
+    "Grawl",
+    "Mathman",
+    "Necro",
+    "Perlin"
+  ]
 }
