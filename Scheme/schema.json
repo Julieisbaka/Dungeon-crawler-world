@@ -54,7 +54,7 @@
     "abilities": {
       "type": "array",
       "items": {
-        "type": "object",
+        "type": "array",
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
@@ -87,8 +87,7 @@
           "cooldown": { "type": "number" },
           "range": { "type": "number" },
           "duration": { "type": "number" }
-        },
-        "required": ["name", "type"]
+        }
       },
       "description": "This is a list of all the abilities available."
     },
@@ -172,10 +171,6 @@
       "minimum": 0,
       "description": "This is the cooldown period for using the ability."
     }
-  },
-  "additionalProperties": false,
-  "required": ["name"],
-  "dependencies": {},
-  "definitions": {}
+  }
 }
 
