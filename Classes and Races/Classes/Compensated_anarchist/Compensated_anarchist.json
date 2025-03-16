@@ -1,8 +1,10 @@
 {
-  "Requirements": {
-    "Views": 500000000000
-  },
-  "Prerequisites": {
+  "requirements": [
+    {
+      "Views": 500000000000
+    }
+  ],
+  "prerequisites": {
     "Charisma": 25
   },
   "name": "Compensated Anarchist",

@@ -27,8 +27,15 @@
         "json.format.enable": false,
         "json.schemas": [
           {
-            "url": "raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/main/Scheme/schema.json",
-            "fileMatch": ["**/*.json"]
+            "url": "https://raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/refs/heads/Main/Scheme/schema.json",
+            "fileMatch": [
+              "**/*.json",
+              "!.vscode/settings.json",
+              "!.devcontainer/devcontainer.json",
+              "!.vscode/**/*.json",
+              "!.devcontainer/**/*.json",
+              "!package-lock.json"
+            ]
           }
         ],
         "json.validate.enable": true,

@@ -13,8 +13,7 @@
           "Strength",
           "Intelligence",
           "Dexterity",
-          "Constitution",
-          "Wisdom"
+          "Constitution"
         ]
       },
       "description": "This is a list of all the prerequisites needed to use this ability."
@@ -31,14 +30,8 @@
               "views",
               "abilities",
               "sub_classes",
-              "description",
-              "type",
-              "level",
-              "name",
-              "range",
-              "duration",
-              "cost",
-              "cooldown"
+              "level"
+
             ],
             "description": "The property that is required."
           },
@@ -58,7 +51,6 @@
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
-          "description": { "type": "string" },
           "type": {
             "type": "string",
             "enum": [
@@ -89,7 +81,7 @@
           "duration": { "type": "number" }
         }
       },
-      "description": "This is a list of all the abilities available."
+      "description": "This is a list of available abilities."
     },
     "classes": {
       "type": "array",
@@ -107,6 +99,8 @@
       "description": "This is the description of the thing."
     },
     "type": {
+      "type": "array",
+      "items": {
       "type": "string",
       "enum": [
         "Null",
@@ -128,7 +122,8 @@
         "heal",
         "buff",
         "attack"
-      ],
+      ]
+      },
       "description": "This is the type of the thing."
     },
     "level": {
@@ -163,7 +158,6 @@
     },
     "cost": {
       "type": "number",
-      "minimum": 0,
       "description": "This is the cost of using the ability."
     },
     "cooldown": {
