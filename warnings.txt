@@ -12,3 +12,14 @@ Warning: This mob inflicts Permanent Blindness.
 
 Warning: This mob inflicts Permanent Insanity.
 
+Warning: Holding a Desperado Pass negates the ability to obtain a Vanquisher pass.
+
+Warning: holding a Goblin Pass will cause natural goblin enemies, such as fairy-class creatures, to deal 20% more damage against you. Still, it looks kinda badass.
+
+WARNING: This is a fairy-class mob. Mobs of this class inflict 20% more damage against you due to your goblin pass.
+
+Warning: (Seriously though. I’m going to say this again. WARNING! Read this shit before you put it on.)
+Placing this crown upon your head permanently places you within the royal line of succession for the Blood Sultanate on the ninth floor of the world dungeon. Removing this item will not remove this status. Royal members of the Blood Sultanate will be required to slay the Sultan and all other members of the royal family before descending to the tenth floor. You’ll only want to wear this if you’re a blood-thirsty, raging psychopath.
+
+WARNING!: (Notice how I used ALL CAPS for the warning?) Using this benefit will destroy both the patch and the item it is attached to. That means the jacket and all those ugly little patches inexpertly sewn to it. 
+

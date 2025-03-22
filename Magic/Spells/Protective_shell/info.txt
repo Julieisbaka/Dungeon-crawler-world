@@ -1,0 +1,2 @@
+duration + 1s per spell level
+Radius + 50cm per spell level

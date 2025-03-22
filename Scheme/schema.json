@@ -189,7 +189,8 @@
     "range": {
       "type": "number",
       "minimum": 0,
-      "description": "This is the range of the ability."
+      "description": "This is the range of the ability. This is measured in Centimeters.",
+      "$comment": "Its measured in Centimeters because that is the smallest measurement unit used regarding range."
     },
     "duration": {
       "type": "number",

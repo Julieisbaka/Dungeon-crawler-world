@@ -4,7 +4,8 @@ Reading the contents of any code in this repository **WILL SPOIL THE GAME.**
 
 ## Dungeon Crawler World
 
-Welcome to Dungeon Crawler World! This project is a thrilling adventure game where players explore dungeons, fight monsters,
+Welcome to Dungeon Crawler World! This project is a thrilling adventure game
+where players explore dungeons, fight monsters,
 and collect treasures.
 
 ## Contributing
@@ -19,9 +20,12 @@ We welcome contributions from the community! To contribute, please follow these 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.MD) file for more details.
-By reading any part of the repository (except the license and Readme files), you agree to the terms of the license.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE.MD)
+file for more details.
+By reading any part of the repository (except the license and Readme files), you
+agree to the terms of the license.
 
 ## Contact
 
-For any questions or feedback, please open an issue on GitHub or contact the project maintainers.
+For any questions or feedback, please open an issue on GitHub or contact the
+project maintainers.
