@@ -5,10 +5,12 @@
       "skills": {"Explosives Handling Skill": 5}
     }
   ],
-  "prerequisites": {
-    "Charisma": 25,
-    "Dexterity": 10
-  },
+  "prerequisites": [
+    {
+      "Charisma": 25,
+      "Dexterity": 10
+    }
+  ],
   "name": "Compensated Anarchist",
   "description": ""
 }
