@@ -7,16 +7,27 @@
     "prerequisites": {
       "type": "array",
       "items": {
-        "type": "string",
-        "enum": [
-          "Charisma",
-          "Strength",
-          "Intelligence",
-          "Dexterity",
-          "Constitution"
-        ]
+        "type": "object",
+        "properties": {
+          "attribute": {
+            "type": "string",
+            "enum": [
+              "Charisma",
+              "Strength",
+              "Intelligence",
+              "Dexterity",
+              "Constitution",
+              "Wisdom"
+            ]
+          },
+          "value": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": ["attribute", "value"]
       },
-      "description": "This is a list of all the prerequisites needed to use this ability."
+      "description": "This is a list of all the prerequisite attributes and their minimum values needed to use this ability."
     },
     "requirements": {
       "type": "array",
@@ -30,8 +41,8 @@
               "views",
               "abilities",
               "sub_classes",
-              "level"
-
+              "level",
+              "skills"
             ],
             "description": "The property that is required."
           },
@@ -40,14 +51,14 @@
             "description": "The value that the property must have."
           }
         },
-        "$comment": "This property is currently broken. It is not working as intended."
+        "required": ["property", "value"]
       },
       "description": "This is a list of all the requirements needed to unlock this ability."
     },
     "abilities": {
       "type": "array",
       "items": {
-        "type": "array",
+        "type": "object",
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
@@ -79,9 +90,38 @@
           "cooldown": { "type": "number" },
           "range": { "type": "number" },
           "duration": { "type": "number" }
-        }
+        },
+        "required": ["id", "name"]
       },
       "description": "This is a list of available abilities."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "attribute": {
+            "type": "string",
+            "enum": [
+              "Charisma",
+              "Strength",
+              "Intelligence",
+              "Dexterity",
+              "Constitution",
+              "Wisdom"
+            ]
+          },
+          "level": { 
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": ["id", "name", "attribute"]
+      },
+      "description": "List of character skills and proficiencies."
     },
     "classes": {
       "type": "array",

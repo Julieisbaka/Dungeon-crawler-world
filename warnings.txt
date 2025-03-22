@@ -1,0 +1,14 @@
+Warning: You do not have a cleric or paladin class. As such, you may not ascend past Devotee. See the Deity tab for more information. 
+
+Warning: This is a deity. He is invulnerable on this floor.
+
+Warning: Upgrade patches are fleeting items. You may remove them, but they will be destroyed in the process. 
+
+Warning: This is a divine item. This means it gains differing abilities, buffs, and possibly debuffs depending on your proximity to certain deities and demons. It makes for new and exciting combinations!
+
+Warning: you know how asbestos is really bad for you? Like, it doesn’t hurt you immediately, but it builds up in your lungs and eventually screws you over? Actually, you know what? Just ignore this warning. Forget I said anything. Carrying corrupted essence around on your back builds character.
+
+Warning: This mob inflicts Permanent Blindness.
+
+Warning: This mob inflicts Permanent Insanity.
+
