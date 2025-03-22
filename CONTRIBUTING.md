@@ -1,6 +1,6 @@
 # Contributing to Dungeon Crawler World
 
-Thank you for your interest in contributing to Dungeon Crawler World! This 
+Thank you for your interest in contributing to Dungeon Crawler World! This
 document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
