@@ -3,7 +3,8 @@
 ## **Floor 1**
 
 Players will have between 12 and 20 hours to complete this floor.
-The time the player has for floor one is determined by a normal distribution with a mean of 15 hours.
+The time the player has for floor one is determined by a normal distribution
+with a mean of 15 hours.
 
 The player must find a tutorial guild to begin the game.
 The tutorial guild consists of you, your teammates, and a game guide.
