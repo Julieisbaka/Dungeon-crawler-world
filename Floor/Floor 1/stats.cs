@@ -6,7 +6,6 @@ namespace RandomNumberGenerator
     {
         static void Main(string[] args)
         {
-            // Create a new instance of Random
             Random random = new Random();
             
             // Generate 8 numbers between 3 and 5 (inclusive)            
