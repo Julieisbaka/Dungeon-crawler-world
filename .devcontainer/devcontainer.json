@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Dungeon-crawler-world",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
   "features": {
     "ghcr.io/devcontainers-extra/features/prettier": "latest",
     "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest"
