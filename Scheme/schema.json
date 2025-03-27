@@ -143,10 +143,34 @@
         {
           "type": "string",
           "enum": [
-            "Null", "None", "Blunt", "Fire", "Heat", "Poison", "Electric",
-            "Ranged", "Magic", "Melee", "Sonic", "Physic", "Direct", "Indirect",
-            "DOT", "AOE", "Heal", "Buff", "Attack", "Divine", "Artifact",
-            "Weapon", "Armor", "Consumable", "Skill", "Race", "Class", "God"
+            "Null",
+            "None",
+            "Blunt",
+            "Fire",
+            "Heat",
+            "Poison",
+            "Electric",
+            "Ranged",
+            "Magic",
+            "Melee",
+            "Sonic",
+            "Physic",
+            "Direct",
+            "Indirect",
+            "DOT",
+            "AOE",
+            "Heal",
+            "Buff",
+            "Attack",
+            "Divine",
+            "Artifact",
+            "Weapon",
+            "Armor",
+            "Consumable",
+            "Skill",
+            "Race",
+            "Class",
+            "God"
           ]
         },
         {
@@ -154,10 +178,34 @@
           "items": {
             "type": "string",
             "enum": [
-              "Null", "None", "Blunt", "Fire", "Heat", "Poison", "Electric",
-              "Ranged", "Magic", "Melee", "Sonic", "Physic", "Direct", "Indirect",
-              "DOT", "AOE", "Heal", "Buff", "Attack", "Divine", "Artifact",
-              "Weapon", "Armor", "Consumable", "Skill", "Race", "Class", "God"
+              "Null",
+              "None",
+              "Blunt",
+              "Fire",
+              "Heat",
+              "Poison",
+              "Electric",
+              "Ranged",
+              "Magic",
+              "Melee",
+              "Sonic",
+              "Physic",
+              "Direct",
+              "Indirect",
+              "DOT",
+              "AOE",
+              "Heal",
+              "Buff",
+              "Attack",
+              "Divine",
+              "Artifact",
+              "Weapon",
+              "Armor",
+              "Consumable",
+              "Skill",
+              "Race",
+              "Class",
+              "God"
             ]
           }
         }
@@ -204,8 +252,14 @@
       "minimum": 0,
       "description": "This is the cooldown period for using the ability."
     },
-    "Duration_level_mod": { "type": "number" },
-    "cooldown_level_mod": { "type": "number" },
+    "Duration_level_mod": {
+      "type": "number",
+      "$comment": "This property should not be used!"
+    },
+    "cooldown_level_mod": {
+      "type": "number",
+      "$comment": "This property should not be used!"
+    },
     "effects": {
       "type": "array",
       "items": {
@@ -215,8 +269,7 @@
           "description": { "type": "string" },
           "duration": { "type": "number" },
           "type": { "$ref": "#/properties/type" }
-        },
-        "required": ["name"]
+        }
       }
     },
     "divine_aspects": {
@@ -268,7 +321,6 @@
         }
       }
     }
-  },
-  "required": ["name", "description"]
+  }
 }
 

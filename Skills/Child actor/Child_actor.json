@@ -1,6 +1,11 @@
 {
   "name": "Child actor",
   "description": "",
-  "requirements": [{ "classes": "Former_Child_actor" }],
-  "level":"x"
+  "requirements": [
+    {
+      "property":"classes",
+      "value":"Former Child actor"
+    }
+  ],
+  "level": "x"
 }

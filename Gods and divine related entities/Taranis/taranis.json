@@ -1,1 +1,6 @@
-{ "name": "Taranis", "level": 250 }
+{
+  "name": "Taranis",
+  "description": "",
+  "level": 250
+}
+
