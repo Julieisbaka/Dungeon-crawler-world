@@ -48,13 +48,12 @@
             "description": "The property that is required."
           },
           "value": {
-            "type": ["string", "number"],
-            "description": "The value that the property must have."
+            "description": "Must be a valid value from the specified property. For example, if property is 'classes', value must be one of the available classes."
           }
         },
         "required": ["property", "value"]
       },
-      "description": "This is a list of all the requirements needed to unlock this ability."
+      "description": "This is a list of all the requirements needed to unlock this ability. The value must be one of the valid values for the specified property."
     },
     "abilities": {
       "type": "array",
