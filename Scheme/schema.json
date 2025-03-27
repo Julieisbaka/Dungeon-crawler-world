@@ -42,7 +42,8 @@
               "abilities",
               "sub_classes",
               "level",
-              "skills"
+              "skills",
+              "gender"
             ],
             "description": "The property that is required."
           },
@@ -207,8 +208,7 @@
       "description": "This is the cooldown period for using the ability."
     },
     "Duration_level_mod": { "type": "number" },
-    "cooldown_level_mod": { "type": "number" },
-    
+    "cooldown_level_mod": { "type": "number" }
   }
 }
 
