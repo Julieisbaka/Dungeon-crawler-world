@@ -46,6 +46,7 @@
     },
     "abilities": {
       "type": "array",
+      "description": "Collection of all abilities and spells available in the game. Each ability can have unique properties, scaling, and effects.",
       "items": {
         "type": "object",
         "properties": {
@@ -78,19 +79,23 @@
           "target_type": {
             "type": "string",
             "enum": ["self", "single", "area", "line", "cone"],
-            "description": "How the ability targets entities",
+            "description": "How the ability targets entities or areas:\n- self: Affects only the caster\n- single: Targets one entity\n- area: Affects a circular area\n- line: Creates a linear effect\n- cone: Creates a cone-shaped effect",
             "default": "single"
           },
           "scaling": {
             "type": "object",
+            "description": "Defines how the ability's power increases with character attributes",
             "properties": {
               "attribute": {
-                "$ref": "#/definitions/attributes"
+                "$ref": "#/definitions/attributes",
+                "description": "The primary attribute that affects this ability's power"
               },
               "factor": {
                 "type": "number",
                 "minimum": 0,
-                "maximum": 5
+                "maximum": 5,
+                "description": "Multiplier that determines how strongly the attribute affects the ability (0-5). Example: 1.5 means 150% of attribute value",
+                "examples": [1.0, 1.5, 2.0]
               }
             },
             "required": ["attribute", "factor"]
@@ -101,8 +106,7 @@
           "duration": { "type": "number" }
         },
         "required": ["id", "name", "type"]
-      },
-      "description": "This is a list of available abilities."
+      }
     },
     "skills": {
       "type": "array",
@@ -306,14 +310,17 @@
     },
     "divine_aspects": {
       "type": "object",
+      "description": "Defines religious and divine properties for deities and divine entities",
       "properties": {
         "domains": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "Spheres of influence for a deity (e.g., 'war', 'healing', 'nature')"
         },
         "worshippers": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "Types of followers or cultures that worship this deity"
         },
         "artifacts": {
           "type": "array",
@@ -367,7 +374,7 @@
         "necklace",
         "belt"
       ],
-      "description": "Equipment slot where an item can be equipped"
+      "description": "Defines where equipment can be worn:\n- head: Helmets, circlets\n- chest: Armor, robes\n- legs: Leg armor, pants\n- feet: Boots, shoes\n- hands: Gloves, gauntlets\n- mainHand: Primary weapons\n- offHand: Shields, secondary weapons\n- ring: Magical rings (2 slots)\n- necklace: Amulets, pendants\n- belt: Utility items, pouches"
     }
   },
   "definitions": {
@@ -404,7 +411,7 @@
         "shadow",
         "arcane"
       ],
-      "description": "Available damage types in the game"
+      "description": "Available damage types in the game:\n- physical: Direct physical damage\n- fire: Heat and flame damage\n- ice: Cold and frost damage\n- lightning: Electrical damage\n- poison: Toxic and venom damage\n- holy: Divine and radiant damage\n- shadow: Dark and necrotic damage\n- arcane: Magical energy damage"
     },
     "attributes": {
       "type": "string",
@@ -416,14 +423,16 @@
         "wisdom",
         "charisma"
       ],
-      "description": "Core character attributes"
+      "description": "Core character attributes:\n- strength: Physical power and carrying capacity\n- dexterity: Agility, reflexes, and finesse\n- constitution: Health, stamina, and resilience\n- intelligence: Learning, memory, and reasoning\n- wisdom: Intuition, perception, and willpower\n- charisma: Personality, leadership, and social influence"
     },
     "effect": {
       "type": "object",
+      "description": "Defines temporary or permanent effects that can be applied to entities",
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+          "description": "Unique identifier for the effect. Must start with a letter and can contain letters, numbers, and underscores"
         },
         "name": {
           "type": "string"
@@ -434,15 +443,18 @@
         },
         "stackable": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Whether multiple instances of this effect can stack on the same target"
         },
         "max_stacks": {
           "type": "integer",
           "minimum": 1,
-          "default": 1
+          "default": 1,
+          "description": "Maximum number of times this effect can stack if stackable is true"
         },
         "modifiers": {
           "type": "array",
+          "description": "List of attribute modifications applied by this effect",
           "items": {
             "type": "object",
             "properties": {
@@ -453,7 +465,8 @@
                 "type": "number"
               },
               "type": {
-                "enum": ["flat", "percentage"]
+                "enum": ["flat", "percentage"],
+                "description": "How the modifier is applied:\n- flat: Direct number addition/subtraction\n- percentage: Percentage-based modification"
               }
             },
             "required": ["attribute", "value", "type"]
