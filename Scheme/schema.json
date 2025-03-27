@@ -139,31 +139,29 @@
       "description": "This is the description of the thing."
     },
     "type": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": [
-          "Null",
-          "None",
-          "Blunt",
-          "Fire",
-          "heat",
-          "poison",
-          "electric",
-          "ranged",
-          "magic",
-          "melee",
-          "sonic",
-          "physic",
-          "direct",
-          "indirect",
-          "dot",
-          "aoe",
-          "heal",
-          "buff",
-          "attack"
-        ]
-      },
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Null", "None", "Blunt", "Fire", "Heat", "Poison", "Electric",
+            "Ranged", "Magic", "Melee", "Sonic", "Physic", "Direct", "Indirect",
+            "DOT", "AOE", "Heal", "Buff", "Attack", "Divine", "Artifact",
+            "Weapon", "Armor", "Consumable", "Skill", "Race", "Class", "God"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Null", "None", "Blunt", "Fire", "Heat", "Poison", "Electric",
+              "Ranged", "Magic", "Melee", "Sonic", "Physic", "Direct", "Indirect",
+              "DOT", "AOE", "Heal", "Buff", "Attack", "Divine", "Artifact",
+              "Weapon", "Armor", "Consumable", "Skill", "Race", "Class", "God"
+            ]
+          }
+        }
+      ],
       "description": "This is the type of the thing."
     },
     "level": {
@@ -207,7 +205,70 @@
       "description": "This is the cooldown period for using the ability."
     },
     "Duration_level_mod": { "type": "number" },
-    "cooldown_level_mod": { "type": "number" }
-  }
+    "cooldown_level_mod": { "type": "number" },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "duration": { "type": "number" },
+          "type": { "$ref": "#/properties/type" }
+        },
+        "required": ["name"]
+      }
+    },
+    "divine_aspects": {
+      "type": "object",
+      "properties": {
+        "domains": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "worshippers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "item_properties": {
+      "type": "object",
+      "properties": {
+        "equippable": { "type": "boolean" },
+        "consumable": { "type": "boolean" },
+        "charges": { "type": "number" },
+        "durability": { "type": "number" },
+        "value": { "type": "number" }
+      }
+    },
+    "race_properties": {
+      "type": "object",
+      "properties": {
+        "base_stats": {
+          "type": "object",
+          "properties": {
+            "strength": { "type": "number" },
+            "dexterity": { "type": "number" },
+            "constitution": { "type": "number" },
+            "intelligence": { "type": "number" },
+            "wisdom": { "type": "number" },
+            "charisma": { "type": "number" }
+          }
+        },
+        "size": { "type": "string" },
+        "speed": { "type": "number" },
+        "languages": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  },
+  "required": ["name", "description"]
 }
 
