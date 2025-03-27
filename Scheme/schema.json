@@ -65,8 +65,7 @@
             "examples": ["Fireball", "Healing Touch"]
           },
           "description": {
-            "type": "string",
-            "maxLength": 500
+            "$ref": "#/definitions/description_field"
           },
           "type": {
             "type": "array",
@@ -165,8 +164,12 @@
       "description": "This is the list of subclasses connected to the input classes."
     },
     "description": {
-      "type": "string",
-      "description": "This is the description of the thing."
+      "$ref": "#/definitions/description_field",
+      "description": "Description that can be provided directly or referenced from a markdown file",
+      "examples": [
+        "A direct description string",
+        { "markdown_file": "descriptions/item_description.md" }
+      ]
     },
     "type": {
       "oneOf": [
@@ -474,6 +477,27 @@
         }
       },
       "required": ["id", "name"]
+    },
+    "description_field": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Direct description text"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "markdown_file": {
+              "type": "string",
+              "pattern": "^.*\\.md$",
+              "description": "Path to a markdown file containing the description"
+            }
+          },
+          "required": ["markdown_file"],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Can be either a direct string description or a reference to a markdown file"
     }
   },
   "errorMessage": {
