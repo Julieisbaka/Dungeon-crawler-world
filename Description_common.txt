@@ -6,3 +6,5 @@ This god has been involuntarily summoned to this location. Summoning rules apply
 
 This is a unique item.
 
+This is a Non-Combatant NPC.
+
