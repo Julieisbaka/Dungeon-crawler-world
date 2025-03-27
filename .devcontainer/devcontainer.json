@@ -35,7 +35,8 @@
               "!.devcontainer/devcontainer.json",
               "!.vscode/**/*.json",
               "!.devcontainer/**/*.json",
-              "!package-lock.json"
+              "!package-lock.json",
+              "!config.json"
             ]
           }
         ],

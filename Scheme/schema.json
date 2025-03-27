@@ -1,97 +1,106 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Dungeon crawler world Schema",
-  "description": "Contains all properties used for json data files within the dungeon crawler world fan-made game.",
+  "title": "Dungeon Crawler World Schema",
+  "description": "Schema for the Dungeon Crawler World game data files. Defines all available properties and their validation rules.",
+  "$comment": "Version 2.0 - Updated with enhanced validation and documentation",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "prerequisites": {
       "type": "array",
       "items": {
         "type": "object",
-        "properties": {
-          "attribute": {
-            "type": "string",
-            "enum": [
-              "Charisma",
-              "Strength",
-              "Intelligence",
-              "Dexterity",
-              "Constitution",
-              "Wisdom"
-            ]
-          },
-          "value": {
-            "type": "number",
-            "minimum": 1
-          }
-        },
-        "required": ["attribute", "value"]
+        "additionalProperties": {
+          "oneOf": [
+            { "$ref": "#/definitions/attributeValue" },
+            { "$ref": "#/properties/level" },
+            { "$ref": "#/properties/duration" },
+            { "$ref": "#/properties/range" },
+            { "$ref": "#/properties/cost" },
+            { "$ref": "#/properties/cooldown" }
+          ]
+        }
       },
-      "description": "This is a list of all the prerequisite attributes and their minimum values needed to use this ability."
+      "description": "List of prerequisites where each object can contain any schema property as a key with its required value"
     },
     "requirements": {
       "type": "array",
       "items": {
         "type": "object",
-        "properties": {
-          "property": {
-            "type": "string",
-            "enum": [
-              "classes",
-              "views",
-              "abilities",
-              "sub_classes",
-              "level",
-              "skills",
-              "gender"
-            ],
-            "description": "The property that is required."
-          },
-          "value": {
-            "description": "Must be a valid value from the specified property. For example, if property is 'classes', value must be one of the available classes."
-          }
-        },
-        "required": ["property", "value"]
+        "additionalProperties": {
+          "oneOf": [
+            { "$ref": "#/definitions/skillRequirement" },
+            { "$ref": "#/properties/level" },
+            { "$ref": "#/properties/duration" },
+            { "$ref": "#/properties/range" },
+            { "$ref": "#/properties/cost" },
+            { "$ref": "#/properties/cooldown" },
+            { 
+              "type": "object",
+              "additionalProperties": true
+            }
+          ]
+        }
       },
-      "description": "This is a list of all the requirements needed to unlock this ability. The value must be one of the valid values for the specified property."
+      "description": "List of requirements where each object can contain any schema property as a key with its required value"
     },
     "abilities": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "type": {
+          "id": {
             "type": "string",
-            "enum": [
-              "Null",
-              "None",
-              "Blunt",
-              "Fire",
-              "heat",
-              "poison",
-              "electric",
-              "ranged",
-              "magic",
-              "melee",
-              "sonic",
-              "physic",
-              "direct",
-              "indirect",
-              "dot",
-              "aoe",
-              "heal",
-              "buff",
-              "attack"
-            ]
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+            "description": "Unique identifier for the ability",
+            "examples": ["fireball", "healing_touch"],
+            "errorMessage": "Ability ID must start with a letter and contain only letters, numbers, and underscores"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "description": "Display name of the ability",
+            "examples": ["Fireball", "Healing Touch"]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "type": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/damageTypes"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "target_type": {
+            "type": "string",
+            "enum": ["self", "single", "area", "line", "cone"],
+            "description": "How the ability targets entities",
+            "default": "single"
+          },
+          "scaling": {
+            "type": "object",
+            "properties": {
+              "attribute": {
+                "$ref": "#/definitions/attributes"
+              },
+              "factor": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              }
+            },
+            "required": ["attribute", "factor"]
           },
           "cost": { "type": "number" },
           "cooldown": { "type": "number" },
           "range": { "type": "number" },
           "duration": { "type": "number" }
         },
-        "required": ["id", "name"]
+        "required": ["id", "name", "type"]
       },
       "description": "This is a list of available abilities."
     },
@@ -117,9 +126,26 @@
           "level": {
             "type": "number",
             "minimum": 0
+          },
+          "specializations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "passive_effects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/effect"
+            }
           }
         },
-        "required": ["id", "name", "attribute"]
+        "required": [
+          "id", 
+          "name", 
+          "attribute"
+        ]
       },
       "description": "List of character skills and proficiencies."
     },
@@ -221,7 +247,11 @@
         },
         {
           "type": "string",
-          "enum": ["x", "?", "unknown"],
+          "enum": [
+            "x", 
+            "?", 
+            "unknown"
+          ],
           "description": "This allows for variable and unknown level descriptions."
         }
       ],
@@ -254,10 +284,12 @@
     },
     "Duration_level_mod": {
       "type": "number",
+      "description": "This property is deprecated and should not be used!",
       "$comment": "This property should not be used!"
     },
     "cooldown_level_mod": {
       "type": "number",
+      "description": "This property is deprecated and should not be used!",
       "$comment": "This property should not be used!"
     },
     "effects": {
@@ -320,7 +352,173 @@
           "items": { "type": "string" }
         }
       }
+    },
+    "equipment_slot": {
+      "type": "string",
+      "enum": [
+        "head",
+        "chest",
+        "legs",
+        "feet",
+        "hands",
+        "mainHand",
+        "offHand",
+        "ring",
+        "necklace",
+        "belt"
+      ],
+      "description": "Equipment slot where an item can be equipped"
     }
-  }
+  },
+  "definitions": {
+    "attributeValue": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Value for attributes like Strength, Dexterity, etc."
+    },
+    "skillRequirement": {
+      "type": "object",
+      "properties": {
+        "id": { 
+          "type": "string" 
+        },
+        "level": { 
+          "type": "number", 
+          "minimum": 0 
+        }
+      },
+      "required": [
+        "id", 
+        "level"
+      ]
+    },
+    "damageTypes": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "fire",
+        "ice",
+        "lightning",
+        "poison",
+        "holy",
+        "shadow",
+        "arcane"
+      ],
+      "description": "Available damage types in the game"
+    },
+    "attributes": {
+      "type": "string",
+      "enum": [
+        "strength",
+        "dexterity",
+        "constitution", 
+        "intelligence",
+        "wisdom",
+        "charisma"
+      ],
+      "description": "Core character attributes"
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stackable": {
+          "type": "boolean",
+          "default": false
+        },
+        "max_stacks": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "attribute": {
+                "$ref": "#/definitions/attributes"
+              },
+              "value": {
+                "type": "number"
+              },
+              "type": {
+                "enum": ["flat", "percentage"]
+              }
+            },
+            "required": ["attribute", "value", "type"]
+          }
+        }
+      },
+      "required": ["id", "name"]
+    }
+  },
+  "errorMessage": {
+    "type": "Must be a valid JSON object",
+    "required": {
+      "name": "Name is required",
+      "id": "ID is required"
+    },
+    "properties": {
+      "level": "Level must be a number >= 0 or one of: 'x', '?', 'unknown'",
+      "range": "Range must be a positive number in centimeters",
+      "duration": "Duration must be a positive number"
+    }
+  },
+  "examples": [
+    {
+      "name": "Fireball",
+      "type": ["fire", "arcane"],
+      "range": 1000,
+      "duration": 0,
+      "cost": 25,
+      "cooldown": 5,
+      "requirements": [
+        {
+          "skills": {
+            "id": "destruction_magic",
+            "level": 3
+          }
+        }
+      ],
+      "description": "A powerful fire spell that engulfs enemies in flames."
+    },
+    {
+      "name": "Ice Lance",
+      "id": "ice_lance",
+      "type": ["ice", "physical"],
+      "target_type": "line",
+      "scaling": {
+        "attribute": "intelligence",
+        "factor": 1.5
+      },
+      "effects": [
+        {
+          "id": "chilled",
+          "name": "Chilled",
+          "duration": 5,
+          "stackable": true,
+          "max_stacks": 3,
+          "modifiers": [
+            {
+              "attribute": "dexterity",
+              "value": -10,
+              "type": "percentage"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 
