@@ -6,6 +6,15 @@
   ],
   "name": "Former child Actor",
   "description": "",
-  "abilities": ["Manager", "child actor"]
+  "abilities": [
+    {
+      "name": "Manager",
+      "type": ["N/A"]
+    },
+    {
+      "name":"child actor",
+      "type": ["N/A"]
+    }
+  ]
 }
 

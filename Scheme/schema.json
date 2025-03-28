@@ -412,7 +412,8 @@
         "poison",
         "holy",
         "shadow",
-        "arcane"
+        "arcane",
+        "N/A"
       ],
       "description": "Available damage types in the game:\n- physical: Direct physical damage\n- fire: Heat and flame damage\n- ice: Cold and frost damage\n- lightning: Electrical damage\n- poison: Toxic and venom damage\n- holy: Divine and radiant damage\n- shadow: Dark and necrotic damage\n- arcane: Magical energy damage"
     },
