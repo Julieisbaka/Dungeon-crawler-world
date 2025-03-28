@@ -62,7 +62,7 @@
             "minLength": 1,
             "maxLength": 50,
             "description": "Display name of the ability",
-            "examples": ["Fireball", "Healing Touch"]
+            "examples": ["Fireball", "Healing Touch"," Ice Lance"]
           },
           "description": {
             "$ref": "#/definitions/description_field"
@@ -104,7 +104,7 @@
           "range": { "type": "number" },
           "duration": { "type": "number" }
         },
-        "required": ["id", "name", "type"]
+        "required": ["id", "type"]
       }
     },
     "skills": {
@@ -145,9 +145,7 @@
           }
         },
         "required": [
-          "id", 
-          "name", 
-          "attribute"
+          "id"
         ]
       },
       "description": "List of character skills and proficiencies."
