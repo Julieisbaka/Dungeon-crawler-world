@@ -1,4 +1,6 @@
 {
   "name": "Marked for death",
-  "description": "Skills/Marked_for_death/Description.md"
+  "description": {
+    "markdown_file": "Skills/Marked_for_death/Description.md"
+  }
 }

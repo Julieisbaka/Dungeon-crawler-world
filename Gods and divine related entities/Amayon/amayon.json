@@ -1,4 +1,6 @@
-{ 
-    "name": "Amayon",
-    "description": "" 
+{
+  "name": "Amayon",
+  "description": "",
+  "divine_aspects": { "artifacts": [] }
 }
+
