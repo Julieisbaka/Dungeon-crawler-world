@@ -1,7 +1,7 @@
 duration + 1s per spell level
 Radius + 50cm per spell level
-This sheild only affects red tagged things.
-This sheild does not move with the caster.
-This sheild does not protect against magic attacks.
-This sheild can not be destroyed.
-This sheild does not absorb damage.
+This shield only affects red tagged things.
+This shield does not move with the caster.
+This shield does not protect against magic attacks.
+This shield can not be destroyed.
+This shield does not absorb damage.
