@@ -1,7 +1,5 @@
 # **README**
 
-[![wakatime](https://wakatime.com/badge/user/c37e3ffc-6f9e-4580-896c-a5384b348c2f/project/f2e9138e-f893-45ee-9e0b-c4916e064e6e.svg)](https://wakatime.com/badge/user/c37e3ffc-6f9e-4580-896c-a5384b348c2f/project/f2e9138e-f893-45ee-9e0b-c4916e064e6e)
-
 Reading the contents of any code in this repository **WILL SPOIL THE GAME.**
 
 ## Dungeon Crawler World
