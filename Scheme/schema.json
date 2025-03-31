@@ -28,7 +28,7 @@
       "items": {
         "type": "object",
         "additionalProperties": {
-          "oneOf": [
+          "anyOf": [
             { "$ref": "#/definitions/skillRequirement" },
             { "$ref": "#/properties/level" },
             { "$ref": "#/properties/duration" },
@@ -269,16 +269,19 @@
     "duration": {
       "type": "number",
       "minimum": 0,
-      "description": "This is the duration of the ability."
+      "description": "This is the duration of the ability.",
+      "$comment": "Do not use this becouse it is prefered for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
     },
     "cost": {
       "type": "number",
-      "description": "This is the cost of using the ability."
+      "description": "This is the cost of using the ability.",
+      "$comment": "Do not use this becouse it is prefered for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
     },
     "cooldown": {
       "type": "number",
       "minimum": 0,
-      "description": "This is the cooldown period for using the ability."
+      "description": "This is the cooldown period for using the ability.",
+      "$comment": "Do not use this becouse it is prefered for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
     },
     "Duration_level_mod": {
       "type": "number",
@@ -325,11 +328,21 @@
     "item_properties": {
       "type": "object",
       "properties": {
-        "equippable": { "type": "boolean" },
-        "consumable": { "type": "boolean" },
-        "charges": { "type": "number" },
-        "durability": { "type": "number" },
-        "value": { "type": "number" }
+        "equippable": {
+          "type": "boolean"
+        },
+        "consumable": {
+          "type": "boolean"
+        },
+        "charges": {
+          "type": "number"
+        },
+        "durability": {
+          "type": "number"
+        },
+        "value": {
+          "type": "number"
+        }
       }
     },
     "race_properties": {
@@ -419,9 +432,9 @@
         "holy",
         "shadow",
         "arcane",
-        "N/A"
+        "none"
       ],
-      "description": "Available damage types in the game:\n- physical: Direct physical damage\n- fire: Heat and flame damage\n- ice: Cold and frost damage\n- lightning: Electrical damage\n- poison: Toxic and venom damage\n- holy: Divine and radiant damage\n- shadow: Dark and necrotic damage\n- arcane: Magical energy damage"
+      "description": "Available damage types in the game:\n- physical: Direct physical damage\n- fire: Heat and flame damage\n- ice: Cold and frost damage\n- lightning: Electrical damage\n- poison: Toxic and venom damage\n- holy: Divine and radiant damage\n- shadow: Dark and necrotic damage\n- arcane: Magical energy damage\n or None."
     },
     "attributes": {
       "type": "string",
@@ -430,10 +443,9 @@
         "dexterity",
         "constitution",
         "intelligence",
-        "wisdom",
         "charisma"
       ],
-      "description": "Core character attributes:\n- strength: Physical power and carrying capacity\n- dexterity: Agility, reflexes, and finesse\n- constitution: Health, stamina, and resilience\n- intelligence: Learning, memory, and reasoning\n- wisdom: Intuition, perception, and willpower\n- charisma: Personality, leadership, and social influence"
+      "description": "Core character attributes:\n- strength: Physical power and carrying capacity\n- dexterity: Agility, reflexes, and finesse\n- constitution: Health, stamina, and resilience\n- intelligence: Learning, memory, and reasoning\n- charisma: Personality, leadership, and social influence"
     },
     "effect": {
       "type": "object",
@@ -448,8 +460,12 @@
           "type": "string"
         },
         "duration": {
-          "type": "number",
-          "minimum": 0
+          "type": "number"
+        },
+        "is_conditional": {
+          "type": "boolean",
+          "description": "If this is set to true then the affect will stop when the duration ends or when the condition is met whichever is met first. If set to false then this property does nothing and the duration property is purely relied upon for how the affect disapates."
+
         },
         "stackable": {
           "type": "boolean",
@@ -457,7 +473,7 @@
         },
         "max_stacks": {
           "type": "integer",
-          "minimum": 1,
+          "minimum": 0,
           "default": 1,
           "description": "Maximum number of times this effect can stack if stackable is true"
         },
@@ -478,11 +494,12 @@
                 "description": "How the modifier is applied:\n- flat: Direct number addition/subtraction\n- percentage: Percentage-based modification"
               }
             },
-            "required": ["attribute", "value", "type"]
+            "required": ["attribute", "value"],
+            "$comment": "This JSON property is seperate from the rest of the Schema as the data in this section applies to the calculation Csharp file."
           }
         }
       },
-      "required": ["name"]
+      "required": ["id", "name"]
     },
     "description_field": {
       "oneOf": [

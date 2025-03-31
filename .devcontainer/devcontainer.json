@@ -36,7 +36,8 @@
               "!.vscode/**/*.json",
               "!.devcontainer/**/*.json",
               "!package-lock.json",
-              "!config.json"
+              "!config.json",
+              "!Shaders/Scheme.json"
             ]
           }
         ],

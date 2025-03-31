@@ -1,5 +1,8 @@
 {
   "name": "Arrow",
-  "description": "A simple arrow."
+  "description": "A simple arrow.",
+  "item_properties": {
+    "charges": 1
+  }
 }
 
