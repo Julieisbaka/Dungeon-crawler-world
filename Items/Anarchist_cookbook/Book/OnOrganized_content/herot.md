@@ -1,7 +1,7 @@
 ## Note added by Crawler Herot. 16th Edition
 
     Show them the lie. Show them the seams. Show them the path they’re on is a f
-    alse one. Think of a trolley on a track. A worn path is easily traveled. The
+    -alse one. Think of a trolley on a track. A worn path is easily traveled. The
     more worn the path, the more difficult it is to get them to look away. Just 
     like the deeper the track, the sturdier the trolley. But even the strongest of
     minds, even those controlled and relentlessly corrected can be derailed just
@@ -49,7 +49,7 @@
 
     The third castle type is similar to the second with a small difference.
     The castle itself is a self-contained village with an NPC and guard ecology.
-    It isalmost identical to the villages and cities of the third and sixth floor.
+    It is almost identical to the villages and cities of the third and sixth floor.
     If conquered, the castle will appear in the crawler’s interface as an owned
     village and taxes will be collected. Guards can be controlled just as if in a
     regular village.

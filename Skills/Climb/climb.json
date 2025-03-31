@@ -1,5 +1,7 @@
 {
   "name": "climb",
-  "description": "You can climb stuff better, yahoo. What an exciting benefit. I guess that makes you a monkey."
+  "description": {
+    "markdown_file": "Skills/Climb/description.md"
+  }
 }
 

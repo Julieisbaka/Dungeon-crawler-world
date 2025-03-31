@@ -9,11 +9,11 @@
   "abilities": [
     {
       "name": "Manager",
-      "type": ["N/A"]
+      "type": ["none"]
     },
     {
       "name": "child actor",
-      "type": ["N/A"]
+      "type": ["none"]
     }
   ]
 }

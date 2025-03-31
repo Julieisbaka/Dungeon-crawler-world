@@ -9,8 +9,7 @@
   "type": "Magic",
   "effects": [
     {
-    "name": "Half-Splat",
-    "type": "Magic"
+    "name": "Half-Splat"
     }
   ]
 }

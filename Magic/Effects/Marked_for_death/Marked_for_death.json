@@ -1,5 +1,7 @@
 {
   "name": "Marked for Death",
-  "description": "You have been marked for death. Ohhhh booyyy seems like someone really wants you dead!"
+  "description": {
+    "markdown_file": "Magic/Effects/Marked_for_death/description.md"
+  }
 }
 

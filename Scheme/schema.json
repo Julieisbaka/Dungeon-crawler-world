@@ -122,8 +122,7 @@
               "Strength",
               "Intelligence",
               "Dexterity",
-              "Constitution",
-              "Wisdom"
+              "Constitution"
             ]
           },
           "level": {
@@ -162,7 +161,7 @@
       "$ref": "#/definitions/description_field",
       "description": "Description that can be provided directly or referenced from a markdown file",
       "examples": [
-        "A direct description string",
+        "",
         { "markdown_file": "descriptions/item_description.md" }
       ]
     },
@@ -171,7 +170,6 @@
         {
           "type": "string",
           "enum": [
-            "Null",
             "None",
             "Blunt",
             "Fire",
@@ -206,7 +204,6 @@
           "items": {
             "type": "string",
             "enum": [
-              "Null",
               "None",
               "Blunt",
               "Fire",
@@ -241,7 +238,7 @@
       "description": "This is the type of the thing."
     },
     "level": {
-      "anyOf": [
+      "oneOf": [
         {
           "type": "number",
           "minimum": 0,
@@ -249,8 +246,9 @@
         },
         {
           "type": "string",
-          "enum": ["x", "?", "unknown"],
-          "description": "This allows for variable and unknown level descriptions."
+          "enum": ["x", "?"],
+          "description": "This allows for variable and unknown level descriptions.",
+          "$comment": "This property should not be used to assign question mark values to things that don't have a level."
         }
       ],
       "description": "This is the level of the thing."
@@ -268,20 +266,19 @@
     },
     "duration": {
       "type": "number",
-      "minimum": 0,
       "description": "This is the duration of the ability.",
-      "$comment": "Do not use this becouse it is prefered for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
+      "$comment": "Do not use this because it is preferred for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
     },
     "cost": {
       "type": "number",
       "description": "This is the cost of using the ability.",
-      "$comment": "Do not use this becouse it is prefered for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
+      "$comment": "Do not use this because it is preferred for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
     },
     "cooldown": {
       "type": "number",
       "minimum": 0,
       "description": "This is the cooldown period for using the ability.",
-      "$comment": "Do not use this becouse it is prefered for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
+      "$comment": "Do not use this because it is preferred for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
     },
     "Duration_level_mod": {
       "type": "number",
@@ -495,11 +492,11 @@
               }
             },
             "required": ["attribute", "value"],
-            "$comment": "This JSON property is seperate from the rest of the Schema as the data in this section applies to the calculation Csharp file."
+            "$comment": "This JSON property is separate from the rest of the Schema as the data in this section applies to the calculation Csharp file."
           }
         }
       },
-      "required": ["id", "name"]
+      "required": ["name"]
     },
     "description_field": {
       "oneOf": [
@@ -526,13 +523,12 @@
   "errorMessage": {
     "type": "Must be a valid JSON object",
     "required": {
-      "name": "Name is required",
-      "id": "ID is required"
+      "name": "Name is required"
     },
     "properties": {
-      "level": "Level must be a number >= 0 or one of: 'x', '?', 'unknown'",
+      "level": "Level must be a number >= 0 or one of: 'x' or '?'",
       "range": "Range must be a positive number in centimeters",
-      "duration": "Duration must be a positive number"
+      "duration": "Duration must be a positive number in seconds"
     }
   },
   "examples": [
