@@ -1,0 +1,2 @@
+- name: Create Shield Badge
+  uses: sebymiano/shields-badge-generator@v1.0.4
