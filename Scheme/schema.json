@@ -35,7 +35,7 @@
             { "$ref": "#/properties/range" },
             { "$ref": "#/properties/cost" },
             { "$ref": "#/properties/cooldown" },
-            { 
+            {
               "type": "object",
               "additionalProperties": true
             }
@@ -62,7 +62,7 @@
             "minLength": 1,
             "maxLength": 50,
             "description": "Display name of the ability",
-            "examples": ["Fireball", "Healing Touch"," Ice Lance"]
+            "examples": ["Fireball", "Healing Touch", " Ice Lance"]
           },
           "description": {
             "$ref": "#/definitions/description_field"
@@ -104,7 +104,7 @@
           "range": { "type": "number" },
           "duration": { "type": "number" }
         },
-        "required": ["id", "type"]
+        "required": ["type"]
       }
     },
     "skills": {
@@ -143,10 +143,7 @@
               "$ref": "#/definitions/effect"
             }
           }
-        },
-        "required": [
-          "id"
-        ]
+        }
       },
       "description": "List of character skills and proficiencies."
     },
@@ -170,7 +167,7 @@
       ]
     },
     "type": {
-      "oneOf": [
+      "anyOf": [
         {
           "type": "string",
           "enum": [
@@ -244,7 +241,7 @@
       "description": "This is the type of the thing."
     },
     "level": {
-      "oneOf": [
+      "anyOf": [
         {
           "type": "number",
           "minimum": 0,
@@ -252,11 +249,7 @@
         },
         {
           "type": "string",
-          "enum": [
-            "x", 
-            "?", 
-            "unknown"
-          ],
+          "enum": ["x", "?", "unknown"],
           "description": "This allows for variable and unknown level descriptions."
         }
       ],
@@ -345,19 +338,37 @@
         "base_stats": {
           "type": "object",
           "properties": {
-            "strength": { "type": "number" },
-            "dexterity": { "type": "number" },
-            "constitution": { "type": "number" },
-            "intelligence": { "type": "number" },
-            "wisdom": { "type": "number" },
-            "charisma": { "type": "number" }
+            "strength": {
+              "type": "number"
+            },
+            "dexterity": {
+              "type": "number"
+            },
+            "constitution": {
+              "type": "number"
+            },
+            "intelligence": {
+              "type": "number"
+            },
+            "wisdom": {
+              "type": "number"
+            },
+            "charisma": {
+              "type": "number"
+            }
           }
         },
-        "size": { "type": "string" },
-        "speed": { "type": "number" },
+        "size": {
+          "type": "string"
+        },
+        "speed": {
+          "type": "number"
+        },
         "languages": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -387,18 +398,15 @@
     "skillRequirement": {
       "type": "object",
       "properties": {
-        "id": { 
-          "type": "string" 
+        "id": {
+          "type": "string"
         },
-        "level": { 
-          "type": "number", 
-          "minimum": 0 
+        "level": {
+          "type": "number",
+          "minimum": 0
         }
       },
-      "required": [
-        "id", 
-        "level"
-      ]
+      "required": ["id", "level"]
     },
     "damageTypes": {
       "type": "string",
@@ -420,7 +428,7 @@
       "enum": [
         "strength",
         "dexterity",
-        "constitution", 
+        "constitution",
         "intelligence",
         "wisdom",
         "charisma"
@@ -445,7 +453,6 @@
         },
         "stackable": {
           "type": "boolean",
-          "default": false,
           "description": "Whether multiple instances of this effect can stack on the same target"
         },
         "max_stacks": {
@@ -475,7 +482,7 @@
           }
         }
       },
-      "required": ["id", "name"]
+      "required": ["name"]
     },
     "description_field": {
       "oneOf": [

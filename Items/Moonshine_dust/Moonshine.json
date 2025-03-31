@@ -1,5 +1,8 @@
 {
   "name": "Moonshine Dust",
-  "description": ""
+  "description": "",
+  "item_properties": {
+    "equippable": false
+  }
 }
 

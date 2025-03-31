@@ -6,6 +6,11 @@
       "name": "Marked for death",
       "description": "Someone really wants you dead!"
     }
-  ]
+  ],
+  "item_properties": {
+    "equippable": true
+  },
+  "type": "Armor",
+  "equipment_slot": "ring"
 }
 
