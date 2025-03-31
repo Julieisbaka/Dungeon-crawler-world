@@ -2,6 +2,8 @@
 
 ![GitHub License](https://img.shields.io/github/license/Julieisbaka/Dungeon-crawler-world?style=for-the-badge&logo=https%3A%2F%2Fduckduckgo.com%2F%3Fq%3DMIT%2520license%2520logo%26iax%3Dimages%26ia%3Dimages%26iai%3Dhttps%3A%2F%2Fwww.svgrepo.com%2Fshow%2F444064%2Flegal-license-mit.svg%26t%3Dffab&label=LICENSE%3A%20MIT&link=https%3A%2F%2Fopensource.org%2Flicense%2Fmit)
 
+[![CodeQL](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql)
+
 ## Warning: Spoilers Ahead
 
 Reading the contents of any code in this repository **WILL SPOIL THE GAME.**
