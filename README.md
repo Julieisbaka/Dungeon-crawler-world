@@ -4,6 +4,19 @@
 
 [![CodeQL](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql)
 
+## Table of Contents
+- [Warning: Spoilers Ahead](#warning-spoilers-ahead)
+- [Dungeon Crawler World](#dungeon-crawler-world)
+- [Getting Started](#getting-started)
+- [Game Features and Objectives](#game-features-and-objectives)
+- [Screenshots](#screenshots)
+- [Credits](#credits)
+- [Contributing](#contributing)
+- [License](#license)
+- [Issues and Feedback](#issues-and-feedback)
+- [Contact](#contact)
+- [Changelog](#changelog)
+
 ## Warning: Spoilers Ahead
 
 Reading the contents of any code in this repository **WILL SPOIL THE GAME.**
@@ -18,6 +31,29 @@ Our goal is to create an immersive and engaging experience.
 
 Information about Dungeon crawler Carl can be found on the [Dungeon crawler carl]
 (<https://dungeon-crawler-carl.fandom.com>) wiki.
+
+## Game Features and Objectives
+
+Dungeon Crawler World offers a variety of exciting features and objectives for players to enjoy:
+
+- **Exploration**: Traverse through procedurally generated dungeons filled with secrets and surprises.
+- **Combat**: Engage in real-time battles with a wide range of enemies, each with unique abilities and behaviors.
+- **Loot**: Discover and collect powerful weapons, armor, and items to enhance your character's abilities.
+- **Quests**: Complete challenging quests and missions to earn rewards and progress through the game.
+- **Character Progression**: Level up your character, unlock new skills, and customize your playstyle.
+- **Multiplayer***: Team up with friends or other players online to tackle dungeons together.
+
+## Screenshots
+
+## Credits
+
+Dungeon Crawler World is developed by the following contributors:
+
+- JulieISBaka
+
+Special thanks to the following resources and libraries used in the project:
+
+- [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com)
 
 ## [Contributing](CONTRIBUTING.md)
 

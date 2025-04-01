@@ -1,5 +1,16 @@
 {
   "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/v0.37.4/schema/markdownlint-config-schema.json",
   "MD041": false,
-  "no-duplicate-heading": false
+  "no-duplicate-heading": false,
+  "MD022": {
+    "headers_should_be_surrounded_by_blank_lines": true
+  },
+  "comments": {
+    "MD041": "Disable this rule to allow first line headings",
+    "no-duplicate-heading": "Disable this rule to allow duplicate headings",
+    "MD013": "Set line length to 80 characters, but ignore code blocks and tables",
+    "MD022": "Ensure headers are surrounded by blank lines",
+    "custom_rules": "Enforce specific heading style and require certain elements",
+    "ignore": "Ignore specific directories that do not need to be linted"
+  }
 }
