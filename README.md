@@ -88,6 +88,8 @@ project maintainers.
 
 ## Changelog
 
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/17>
+
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/2>
 
 Created Repository
