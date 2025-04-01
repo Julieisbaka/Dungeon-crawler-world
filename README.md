@@ -90,6 +90,8 @@ project maintainers.
 
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/17>
 
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/20>
+
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/2>
 
 Created Repository
