@@ -16,7 +16,8 @@ where players explore dungeons, fight monsters,
 and collect treasures.
 Our goal is to create an immersive and engaging experience.
 
-Information about Dungeon crawler Carl can be found on the [Dungeon crawler carl](https://dungeon-crawler-carl.fandom.com) wiki.
+Information about Dungeon crawler Carl can be found on the [Dungeon crawler carl]
+(<https://dungeon-crawler-carl.fandom.com>) wiki.
 
 ## [Contributing](CONTRIBUTING.md)
 
@@ -28,7 +29,8 @@ We welcome contributions from the community! To contribute, please follow these 
 4. Push your changes to your fork.
 5. Open a pull request to the main repository.
 
-Please see the [code of conduct](CODE_OF_CONDUCT.md) for our guidelines on contributing to this project.
+Please see the [code of conduct](CODE_OF_CONDUCT.md) for our guidelines on
+contributing to this project.
 
 ## License
 
@@ -39,7 +41,8 @@ agree to the terms of the license.
 
 ## Issues and Feedback
 
-For any questions or feedback, please open an issue on GitHub or contact the project maintainers.
+For any questions or feedback, please open an issue on GitHub or contact the
+project maintainers.
 We appreciate your input and look forward to hearing from you!
 
 ## Contact

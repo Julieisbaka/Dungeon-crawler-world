@@ -39,6 +39,9 @@
               "!config.json",
               "!Shaders/Scheme.json"
             ]
+          },
+          {
+            "url": "Shaders/Scheme.json"
           }
         ],
         "json.validate.enable": true,

@@ -1,8 +1,12 @@
 {
+  "name": "Compensated Anarchist",
+  "description": "",
   "requirements": [
     {
       "Views": 500000000000,
-      "skills": { "Explosives Handling Skill": 5 }
+      "skills": { 
+        "Explosives Handling Skill": 5 
+      }
     }
   ],
   "prerequisites": [
@@ -10,8 +14,6 @@
       "Charisma": 25,
       "Dexterity": 10
     }
-  ],
-  "name": "Compensated Anarchist",
-  "description": ""
+  ]
 }
 

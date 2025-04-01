@@ -15,12 +15,13 @@
 
 ## Note added by Crawler Herot. 16th Edition
 
-    During my studies, I have run across multiple castle variations. So far I have
-    identified three distinct types. The size of the castle doesn’t seem to have a
-    bearing on what type it is. It is more a function of the game’s insistence to
-    forward the narrative, not unlike how the musical key of a Virilean opera 
-    movement is a function of the performer’s ability to progress and not 
-    necessarily in service to aural aesthetics.
+    During my studies, I have run across multiple castle variations. 
+    So far I have identified three distinct types. 
+    The size of the castle doesn’t seem to have a bearing on what type it is. 
+    It is more a function of the game’s insistence to forward the narrative, not
+    unlike how the musical key of a Virilean opera movement is a function of the
+    performer’s ability to progress and not necessarily in service to aural 
+    aesthetics.
 
     The first iteration is just a regular building like anything else you might 
     encounter in the dungeon. It is a fortified building with monsters, sometimes
@@ -62,14 +63,16 @@
 
 ## Note added by crawler Herot, 16th Edition
 
-    I’m starting to believe I have the ability to manifest my own destiny, after a
-    certain fashion. The more unstable the AI running this system becomes, the 
-    less predictable it is. Yet at the same time, it’s even more predictable in 
-    certain ways. I made a quip about being hungry, and I suddenly received a 
-    random achievement notification about my hunger level. I discussed with my 
-    friend how I wished we could kill more ghasts, because they often drop 
-    knowledge scrolls, and not one hour later, I received a quest to hunt down a
-    certain number of the very same monsters. Beware, however. That same quest 
-    killed my friend. The AI is always listening, thinking, plotting, changing the
-    game to suit its desires. At the higher levels, it is not nearly as rigid as
-    it once was. That pliability can be an asset or an extreme danger.
+    I’m starting to believe I have the ability to manifest my own destiny, 
+    after a certain fashion. The more unstable the AI running this system becomes,
+    the less predictable it is. 
+    Yet at the same time, it’s even more predictable in certain ways. 
+    I made a quip about being hungry, and I suddenly received a random achievement
+    notification about my hunger level. I discussed with my friend how I wished we
+    could kill more ghasts, because they often drop knowledge scrolls, and not one
+    hour later, I received a quest to hunt down a certain number of the very same
+    monsters. 
+    Beware, however. That same quest killed my friend. The AI is always listening,
+    thinking, plotting, changing the game to suit its desires. At the higher 
+    levels, it is not nearly as rigid as it once was. That pliability can be an 
+    asset or an extreme danger.
