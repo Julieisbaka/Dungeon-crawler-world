@@ -10,9 +10,6 @@
     <!-- Add other package references here -->
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include = "" />
-    <!-- Add other project references here -->
-  </ItemGroup>
+  <!-- Add more Item groups and references as needed -->
 
 </Project>
