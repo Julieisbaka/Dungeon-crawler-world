@@ -1,5 +1,3 @@
-duration + 1s per spell level
-Radius + 50cm per spell level
 This shield only affects red tagged things.
 This shield does not move with the caster.
 This shield does not protect against magic attacks.

@@ -3,7 +3,6 @@ dist/
 .cache/
 *.log
 build/
-temp
 logs
 UserSettings
 cache
