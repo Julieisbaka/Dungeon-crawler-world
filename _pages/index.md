@@ -18,3 +18,10 @@ title: "Welcome to Dungeon Crawler World"
     <li><a href="{{ site.baseurl }}/changelog">Changelog</a></li>
   </ul>
 </div>
+
+<form id="search-form">
+  <input type="text" id="search-input" placeholder="Search...">
+  <button type="submit">Search</button>
+</form>
+
+<div id="search-results"></div>
