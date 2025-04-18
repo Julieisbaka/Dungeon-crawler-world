@@ -21,15 +21,15 @@ The tutorial guild consists of you, your teammates, and a game guide.
 1. Floor one has no theme.
 2. All personal spaces on floor one are free.
 3. All food on floor one is free.
-4. The player can not obtain or use gold on floor one.
+4. The player cannot obtain or use gold on floor one.
 5. Only burrow bosses and below can be found here.
 6. Viewers cannot watch the game and benefactors don't exist.
 7. Elites and quests will not be found on this floor.
 
 Floor one is the biggest floor and has the most staircases.
-Players on floor one can not enter the staircases until six hours remain.
+Players on floor one cannot enter the staircases until six hours remain.
 
-On this floor the enemies that spawn will be low level and easy to kill mobs.
+On this floor, the enemies that spawn will be low level and easy to kill mobs.
 
 **Gods:**
 None
@@ -58,7 +58,7 @@ Hunters can now spawn.
 
 **Modifiers:**
 
-1. Insta - win.
+1. Insta-win.
 
 ## **Floor 8**
 

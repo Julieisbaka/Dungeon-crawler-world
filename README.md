@@ -16,6 +16,9 @@
 - [Issues and Feedback](#issues-and-feedback)
 - [Contact](#contact)
 - [Changelog](#changelog)
+- [Documentation](#documentation)
+- [Security](#security)
+- [Code of Conduct](#code-of-conduct)
 
 ## Warning: Spoilers Ahead
 
@@ -102,3 +105,15 @@ Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/20>
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/2>
 
 Created Repository
+
+## Documentation
+
+For detailed information about the project, please visit the [Documentation](https://github.com/Julieisbaka/Dungeon-crawler-world/docs.md) page.
+
+## Security
+
+For information about the project's security policy, please visit the [Security](https://github.com/Julieisbaka/Dungeon-crawler-world/security.md) page.
+
+## Code of Conduct
+
+For information about the project's code of conduct, please visit the [Code of Conduct](https://github.com/Julieisbaka/Dungeon-crawler-world/code_of_conduct.md) page.

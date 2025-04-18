@@ -39,3 +39,5 @@ We strive to release security updates promptly. Our policy includes:
   other communication channels.
 
 Thank you for helping us keep our project secure.
+
+For more detailed guidelines, please visit the [Security Page](https://github.com/Julieisbaka/Dungeon-crawler-world/_pages/security.md).
