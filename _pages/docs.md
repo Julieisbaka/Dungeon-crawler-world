@@ -11,11 +11,11 @@ title: "Documentation"
 <div class="documentation-sections">
   <h2>Sections</h2>
   <ul>
-    <li><a href="{{ site.baseurl }}/docs/getting_started">Getting Started</a></li>
-    <li><a href="{{ site.baseurl }}/docs/game_mechanics">Game Mechanics</a></li>
-    <li><a href="{{ site.baseurl }}/docs/contributing">Contributing</a></li>
-    <li><a href="{{ site.baseurl }}/docs/code_of_conduct">Code of Conduct</a></li>
-    <li><a href="{{ site.baseurl }}/docs/security">Security</a></li>
-    <li><a href="{{ site.baseurl }}/docs/changelog">Changelog</a></li>
+    <li><a href="{{ site.baseurl }}/getting_started">Getting Started</a></li>
+    <li><a href="{{ site.baseurl }}/game_mechanics">Game Mechanics</a></li>
+    <li><a href="{{ site.baseurl }}/contributing">Contributing</a></li>
+    <li><a href="{{ site.baseurl }}/code_of_conduct">Code of Conduct</a></li>
+    <li><a href="{{ site.baseurl }}/security">Security</a></li>
+    <li><a href="{{ site.baseurl }}/changelog">Changelog</a></li>
   </ul>
 </div>

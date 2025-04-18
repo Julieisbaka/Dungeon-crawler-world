@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title }} - {{ site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <script src="{{ '/assets/js/simple-jekyll-search.min.js' | relative_url }}"></script>
 </head>
 <body>
   {% include nav.html %}
   <div class="content">
     {{ content }}
   </div>
+  <div id="search-results"></div>
 </body>
 </html>

@@ -14,9 +14,12 @@ description: "A thrilling adventure game where players explore dungeons, fight m
 # Build settings
 markdown: kramdown
 highlighter: rouge
+paginate: 5
 
 # Plugins
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-paginate
+  - jekyll-search
