@@ -1,0 +1,22 @@
+# Jekyll configuration file
+
+title: "Dungeon Crawler World"
+baseurl: "/Dungeon-crawler-world"
+url: "https://julieisbaka.github.io"
+theme: "minima"
+
+# Site settings
+author:
+  name: "JulieISBaka"
+  email: "julieisbaka@example.com"
+description: "A thrilling adventure game where players explore dungeons, fight monsters, and collect treasures."
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap

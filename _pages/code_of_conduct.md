@@ -1,3 +1,8 @@
+---
+layout: page
+title: "Code of Conduct"
+---
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
@@ -126,5 +131,3 @@ enforcement ladder](https://github.com/mozilla/diversity).
 For answers to common questions about this code of conduct, see the FAQ at
 <https://www.contributor-covenant.org/faq>. Translations are available at
 <https://www.contributor-covenant.org/translations>.
-
-For more detailed guidelines, please visit the [Code of Conduct Page](https://github.com/Julieisbaka/Dungeon-crawler-world/_pages/code_of_conduct.md).

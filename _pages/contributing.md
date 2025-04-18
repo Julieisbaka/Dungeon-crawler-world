@@ -1,3 +1,8 @@
+---
+layout: page
+title: "Contributing"
+---
+
 # Contributing to Dungeon Crawler World
 
 Thank you for your interest in contributing to Dungeon Crawler World! This
@@ -87,5 +92,3 @@ When reporting issues, please include:
 
 Thank you for contributing to Dungeon Crawler World! Your efforts help make this
 project better for everyone.
-
-For more detailed guidelines, please visit the [Contributing Page](https://github.com/Julieisbaka/Dungeon-crawler-world/_pages/contributing.md).
