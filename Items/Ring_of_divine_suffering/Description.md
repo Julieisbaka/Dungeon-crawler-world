@@ -1,6 +1,0 @@
-Oooh, that's scary sounding. For the discerning Crawler Killer, this magical ring
-can be one of the most formidable items in the dungeon. If utilized properly, this
-ring's wielder can grow exponentially in strength, especially on the deeper floors.
-But beware. If poorly wielded, this ring will kill you quicker than an exploding
-rage elemental. Either way, this ring imparts one of the dungeon's most highly
-sought-after skills: the marked for death skill.
