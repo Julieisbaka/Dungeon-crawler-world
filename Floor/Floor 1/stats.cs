@@ -1,11 +1,11 @@
 namespace RandomNumberGenerator
 {
-    class Program
+    class Stats
     {
-        static void Main(string[] args)
+        static void ProcessStats(string[] args)
         {
             Random random = new();
-            
+
             // Generate 8 numbers between 3 and 5 (inclusive)            
             for (int i = 0; i < 8; i++)
             {

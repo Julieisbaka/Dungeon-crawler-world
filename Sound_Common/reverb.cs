@@ -25,19 +25,4 @@ namespace Dungeon_Crawler_World.Sound_Common
             return $"ReverbEffect [Level={ReverbLevel}, DecayTime={DecayTime}s, RoomSize={RoomSize}]";
         }
     }
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            ReverbEffect reverb = new (0.7f, 1.5f, 0.8f);
-            Console.WriteLine(reverb);
-
-            float inputSample = 0.8f; // Example input sound sample
-            float outputSample = reverb.ApplyReverb(inputSample);
-
-            Console.WriteLine($"Input Sample: {inputSample}");
-            Console.WriteLine($"Output Sample with Reverb: {outputSample}");
-        }
-    }
 }
