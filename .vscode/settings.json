@@ -42,5 +42,8 @@
     "Necro",
     "Perlin",
     "Skolopendra"
-  ]
+  ],
+  "files.associations": {
+    ".prettierrc": "json"
+  }
 }

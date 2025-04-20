@@ -1,7 +1,5 @@
 # Dungeon Crawler World
 
-![GitHub License](https://img.shields.io/github/license/Julieisbaka/Dungeon-crawler-world?style=for-the-badge&logo=https%3A%2F%2Fduckduckgo.com%2F%3Fq%3DMIT%2520license%2520logo%26iax%3Dimages%26ia%3Dimages%26iai%3Dhttps%3A%2F%2Fwww.svgrepo.com%2Fshow%2F444064%2Flegal-license-mit.svg%26t%3Dffab&label=LICENSE%3A%20MIT&link=https%3A%2F%2Fopensource.org%2Flicense%2Fmit)
-
 [![CodeQL](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql)
 
 ## Table of Contents
@@ -50,7 +48,26 @@ customize your playstyle.
 - **Multiplayer***: Team up with friends or other players online to tackle dungeons
 together.
 
+<details>
+  <summary>Note</summary>
+
+  Due to some features in the game affecting time true multiplayer is not possible unless we invent time travel.
+  The multiplayer that will be implemented is still with real people but gameplay is altered.
+  If you want to play with just friends you can create a private server or use LAN; if you choose to due this then gameplay will not be altered 
+  (by default although this is toggleable in the server settings)
+</details>
+
+## AI
+
+The AI present in the book is incredibly advanced and not possible to implement; the solution to this is by custom training our AI.
+This is not a one all solution the AI will not be as advanced as the one in the book as this is impossible unless you can Deepseek it x 100.
+IF you think you can be a Deepseak x 100 dev then contact me.
+I will not leave my contact information here because you are not.
+
 ## Screenshots
+
+Currently the art for the game has not been created so their are no screenshots
+... yet
 
 ## Credits
 
@@ -95,8 +112,9 @@ project maintainers.
 
 ## Changelog
 
-Fixed
-<https://github.com/Julieisbaka/Dungeon-crawler-world/issues/22>
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/11>
+
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/22>
 
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/17>
 

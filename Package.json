@@ -6,7 +6,7 @@
   "version": "0.0.4.5",
   "license": "MIT",
   "devDependencies": {
-    "prettier": "4.0.0-alpha.10",
+    "prettier": "^3.0.0",
     "markdownlint-cli2": "0.17.2"
   }
 }

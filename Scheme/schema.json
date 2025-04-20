@@ -461,7 +461,7 @@
         },
         "is_conditional": {
           "type": "boolean",
-          "description": "If this is set to true then the affect will stop when the duration ends or when the condition is met whichever is met first. If set to false then this property does nothing and the duration property is purely relied upon for how the affect disapates."
+          "description": "If this is set to true then the affect will stop when the duration ends or when the condition is met whichever is met first. If set to false then this property does nothing and the duration property is purely relied upon for how the affect dissipates."
 
         },
         "stackable": {

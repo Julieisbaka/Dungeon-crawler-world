@@ -1,3 +1,6 @@
 {
-    "$schema": "Shaders/Scheme.json"
+    "$schema": "https://raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/refs/heads/Main/Shaders/Schema.json",
+    "fog": 2,
+    "lighting": 2,
+    "sound": true
 }

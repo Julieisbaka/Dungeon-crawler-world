@@ -2,6 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/v0.37.4/schema/markdownlint-config-schema.json",
   "MD041": false,
   "no-duplicate-heading": false,
+  "no-inline-html": false,
+  "MD033": false,
   "comments": {
     "MD041": "Disable this rule to allow first line headings",
     "no-duplicate-heading": "Disable this rule to allow duplicate headings",
