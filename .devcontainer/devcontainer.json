@@ -8,7 +8,8 @@
   "remoteUser": "vscode",
   "features": {
     "ghcr.io/devcontainers-extra/features/prettier": "latest",
-    "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest"
+    "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest",
+    "ghcr.io/devcontainers/features/docker-in-docker": "latest"
   },
   "customizations": {
     "vscode": {
@@ -17,7 +18,11 @@
         "esbenp.prettier-vscode",
         "EditorConfig.EditorConfig",
         "DavidAnson.vscode-markdownlint",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ryanluker.vscode-coverage-gutters",
+        "formulahendry.dotnet-test-explorer"
       ],
       "settings": {
         "prettier.useEditorConfig": true,
@@ -65,9 +70,22 @@
         ],
         "files.associations": {
           ".prettierrc": "json"
+        },
+        "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
+        "omnisharp.enableRoslynAnalyzers": true,
+        "omnisharp.enableEditorConfigSupport": true
       }
     }
   },
-  "postCreateCommand": "dotnet build"
-}}
+  "forwardPorts": [5000, 5001],
+  "mounts": [
+    "source=${env:HOME}${env:USERPROFILE}/.nuget/packages,target=/home/vscode/.nuget/packages,type=bind,consistency=cached"
+  ],
+  "postCreateCommand": "dotnet restore && dotnet build",
+  "postStartCommand": "dotnet test",
+  "remoteEnv": {
+    "DOTNET_ENVIRONMENT": "Development",
+    "ASPNETCORE_ENVIRONMENT": "Development"
+  }
+}
 
