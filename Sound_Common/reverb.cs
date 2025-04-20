@@ -1,5 +1,3 @@
-using System;
-
 namespace DungeonCrawlerWorld.SoundCommon
 {
     public class ReverbEffect
