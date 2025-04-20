@@ -1,4 +1,4 @@
-namespace DungeonCrawlerWorld.SoundCommon
+namespace Dungeon_Crawler_World.Sound_Common
 {
     public class ReverbEffect
     {
@@ -30,7 +30,7 @@ namespace DungeonCrawlerWorld.SoundCommon
     {
         static void Main(string[] args)
         {
-            ReverbEffect reverb = new ReverbEffect(0.7f, 1.5f, 0.8f);
+            ReverbEffect reverb = new (0.7f, 1.5f, 0.8f);
             Console.WriteLine(reverb);
 
             float inputSample = 0.8f; // Example input sound sample

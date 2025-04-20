@@ -1,35 +1,50 @@
-<UserControl x:Class="DungeonCrawlerWorld.UI.SettingsPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Grid Margin="10">
-    <GroupBox Header="Sound and Visuals" Padding="10">
-      <StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-          <Label Content="Fog:" Width="120"/>
-          <ComboBox x:Name="FogComboBox" Width="180">
-            <ComboBoxItem Content="No Fog"      Tag="0"/>
-            <ComboBoxItem Content="Fast Fog"    Tag="1"/>
-            <ComboBoxItem Content="Default Fog" Tag="2"/>
-            <ComboBoxItem Content="Fancy Fog"   Tag="3"/>
-          </ComboBox>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-          <Label Content="Lighting:" Width="120"/>
-          <ComboBox x:Name="LightingComboBox" Width="180">
-            <ComboBoxItem Content="No Shader Lighting"      Tag="0"/>
-            <ComboBoxItem Content="Simple Shader Lighting"  Tag="1"/>
-            <ComboBoxItem Content="Normal Shader Lighting"  Tag="2"/>
-            <ComboBoxItem Content="Fancy Shader Lighting"   Tag="3"/>
-            <ComboBoxItem Content="Highest Quality Lighting" Tag="4"/>
-          </ComboBox>
-        </StackPanel>
-        <CheckBox x:Name="SoundCheckBox"
-                  Content="Enable Physically Based Sound"
-                  Margin="0,0,0,10"/>
-        <Button Content="Save" Width="80"
-                HorizontalAlignment="Right"
-                Click="SaveButton_Click"/>
-      </StackPanel>
-    </GroupBox>
-  </Grid>
-</UserControl>
+<Window x:Class="Dungeon_Crawler_World.UI.SettingsPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Game Settings" Height="450" Width="600">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Visuals &amp; Sound">
+                <StackPanel Margin="10">
+                    <GroupBox Header="Sound Effects">
+                        <Grid Margin="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Reverb Level:" Grid.Row="0" Grid.Column="0"/>
+                            <Slider x:Name="ReverbLevelSlider" Grid.Row="0" Grid.Column="1" 
+                                    Minimum="0" Maximum="1" Value="{Binding ReverbLevel}"/>
+                            <TextBlock Text="{Binding Value, ElementName=ReverbLevelSlider, StringFormat={}{0:F2}}" 
+                                     Grid.Row="0" Grid.Column="2"/>
+
+                            <TextBlock Text="Decay Time (s):" Grid.Row="1" Grid.Column="0"/>
+                            <Slider x:Name="DecayTimeSlider" Grid.Row="1" Grid.Column="1" 
+                                    Minimum="0.1" Maximum="5" Value="{Binding DecayTime}"/>
+                            <TextBlock Text="{Binding Value, ElementName=DecayTimeSlider, StringFormat={}{0:F2}}" 
+                                     Grid.Row="1" Grid.Column="2"/>
+
+                            <TextBlock Text="Room Size:" Grid.Row="2" Grid.Column="0"/>
+                            <Slider x:Name="RoomSizeSlider" Grid.Row="2" Grid.Column="1" 
+                                    Minimum="0" Maximum="1" Value="{Binding RoomSize}"/>
+                            <TextBlock Text="{Binding Value, ElementName=RoomSizeSlider, StringFormat={}{0:F2}}" 
+                                     Grid.Row="2" Grid.Column="2"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button Content="Save" Width="75" Margin="0,0,10,0" Click="SaveButton_Click"/>
+                        <Button Content="Cancel" Width="75" Click="CancelButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

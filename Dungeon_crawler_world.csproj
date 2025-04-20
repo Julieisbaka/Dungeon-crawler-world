@@ -1,32 +1,9 @@
-<Project Sdk = "Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType> Exe </OutputType>
-    <TargetFramework> net7.0 </TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include = "Microsoft.EntityFrameworkCore" Version = "7.0.0" />
-    <!-- Add other package references here -->
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Include the WPF SettingsPage -->
-    <Page Include="UI\SettingsPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="UI\SettingsPage.xaml.cs" />
-  </ItemGroup>
-    <ItemGroup>
-    <!-- Copy shader config files to output so the app can read/write them -->
-    <None Include="Shaders\config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\Scheme.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <!-- Add more Item groups and references as needed -->
-
 </Project>

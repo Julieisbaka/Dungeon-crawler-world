@@ -1,12 +1,10 @@
-using System;
-
 namespace RandomNumberGenerator
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Random random = new Random();
+            Random random = new();
             
             // Generate 8 numbers between 3 and 5 (inclusive)            
             for (int i = 0; i < 8; i++)

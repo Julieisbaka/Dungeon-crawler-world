@@ -3,7 +3,7 @@
   "title": "shader schema",
   "description": "This schema is used for validation and reading of the shader config json file!",
   "properties": {
-    "Fog": { 
+    "fog": { 
         "type": "integer",
         "description": "0 is no fog\n 1 is fast fog\n 2 is default fog\n 3 is fancy fog",
         "default": 2,

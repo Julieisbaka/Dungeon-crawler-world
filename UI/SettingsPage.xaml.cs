@@ -1,53 +1,109 @@
-namespace DungeonCrawlerWorld.UI
+using System.Windows;
+using System.Text.Json;
+using System.IO;
+using System.Diagnostics;
+
+namespace Dungeon_Crawler_World.UI
 {
-    public partial class SettingsPage : UserControl
+    public partial class SettingsPage : Window, IDisposable
     {
-        private static readonly string ConfigFilePath =
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shaders", "config.json");
+        private const string CONFIG_PATH = @"Shaders\config.json";
+        private const string CONFIG_DIR = @"Shaders";
+        private Settings currentSettings;
+        private bool isDisposed;
 
         public SettingsPage()
         {
             InitializeComponent();
             LoadSettings();
+            DataContext = currentSettings;
         }
 
         private void LoadSettings()
         {
-            if (!File.Exists(ConfigFilePath)) return;
-            var json = File.ReadAllText(ConfigFilePath);
-            var cfg = JsonSerializer.Deserialize<ShaderConfig>(json);
-            if (cfg == null) return;
+            try
+            {
+        EnsureConfigDirectoryExists();
+                
+                if (File.Exists(CONFIG_PATH))
+                {
+                    string jsonString = File.ReadAllText(CONFIG_PATH);
+                    currentSettings = JsonSerializer.Deserialize<Settings>(jsonString) 
+                        ?? CreateDefaultSettings();
+                }
+                else
+                {
+                    currentSettings = CreateDefaultSettings();
+          SaveSettings(currentSettings); // Create initial config file
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading settings: {ex}");
+                MessageBox.Show($"Error loading settings. Using defaults.\nError: {ex.Message}", 
+                    "Settings Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                currentSettings = CreateDefaultSettings();
+            }
+        }
 
-            foreach (ComboBoxItem it in FogComboBox.Items)
-                if ((int)it.Tag == cfg.Fog) FogComboBox.SelectedItem = it;
+        private static Settings CreateDefaultSettings()
+        {
+            return new Settings();
+        }
 
-            foreach (ComboBoxItem it in LightingComboBox.Items)
-                if ((int)it.Tag == cfg.Lighting) LightingComboBox.SelectedItem = it;
+        private static void EnsureConfigDirectoryExists()
+        {
+            if (!Directory.Exists(CONFIG_DIR))
+            {
+                Directory.CreateDirectory(CONFIG_DIR);
+            }
+        }
 
-            SoundCheckBox.IsChecked = cfg.Sound;
+        private static void SaveSettings(Settings settings)
+        {
+            var options = new JsonSerializerOptions 
+            { 
+                WriteIndented = true 
+            };
+            string jsonString = JsonSerializer.Serialize(settings, options);
+            File.WriteAllText(CONFIG_PATH, jsonString);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            var cfg = new ShaderConfig
+            try
             {
-                Fog = (int)((ComboBoxItem)FogComboBox.SelectedItem).Tag,
-                Lighting = (int)((ComboBoxItem)LightingComboBox.SelectedItem).Tag,
-                Sound = SoundCheckBox.IsChecked == true
-            };
-
-            var opts = new JsonSerializerOptions { WriteIndented = true };
-            var outJson = JsonSerializer.Serialize(cfg, opts);
-            File.WriteAllText(ConfigFilePath, outJson);
-
-            MessageBox.Show("Settings saved.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        SaveSettings(currentSettings);
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error saving settings: {ex}");
+                MessageBox.Show($"Failed to save settings.\nError: {ex.Message}", 
+                    "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-    }
 
-    public class ShaderConfig
-    {
-        public int Fog { get; set; }
-        public int Lighting { get; set; }
-        public bool Sound { get; set; }
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
+
+        public void Dispose()
+        {
+            if (!isDisposed)
+            {
+                // Clean up any resources here
+                isDisposed = true;
+            }
+            GC.SuppressFinalize(this);
+        }
+
+        ~SettingsPage()
+        {
+            Dispose();
+        }
     }
 }
