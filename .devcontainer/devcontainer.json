@@ -2,6 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Dungeon-crawler-world",
   "image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
+  // override default mount and user
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "remoteUser": "vscode",
   "features": {
     "ghcr.io/devcontainers-extra/features/prettier": "latest",
     "ghcr.io/devcontainers-extra/features/markdownlint-cli2": "latest"
@@ -62,8 +66,6 @@
       }
     }
   },
-  "tasks": {
-    "build": "dotnet build"
-  }
+  "postCreateCommand": "dotnet build"
 }
 
