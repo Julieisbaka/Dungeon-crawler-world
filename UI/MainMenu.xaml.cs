@@ -11,7 +11,7 @@ namespace Dungeon_Crawler_World.UI
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("This feature is not yet implemented.",
+            MessageBox.Show("The game is not ready to be played yet.",
                 "Coming Soon",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);

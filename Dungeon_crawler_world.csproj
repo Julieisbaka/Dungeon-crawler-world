@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Include="UI\SettingsPage.xaml" />
+  </ItemGroup>
 </Project>

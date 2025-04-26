@@ -6,7 +6,7 @@ class IndexGenerator
     static void Main()
     {
         string directoryPath = "Items/Anarchist_cookbook/Book";
-        string outputPath = Path.Combine(directoryPath, "Index.md");
+        string outputPath = Path.Combine(directoryPath, "index.md");
 
         var files = Directory.GetFiles(directoryPath, "*.md")
                              .Select(Path.GetFileName)
