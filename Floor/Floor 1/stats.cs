@@ -2,7 +2,7 @@ namespace RandomNumberGenerator
 {
   class Stats
   {
-    static void ProcessStats(string[] args)
+    public static void ProcessStats(string[] args)
     {
       Random random = new Random();
 
