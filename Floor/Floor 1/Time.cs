@@ -2,16 +2,16 @@ namespace Dungeon_Crawler_World.Floor
 {
   public class TimeGenerator
   {
-    private static readonly Random random = new();
+    private static readonly Random random = new Random();
 
     public static int GenerateRandomTimeInRange()
     {
       double u1 = 1.0 - random.NextDouble();
       double u2 = 1.0 - random.NextDouble();
-      double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); // Using Box-Muller transform to generate a random normal distribution (mean=0, stdDev=1)
+      double randStdNormal = Math.Sqrt(d: -2.0 * Math.Log(d: u1)) * Math.Sin(a: 2.0 * Math.PI * u2); // Using Box-Muller transform to generate a random normal distribution (mean=0, stdDev=1)
       double randNormal = 17 * randStdNormal; // random normal(mean,stdDev)
 
-      int randomTime = (int)Math.Round(randNormal);
+      int randomTime = (int)Math.Round(a: randNormal);
 
       if (randomTime <= 12)
       {

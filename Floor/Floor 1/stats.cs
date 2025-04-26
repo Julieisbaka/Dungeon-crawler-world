@@ -1,18 +1,18 @@
 namespace RandomNumberGenerator
 {
-    class Stats
+  class Stats
+  {
+    static void ProcessStats(string[] args)
     {
-        static void ProcessStats(string[] args)
-        {
-            Random random = new();
+      Random random = new Random();
 
-            // Generate 8 numbers between 3 and 5 (inclusive)            
-            for (int i = 0; i < 8; i++)
-            {
-                // Next(minValue, maxValue) returns a random number >= minValue and < maxValue
-                // So to include 5, we use maxValue of 6
-                int randomNumber = random.Next(3, 6);
-            }
-        }
+      // Generate 8 numbers between 3 and 5 (inclusive)
+      for (int i = 0; i < 8; i++)
+      {
+        // Next(minValue, maxValue) returns a random number >= minValue and < maxValue
+        // So to include 5, we use maxValue of 6
+        int randomNumber = random.Next(minValue: 3, maxValue: 6);
+      }
     }
+  }
 }

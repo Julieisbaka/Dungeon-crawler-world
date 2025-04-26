@@ -4,77 +4,77 @@
         Title="Game Settings"
         Height="450"
         Width="600">
-    <Grid>
-        <TabControl>
-            <TabItem Header="Visuals &amp; Sound">
-                <StackPanel Margin="10">
-                    <GroupBox Header="Sound Effects">
-                        <Grid Margin="5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="120"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="50"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+  <Grid>
+    <TabControl>
+      <TabItem Header="Visuals &amp; Sound">
+        <StackPanel Margin="10">
+          <GroupBox Header="Sound Effects">
+            <Grid Margin="5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="50"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
 
-                            <TextBlock Text="Reverb Level:"
-                                    Grid.Row="0"
-                                    Grid.Column="0"/>
-                            <Slider x:Name="ReverbLevelSlider"
-                                    Grid.Row="0"
-                                    Grid.Column="1"
-                                    Minimum="0"
-                                    Maximum="1"
-                                    Value="{Binding ReverbLevel}"/>
-                            <TextBlock Text="{Binding Value, ElementName=ReverbLevelSlider, StringFormat={}{0:F2}}"
-                                       Grid.Row="0"
-                                    Grid.Column="2"/>
+              <TextBlock Text="Reverb Level:"
+                         Grid.Row="0"
+                         Grid.Column="0"/>
+              <Slider x:Name="ReverbLevelSlider"
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      Minimum="0"
+                      Maximum="1"
+                      Value="{Binding ReverbLevel}"/>
+              <TextBlock Text="{Binding Value, ElementName=ReverbLevelSlider, StringFormat={}{0:F2}}"
+                         Grid.Row="0"
+                         Grid.Column="2"/>
 
-                            <TextBlock Text="Decay Time (s):"
-                                    Grid.Row="1"
-                                    Grid.Column="0"/>
-                            <Slider x:Name="DecayTimeSlider"
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Minimum="0.1"
-                                    Maximum="5"
-                                    Value="{Binding DecayTime}"/>
-                            <TextBlock Text="{Binding Value, ElementName=DecayTimeSlider, StringFormat={}{0:F2}}"
-                                       Grid.Row="1"
-                                    Grid.Column="2"/>
+              <TextBlock Text="Decay Time (s):"
+                         Grid.Row="1"
+                         Grid.Column="0"/>
+              <Slider x:Name="DecayTimeSlider"
+                      Grid.Row="1"
+                      Grid.Column="1"
+                      Minimum="0.1"
+                      Maximum="5"
+                      Value="{Binding DecayTime}"/>
+              <TextBlock Text="{Binding Value, ElementName=DecayTimeSlider, StringFormat={}{0:F2}}"
+                         Grid.Row="1"
+                         Grid.Column="2"/>
 
-                            <TextBlock Text="Room Size:"
-                                    Grid.Row="2"
-                                    Grid.Column="0"/>
-                            <Slider x:Name="RoomSizeSlider"
-                                    Grid.Row="2"
-                                    Grid.Column="1"
-                                    Minimum="0"
-                                    Maximum="1"
-                                    Value="{Binding RoomSize}"/>
-                            <TextBlock Text="{Binding Value, ElementName=RoomSizeSlider, StringFormat={}{0:F2}}"
-                                       Grid.Row="2"
-                                    Grid.Column="2"/>
-                        </Grid>
-                    </GroupBox>
+              <TextBlock Text="Room Size:"
+                         Grid.Row="2"
+                         Grid.Column="0"/>
+              <Slider x:Name="RoomSizeSlider"
+                      Grid.Row="2"
+                      Grid.Column="1"
+                      Minimum="0"
+                      Maximum="1"
+                      Value="{Binding RoomSize}"/>
+              <TextBlock Text="{Binding Value, ElementName=RoomSizeSlider, StringFormat={}{0:F2}}"
+                         Grid.Row="2"
+                         Grid.Column="2"/>
+            </Grid>
+          </GroupBox>
 
-                    <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            Margin="0,10,0,0">
-                        <Button Content="Save"
-                                Width="75"
-                                Margin="0,0,10,0"
-                                Click="SaveButton_Click"/>
-                        <Button Content="Cancel"
-                                Width="75"
-                                Click="CancelButton_Click"/>
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
-    </Grid>
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Margin="0,10,0,0">
+            <Button Content="Save"
+                    Width="75"
+                    Margin="0,0,10,0"
+                    Click="SaveButton_Click"/>
+            <Button Content="Cancel"
+                    Width="75"
+                    Click="CancelButton_Click"/>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+  </Grid>
 </Window>

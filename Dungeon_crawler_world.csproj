@@ -6,8 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
-    <Page Include="UI\SettingsPage.xaml" />
+    <PackageReference Include="Parquet.Net" Version="5.1.1" />
   </ItemGroup>
 </Project>
