@@ -30,13 +30,14 @@ namespace Dungeon_Crawler_World.UI
       StatsManager.LoadOrCreateStats();
       TimeManager.LoadOrCreateTime();
 
-      MessageBox.Show("New game started! Stats and time files loaded.");
-      // Add logic to start the game here
+      MessageBox.Show(messageBoxText: "New game started! Stats and time files loaded.");
+      //TODO: #33 Add logic to start the game here
     }
 
     private void GameSavesButton_Click(object sender, RoutedEventArgs e)
     {
-      GameSavesWindow? savesWindow = new GameSavesWindow();
+      //TODO: #34 Add gamesaveswindow logic here
+      GameSavesWindow savesWindow = new GameSavesWindow();
       savesWindow.ShowDialog();
     }
   }

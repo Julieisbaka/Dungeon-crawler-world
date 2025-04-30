@@ -6,7 +6,7 @@ namespace Dungeon_Crawler_World
   {
     protected override void OnStartup(StartupEventArgs e)
     {
-      base.OnStartup(e);
+      base.OnStartup(e: e);
 
       // Generate index and table of contents at startup
       IndexGenerator.GenerateIndex();

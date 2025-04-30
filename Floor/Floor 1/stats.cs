@@ -12,7 +12,7 @@ namespace Dungeon_Crawler_World.Floor.Floor1
       // Generate 8 numbers between 3 and 5 (inclusive)
       for (int i = 0; i < 8; i++)
       {
-        statValues[i] = random.Next(3, 6);
+        statValues[i] = random.Next(minValue: 3, maxValue: 6);
       }
 
       // You can add logic here to save/load stats as needed

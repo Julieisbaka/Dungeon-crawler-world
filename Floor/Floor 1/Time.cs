@@ -8,10 +8,10 @@ namespace Dungeon_Crawler_World.Floor.Floor1
     {
       double u1 = 1.0 - random.NextDouble();
       double u2 = 1.0 - random.NextDouble();
-      double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); // Box-Muller transform
+      double randStdNormal = Math.Sqrt(d: -2.0 * Math.Log(d: u1)) * Math.Sin(a: 2.0 * Math.PI * u2); // Box-Muller transform
       double randNormal = 17 * randStdNormal;
 
-      int randomTime = (int)Math.Round(randNormal);
+      int randomTime = (int)Math.Round(a: randNormal);
 
       if (randomTime <= 12)
       {
