@@ -1,48 +1,133 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Dungeon_Crawler_World.UI
 {
-  public class Settings : INotifyPropertyChanged
-  {
-    private float reverbLevel = 0.5f;
-    private float decayTime = 1.0f;
-    private float roomSize = 0.5f;
-
-    public float ReverbLevel
+    public class Settings : INotifyPropertyChanged
     {
-      get => reverbLevel;
-      set
-      {
-        reverbLevel = value;
-        OnPropertyChanged(propertyName: nameof(ReverbLevel));
-      }
-    }
+        // General application settings
+        private bool _musicEnabled = true;
+        public bool MusicEnabled
+        {
+            get => _musicEnabled;
+            set => SetProperty(ref _musicEnabled, value);
+        }
 
-    public float DecayTime
-    {
-      get => decayTime;
-      set
-      {
-        decayTime = value;
-        OnPropertyChanged(propertyName: nameof(DecayTime));
-      }
-    }
+        private bool _soundEffectsEnabled = true;
+        public bool SoundEffectsEnabled
+        {
+            get => _soundEffectsEnabled;
+            set => SetProperty(ref _soundEffectsEnabled, value);
+        }
 
-    public float RoomSize
-    {
-      get => roomSize;
-      set
-      {
-        roomSize = value;
-        OnPropertyChanged(propertyName: nameof(RoomSize));
-      }
-    }
+        private int _volume = 75;
+        public int Volume
+        {
+            get => _volume;
+            set => SetProperty(ref _volume, value);
+        }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+        private int _fps = 60;
+        public int FPS
+        {
+            get => _fps;
+            set => SetProperty(ref _fps, value);
+        }
 
-    protected virtual void OnPropertyChanged(string propertyName)
-    {
-      PropertyChanged?.Invoke(sender: this, e: new PropertyChangedEventArgs(propertyName: propertyName));
+        // Display settings
+        private bool _fullscreen;
+        public bool Fullscreen
+        {
+            get => _fullscreen;
+            set => SetProperty(ref _fullscreen, value);
+        }
+
+        private int _windowWidth = 1280;
+        public int WindowWidth
+        {
+            get => _windowWidth;
+            set => SetProperty(ref _windowWidth, value);
+        }
+
+        private int _windowHeight = 720;
+        public int WindowHeight
+        {
+            get => _windowHeight;
+            set => SetProperty(ref _windowHeight, value);
+        }
+
+        // Shader settings
+        private bool _shadersEnabled = true;
+        public bool ShadersEnabled
+        {
+            get => _shadersEnabled;
+            set => SetProperty(ref _shadersEnabled, value);
+        }
+
+        private float _bloomIntensity = 0.5f;
+        public float BloomIntensity
+        {
+            get => _bloomIntensity;
+            set => SetProperty(field: ref _bloomIntensity, value: value);
+        }
+
+        private float _bloomThreshold = 0.8f;
+        public float BloomThreshold
+        {
+            get => _bloomThreshold;
+            set => SetProperty(field: ref _bloomThreshold, value: value);
+        }
+
+        private bool _ambientOcclusionEnabled = true;
+        public bool AmbientOcclusionEnabled
+        {
+            get => _ambientOcclusionEnabled;
+            set => SetProperty(field: ref _ambientOcclusionEnabled, value: value);
+        }
+
+        private float _ambientOcclusionStrength = 1.0f;
+        public float AmbientOcclusionStrength
+        {
+            get => _ambientOcclusionStrength;
+            set => SetProperty(field: ref _ambientOcclusionStrength, value: value);
+        }
+
+        private bool _shadowsEnabled = true;
+        public bool ShadowsEnabled
+        {
+            get => _shadowsEnabled;
+            set => SetProperty(field: ref _shadowsEnabled, value: value);
+        }
+
+        private int _shadowResolution = 1024;
+        public int ShadowResolution
+        {
+            get => _shadowResolution;
+            set => SetProperty(field: ref _shadowResolution, value: value);
+        }
+
+        private float _shadowSoftness = 2.0f;
+        public float ShadowSoftness
+        {
+            get => _shadowSoftness;
+            set => SetProperty(field: ref _shadowSoftness, value: value);
+        }
+
+
+        // INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(sender: this, e: new PropertyChangedEventArgs(propertyName: propertyName));
+        }
+
+        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(objA: field, objB: value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName: propertyName);
+            return true;
+        }
     }
-  }
 }
