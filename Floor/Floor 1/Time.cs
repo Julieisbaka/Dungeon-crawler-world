@@ -1,17 +1,17 @@
-namespace Dungeon_Crawler_World.Floor
+namespace Dungeon_Crawler_World.Floor.Floor1
 {
-  public class TimeGenerator
+  public static class TimeManager
   {
     private static readonly Random random = new Random();
 
-    public static int GenerateRandomTimeInRange()
+    public static void LoadOrCreateTime()
     {
       double u1 = 1.0 - random.NextDouble();
       double u2 = 1.0 - random.NextDouble();
-      double randStdNormal = Math.Sqrt(d: -2.0 * Math.Log(d: u1)) * Math.Sin(a: 2.0 * Math.PI * u2); // Using Box-Muller transform to generate a random normal distribution (mean=0, stdDev=1)
-      double randNormal = 17 * randStdNormal; // random normal(mean,stdDev)
+      double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); // Box-Muller transform
+      double randNormal = 17 * randStdNormal;
 
-      int randomTime = (int)Math.Round(a: randNormal);
+      int randomTime = (int)Math.Round(randNormal);
 
       if (randomTime <= 12)
       {
@@ -21,7 +21,8 @@ namespace Dungeon_Crawler_World.Floor
       {
         randomTime = 20;
       }
-      return randomTime;
+
+      // Add logic to save/load time as needed
     }
   }
 }

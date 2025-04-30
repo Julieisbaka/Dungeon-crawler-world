@@ -1,4 +1,5 @@
 using System.Windows;
+using Dungeon_Crawler_World.Floor.Floor1;
 
 namespace Dungeon_Crawler_World.UI
 {
@@ -21,6 +22,22 @@ namespace Dungeon_Crawler_World.UI
     {
       SettingsPage? settingsPage = new SettingsPage();
       settingsPage.ShowDialog();
+    }
+
+    private void NewGameButton_Click(object sender, RoutedEventArgs e)
+    {
+      // Call stats and time file logic here
+      StatsManager.LoadOrCreateStats();
+      TimeManager.LoadOrCreateTime();
+
+      MessageBox.Show("New game started! Stats and time files loaded.");
+      // Add logic to start the game here
+    }
+
+    private void GameSavesButton_Click(object sender, RoutedEventArgs e)
+    {
+      GameSavesWindow? savesWindow = new GameSavesWindow();
+      savesWindow.ShowDialog();
     }
   }
 }

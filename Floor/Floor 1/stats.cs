@@ -1,18 +1,21 @@
-namespace RandomNumberGenerator
+namespace Dungeon_Crawler_World.Floor.Floor1
 {
-  class Stats
+  public static class StatsManager
   {
-    public static void ProcessStats(string[] args)
+    public static void LoadOrCreateStats()
     {
       Random random = new Random();
+
+      string[] statNames = { "walking", "breathing", "blinking", "talking", "jumping", "writing", "reading", "climbing" };
+      int[] statValues = new int[8];
 
       // Generate 8 numbers between 3 and 5 (inclusive)
       for (int i = 0; i < 8; i++)
       {
-        // Next(minValue, maxValue) returns a random number >= minValue and < maxValue
-        // So to include 5, we use maxValue of 6
-        int randomNumber = random.Next(minValue: 3, maxValue: 6);
+        statValues[i] = random.Next(3, 6);
       }
+
+      // You can add logic here to save/load stats as needed
     }
   }
 }
