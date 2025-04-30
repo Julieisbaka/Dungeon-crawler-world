@@ -10,28 +10,28 @@ namespace Dungeon_Crawler_World.UI
         public bool MusicEnabled
         {
             get => _musicEnabled;
-            set => SetProperty(ref _musicEnabled, value);
+            set => SetProperty(field: ref _musicEnabled, value: value);
         }
 
         private bool _soundEffectsEnabled = true;
         public bool SoundEffectsEnabled
         {
             get => _soundEffectsEnabled;
-            set => SetProperty(ref _soundEffectsEnabled, value);
+            set => SetProperty(field: ref _soundEffectsEnabled, value: value);
         }
 
         private int _volume = 75;
         public int Volume
         {
             get => _volume;
-            set => SetProperty(ref _volume, value);
+            set => SetProperty(field: ref _volume, value: value);
         }
 
         private int _fps = 60;
         public int FPS
         {
             get => _fps;
-            set => SetProperty(ref _fps, value);
+            set => SetProperty(field: ref _fps, value: value);
         }
 
         // Display settings
@@ -39,21 +39,21 @@ namespace Dungeon_Crawler_World.UI
         public bool Fullscreen
         {
             get => _fullscreen;
-            set => SetProperty(ref _fullscreen, value);
+            set => SetProperty(field: ref _fullscreen, value: value);
         }
 
         private int _windowWidth = 1280;
         public int WindowWidth
         {
             get => _windowWidth;
-            set => SetProperty(ref _windowWidth, value);
+            set => SetProperty(field: ref _windowWidth, value: value);
         }
 
         private int _windowHeight = 720;
         public int WindowHeight
         {
             get => _windowHeight;
-            set => SetProperty(ref _windowHeight, value);
+            set => SetProperty(field: ref _windowHeight, value: value);
         }
 
         // Shader settings
@@ -61,7 +61,7 @@ namespace Dungeon_Crawler_World.UI
         public bool ShadersEnabled
         {
             get => _shadersEnabled;
-            set => SetProperty(ref _shadersEnabled, value);
+            set => SetProperty(field: ref _shadersEnabled, value: value);
         }
 
         private float _bloomIntensity = 0.5f;
@@ -115,14 +115,14 @@ namespace Dungeon_Crawler_World.UI
 
 
         // INotifyPropertyChanged implementation
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler ?PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string ?propertyName = null)
         {
             PropertyChanged?.Invoke(sender: this, e: new PropertyChangedEventArgs(propertyName: propertyName));
         }
 
-        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string ?propertyName = null)
         {
             if (Equals(objA: field, objB: value)) return false;
             field = value;
