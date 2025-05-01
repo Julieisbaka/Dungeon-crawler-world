@@ -85,5 +85,4 @@ When reporting issues, please include:
 
 ---
 
-Thank you for contributing to Dungeon Crawler World! Your efforts help make this
-project better for everyone.
+Thank you for contributing to Dungeon Crawler World! Your efforts help make this project better for everyone.
