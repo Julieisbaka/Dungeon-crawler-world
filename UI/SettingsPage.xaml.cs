@@ -65,8 +65,23 @@ namespace Dungeon_Crawler_World.UI
       {
         WriteIndented = true
       };
+
+      // Save all settings to config.json
       string jsonString = JsonSerializer.Serialize(value: settings, options: options);
       File.WriteAllText(path: CONFIG_PATH, contents: jsonString);
+
+      // Also save shader-specific config according to the schema
+      var shaderConfig = new
+      {
+        fog = settings.FogLevel,
+        lighting = settings.LightingLevel,
+        sound = settings.PhysicalSound
+      };
+
+      // Save shader config to separate file
+      string shaderConfigPath = Path.Combine(path1: CONFIG_DIR, path2: "shader_config.json");
+      string shaderConfigJson = JsonSerializer.Serialize(value: shaderConfig, options: options);
+      File.WriteAllText(path: shaderConfigPath, contents: shaderConfigJson);
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -74,6 +89,7 @@ namespace Dungeon_Crawler_World.UI
       try
       {
         SaveSettings(settings: currentSettings);
+        MessageBox.Show(messageBoxText: "Settings saved successfully!", caption: "Settings", button: MessageBoxButton.OK, icon: MessageBoxImage.Information);
         DialogResult = true;
         Close();
       }
@@ -86,6 +102,12 @@ namespace Dungeon_Crawler_World.UI
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+      DialogResult = false;
+      Close();
+    }
+
+    private void ExitButton_Click(object sender, RoutedEventArgs e)
     {
       DialogResult = false;
       Close();

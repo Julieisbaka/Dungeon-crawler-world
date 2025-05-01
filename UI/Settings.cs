@@ -113,6 +113,27 @@ namespace Dungeon_Crawler_World.UI
             set => SetProperty(field: ref _shadowSoftness, value: value);
         }
 
+        // Shader schema properties
+        private int _fogLevel = 2;
+        public int FogLevel
+        {
+            get => _fogLevel;
+            set => SetProperty(field: ref _fogLevel, value: value);
+        }
+
+        private int _lightingLevel = 2;
+        public int LightingLevel
+        {
+            get => _lightingLevel;
+            set => SetProperty(field: ref _lightingLevel, value: value);
+        }
+
+        private bool _physicalSound = true;
+        public bool PhysicalSound
+        {
+            get => _physicalSound;
+            set => SetProperty(field: ref _physicalSound, value: value);
+        }
 
         // INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler ?PropertyChanged;

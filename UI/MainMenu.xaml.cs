@@ -27,18 +27,32 @@ namespace Dungeon_Crawler_World.UI
     private void NewGameButton_Click(object sender, RoutedEventArgs e)
     {
       // Call stats and time file logic here
-      StatsManager.LoadOrCreateStats();
-      TimeManager.LoadOrCreateTime();
+      Dictionary<string, int>? stats = StatsManager.LoadOrCreateStats();
+      int floorTime = TimeManager.LoadOrCreateTime();
 
-      MessageBox.Show(messageBoxText: "New game started! Stats and time files loaded.");
-      //TODO: #33 Add logic to start the game here
+      // Create a user-friendly message showing the stats and time
+      string statsMessage = "New game started!\n\nFloor Time: " + floorTime + ":00\n\nStats:";
+      foreach (KeyValuePair<string, int> stat in stats)
+      {
+        statsMessage += $"\n- {char.ToUpper(c: stat.Key[index: 0]) + stat.Key[1..]}: {stat.Value}";
+      }
+
+      MessageBox.Show(messageBoxText: statsMessage,
+          caption: "Game Started",
+          button: MessageBoxButton.OK,
+          icon: MessageBoxImage.Information);
     }
 
     private void GameSavesButton_Click(object sender, RoutedEventArgs e)
     {
-      //TODO: #34 Add gamesaveswindow logic here
       GameSavesWindow savesWindow = new GameSavesWindow();
       savesWindow.ShowDialog();
+    }
+
+    private void ExitButton_Click(object sender, RoutedEventArgs e)
+    {
+      // Close the application
+      Application.Current.Shutdown();
     }
   }
 }
