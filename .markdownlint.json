@@ -4,11 +4,11 @@
   "no-duplicate-heading": false,
   "no-inline-html": false,
   "MD033": false,
-  "comments": {
-    "MD041": "Disable this rule to allow first line headings",
-    "no-duplicate-heading": "Disable this rule to allow duplicate headings",
-    "MD013": "Set line length to 80 characters, but ignore code blocks and tables",
-    "custom_rules": "Enforce specific heading style and require certain elements",
-    "ignore": "Ignore specific directories that do not need to be linted"
+  "first-line-h1": false,
+  "first-line-heading": false,
+  "MD013": {
+    "line_length": 120,
+    "code_blocks": false,
+    "tables": false
   }
 }
