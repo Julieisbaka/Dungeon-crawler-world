@@ -14,6 +14,7 @@ namespace Dungeon_Crawler_World.UI
 
     public SettingsPage()
     {
+      //#32
       InitializeComponent();
       LoadSettings();
       DataContext = currentSettings;

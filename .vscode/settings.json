@@ -20,12 +20,12 @@
       "!.devcontainer/**/*.json",
       "!package-lock.json",
       "!config.json",
-      "!Shaders/Scheme.json"
+      "!Scheme/Shader.json"
       ]
-      
+
     },
     {
-      "url": "Shaders/Scheme.json"
+      "url": "Scheme/Shader.json"
     }
   ],
   "json.validate.enable": true,
