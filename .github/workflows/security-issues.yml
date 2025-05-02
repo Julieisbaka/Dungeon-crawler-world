@@ -43,14 +43,14 @@ jobs:
             const variables = { owner: context.repo.owner, repo: context.repo.repo };
             const result = await github.graphql(query, variables);
             const alerts = result.repository.vulnerabilityAlerts.nodes;
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['security-vulnerability']
+            });
             for (const alert of alerts) {
               const issueTitle = `Security Alert: ${alert.securityVulnerability.package.name}`;
-              const issues = await github.rest.issues.listForRepo({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: 'open',
-                labels: ['security-vulnerability']
-              });
               const existingIssue = issues.data.find(issue => issue.title === issueTitle);
               if (!existingIssue) {
                 await github.rest.issues.create({
@@ -89,14 +89,14 @@ jobs:
               repo: context.repo.repo,
               state: 'open'
             });
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['code-scanning-alert']
+            });
             for (const alert of alerts.data) {
               const issueTitle = `Code Scanning Alert: ${alert.rule.id}`;
-              const issues = await github.rest.issues.listForRepo({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: 'open',
-                labels: ['code-scanning-alert']
-              });
               const existingIssue = issues.data.find(issue => issue.title === issueTitle);
               if (!existingIssue) {
                 await github.rest.issues.create({
