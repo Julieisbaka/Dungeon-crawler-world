@@ -38,4 +38,4 @@ We strive to release security updates promptly. Our policy includes:
   Informing our users about security updates through our GitHub repository and
   other communication channels.
 
-Thank you for helping us keep our project secure.
+Thank you for helping us keep our project safe and secure.

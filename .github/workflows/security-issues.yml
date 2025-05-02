@@ -1,0 +1,124 @@
+name: Security Vulnerability to Issues
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+
+permissions:
+  security-events: read     # Read vulnerabilities
+  issues: write             # Create issues
+  contents: read            # Read code-scanning alerts
+
+jobs:
+  find-and-create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get Dependabot Alerts
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const query = `query($owner:String!, $repo:String!) {
+              repository(owner:$owner, name:$repo) {
+                vulnerabilityAlerts(first: 100, states: [OPEN]) {
+                  nodes {
+                    id
+                    securityVulnerability {
+                      package { name }
+                      severity
+                      advisory {
+                        description
+                        references { url }
+                      }
+                    }
+                    createdAt
+                  }
+                }
+              }
+            }`;
+            const variables = { owner: context.repo.owner, repo: context.repo.repo };
+            const result = await github.graphql(query, variables);
+            const alerts = result.repository.vulnerabilityAlerts.nodes;
+            for (const alert of alerts) {
+              const issueTitle = `Security Alert: ${alert.securityVulnerability.package.name}`;
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: ['security-vulnerability']
+              });
+              const existingIssue = issues.data.find(issue => issue.title === issueTitle);
+              if (!existingIssue) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issueTitle,
+                  body: [
+                    '## Security Vulnerability Detected',
+                    '',
+                    `- **Package:** ${alert.securityVulnerability.package.name}`,
+                    `- **Severity:** ${alert.securityVulnerability.severity}`,
+                    `- **Detected:** ${new Date(alert.createdAt).toDateString()}`,
+                    '',
+                    '### Description',
+                    alert.securityVulnerability.advisory.description,
+                    '',
+                    '### References',
+                    ...(alert.securityVulnerability.advisory.references.map(ref => `- ${ref.url}`)),
+                    '',
+                    'Please address this security vulnerability as soon as possible.'
+                  ].join('\n'),
+                  labels: ['security-vulnerability', alert.securityVulnerability.severity.toLowerCase()],
+                });
+                console.log(`Created issue for ${alert.securityVulnerability.package.name}`);
+              }
+            }
+            return alerts.length;
+
+      - name: Get Code Scanning Alerts
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const alerts = await github.rest.codeScanning.listAlertsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+            for (const alert of alerts.data) {
+              const issueTitle = `Code Scanning Alert: ${alert.rule.id}`;
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: ['code-scanning-alert']
+              });
+              const existingIssue = issues.data.find(issue => issue.title === issueTitle);
+              if (!existingIssue) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issueTitle,
+                  body: [
+                    '## Code Scanning Alert',
+                    '',
+                    `- **Rule ID:** ${alert.rule.id}`,
+                    `- **Severity:** ${alert.rule.severity}`,
+                    `- **Description:** ${alert.rule.description}`,
+                    `- **Location:** ${alert.most_recent_instance.location.path}:${alert.most_recent_instance.location.start_line}`,
+                    '',
+                    '### Details',
+                    `${alert.most_recent_instance.message.text}`,
+                    '',
+                    'Please address this security issue as soon as possible.'
+                  ].join('\n'),
+                  labels: ['code-scanning-alert', alert.rule.severity?.toLowerCase() || 'unknown'],
+                });
+                console.log(`Created issue for code scanning alert: ${alert.rule.id}`);
+              }
+            }
+            return alerts.data.length;
