@@ -60,9 +60,11 @@ jobs:
                   body: [
                     '## Security Vulnerability Detected',
                     '',
+                    `- **Rule ID:** ${alert.rule.id}`,
                     `- **Package:** ${alert.securityVulnerability.package.name}`,
                     `- **Severity:** ${alert.securityVulnerability.severity}`,
                     `- **Detected:** ${new Date(alert.createdAt).toDateString()}`,
+                    `- **Location:** ${alert.most_recent_instance.location.path}:${alert.most_recent_instance.location.start_line}`,
                     '',
                     '### Description',
                     alert.securityVulnerability.advisory.description,
