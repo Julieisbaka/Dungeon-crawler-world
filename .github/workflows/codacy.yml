@@ -46,6 +46,7 @@ jobs:
           # You can also omit the token and run the tools that support default configurations
           # Only pass the project-token if the secret exists
           # (If not set, Codacy CLI will run with default config)
+          # Uncomment and set the project-token if required for private repositories or specific configurations
           # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
           output: results.sarif
