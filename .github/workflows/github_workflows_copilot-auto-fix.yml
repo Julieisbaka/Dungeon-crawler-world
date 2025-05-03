@@ -17,6 +17,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }} # You must add this secret!
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,34 +43,72 @@ jobs:
 
       - name: Process and Fix Issues with Copilot CLI
         run: |
-          # For demo: only process first issue (customize for more)
-          ISSUE_TITLE=$(jq -r '.[0].title' issues.json)
-          ISSUE_NUMBER=$(jq -r '.[0].number' issues.json)
-          if [ -z "$ISSUE_TITLE" ]; then
-            echo "No issues to fix"
-            exit 0
-          fi
+          ISSUES=$(cat issues.json | jq -r '.[] | "\(.number) \(.title)"')
+          SCANS=$(cat scans.json | jq -r '.[] | "\(.number) \(.rule.id) \(.state)"')
 
-          BRANCH="autofix/issue-$ISSUE_NUMBER"
-          git checkout -b "$BRANCH"
+          for ISSUE in $ISSUES; do
+            ISSUE_NUMBER=$(echo $ISSUE | cut -d' ' -f1)
+            ISSUE_TITLE=$(echo $ISSUE | cut -d' ' -f2-)
+            if [ -z "$ISSUE_TITLE" ]; then
+              echo "No issues to fix"
+              continue
+            fi
 
-          # Generate a commit message and try to fix using Copilot CLI
-          echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
-          chmod +x copilot-command.sh
-          # You must authenticate Copilot CLI before use
-          echo $COPILOT_TOKEN | copilot auth login --stdin
+            BRANCH="autofix/issue-$ISSUE_NUMBER"
+            git checkout -b "$BRANCH"
 
-          # Attempt fix (this is pseudo; actual CLI usage may differ)
-          copilot suggest --fix --issue "$ISSUE_TITLE" --commit "fix: $ISSUE_TITLE [auto-copilot]"
+            # Generate a commit message and try to fix using Copilot CLI
+            echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
+            chmod +x copilot-command.sh
+            # You must authenticate Copilot CLI before use
+            echo $COPILOT_TOKEN | copilot auth login --stdin
 
-          # Push branch if there are changes
-          if [ -n "$(git status --porcelain)" ]; then
-            git push --set-upstream origin "$BRANCH"
-            gh pr create --title "Auto Copilot Fix: $ISSUE_TITLE" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
-          else
-            echo "No changes made by Copilot"
-          fi
+            # Attempt fix (this is pseudo; actual CLI usage may differ)
+            copilot suggest --fix --issue "$ISSUE_TITLE" --commit "fix: $ISSUE_TITLE [auto-copilot]"
 
-      # Optionally: Add similar steps for code scanning/security alerts
+            # Push branch if there are changes
+            if [ -n "$(git status --porcelain)" ]; then
+              git push --set-upstream origin "$BRANCH"
+              gh pr create --title "Auto Copilot Fix: $ISSUE_TITLE" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
+            else
+              echo "No changes made by Copilot for issue #$ISSUE_NUMBER"
+            fi
 
-    # You can expand this job to loop over multiple issues/alerts, and add error handling/logging.
+            # Clean up branch
+            git checkout main
+            git branch -D "$BRANCH"
+          done
+
+          for SCAN in $SCANS; do
+            SCAN_NUMBER=$(echo $SCAN | cut -d' ' -f1)
+            SCAN_RULE=$(echo $SCAN | cut -d' ' -f2)
+            SCAN_STATE=$(echo $SCAN | cut -d' ' -f3)
+            if [ "$SCAN_STATE" != "open" ]; then
+              echo "Scan alert #$SCAN_NUMBER is not open, skipping."
+              continue
+            fi
+
+            BRANCH="autofix/scan-$SCAN_NUMBER"
+            git checkout -b "$BRANCH"
+
+            # Generate a commit message and try to fix using Copilot CLI
+            echo "copilot suggest --fix --alert \"$SCAN_RULE\"" > copilot-command.sh
+            chmod +x copilot-command.sh
+            # You must authenticate Copilot CLI before use
+            echo $COPILOT_TOKEN | copilot auth login --stdin
+
+            # Attempt fix (this is pseudo; actual CLI usage may differ)
+            copilot suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
+
+            # Push branch if there are changes
+            if [ -n "$(git status --porcelain)" ]; then
+              git push --set-upstream origin "$BRANCH"
+              gh pr create --title "Auto Copilot Fix: $SCAN_RULE" --body "This PR fixes security alert #$SCAN_NUMBER using Copilot CLI." --head "$BRANCH"
+            else
+              echo "No changes made by Copilot for scan alert #$SCAN_NUMBER"
+            fi
+
+            # Clean up branch
+            git checkout main
+            git branch -D "$BRANCH"
+          done
