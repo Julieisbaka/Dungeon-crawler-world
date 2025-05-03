@@ -145,7 +145,11 @@ namespace Dungeon_Crawler_World.UI
 
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
-      if (Equals(objA: field, objB: value)) return false;
+      if (Equals(objA: field, objB: value))
+      {
+        return false;
+      }
+
       field = value;
       OnPropertyChanged(propertyName: propertyName);
       return true;
