@@ -1,1 +1,19 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Dungeon Crawler World Community Support
+    url: https://github.com/yourusername/Dungeon-crawler-world-11/discussions
+    about: Please ask and answer questions here.
+issue_templates:
+  - name: Bug Report
+    about: Report a bug in the game
+    template: bug_report.md
+    labels: [bug]
+  - name: Feature Request
+    about: Suggest a new feature or enhancement
+    template: feature_request.md
+    labels: [enhancement]
+  - name: Documentation Issue
+    about: Report issues in the documentation
+    template: documentation.md
+    labels: [documentation]
 

@@ -97,7 +97,7 @@ jobs:
             echo "copilot suggest --fix --alert \"$SCAN_RULE\"" > copilot-command.sh
             chmod +x copilot-command.sh
             # You must authenticate Copilot CLI before use
-            echo $COPILOT_TOKEN | github-copilot-cli auth login --stdin
+            echo $COPILOT_TOKEN | github-copilot-cli auth login
 
             # Attempt fix (this is pseudo; actual CLI usage may differ)
             github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
