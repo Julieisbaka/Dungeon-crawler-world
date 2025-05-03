@@ -1,3 +1,4 @@
+// #52
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -143,6 +144,16 @@ namespace Dungeon_Crawler_World.UI
       PropertyChanged?.Invoke(sender: this, e: new PropertyChangedEventArgs(propertyName: propertyName));
     }
 
+    // Note: The Equals method is used to compare the current and new values.
+    // For reference types, ensure that Equals is overridden appropriately to avoid performance issues.
+    // protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    /// Sets the value of a property and raises the PropertyChanged event if the value changes.
+    /// </summary>
+    /// <typeparam name="T">The type of the property.</typeparam>
+    /// <param name="field">A reference to the field storing the property's value.</param>
+    /// <param name="value">The new value to set.</param>
+    /// <param name="propertyName">The name of the property (automatically provided by the compiler).</param>
+    /// <returns>True if the value was changed; otherwise, false.</returns>
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
       if (Equals(objA: field, objB: value))
