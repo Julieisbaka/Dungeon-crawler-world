@@ -15,8 +15,8 @@ jobs:
   copilot-auto-fix:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }} # You must add this secret!
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Don't set COPILOT_TOKEN at the job level
 
     steps:
       - name: Checkout repository
@@ -40,10 +40,12 @@ jobs:
           gh api repos/${{ github.repository }}/code-scanning/alerts > scans.json
           # Optionally: Fetch Dependabot alerts (API preview required)
           # gh api repos/${{ github.repository }}/dependabot/alerts > dependabot.json
-          echo "::set-output name=issues::$(cat issues.json)"
-          echo "::set-output name=scans::$(cat scans.json)"
+          echo "issues=$(cat issues.json)" >> $GITHUB_OUTPUT
+          echo "scans=$(cat scans.json)" >> $GITHUB_OUTPUT
 
       - name: Process and Fix Issues with Copilot CLI
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }} # Set directly as GH_TOKEN at the step level
         run: |
           ISSUES=$(cat issues.json | jq -r '.[] | "\(.number) \(.title)"')
           SCANS=$(cat scans.json | jq -r '.[] | "\(.number) \(.rule.id) \(.state)"')
@@ -64,7 +66,7 @@ jobs:
               echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
               chmod +x copilot-command.sh
               # You must authenticate Copilot CLI before use
-              echo $COPILOT_TOKEN | github-copilot-cli auth login --stdin
+              github-copilot-cli auth
               if ! github-copilot-cli auth status > /dev/null 2>&1; then
                 echo "Error: Copilot CLI authentication failed. Exiting."
                 exit 1
@@ -103,7 +105,7 @@ jobs:
             echo "copilot suggest --fix --alert \"$SCAN_RULE\"" > copilot-command.sh
             chmod +x copilot-command.sh
             # You must authenticate Copilot CLI before use
-            echo $COPILOT_TOKEN | github-copilot-cli auth login
+            github-copilot-cli auth
             # Attempt fix using Copilot CLI. Refer to the official documentation for details: https://githubnext.com/github-copilot-cli/
             github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
             github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
