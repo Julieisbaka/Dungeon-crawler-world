@@ -49,37 +49,43 @@ jobs:
           SCANS=$(cat scans.json | jq -r '.[] | "\(.number) \(.rule.id) \(.state)"')
 
           for ISSUE in $ISSUES; do
-            ISSUE_NUMBER=$(echo $ISSUE | cut -d' ' -f1)
-            ISSUE_TITLE=$(echo $ISSUE | cut -d' ' -f2-)
-            if [ -z "$ISSUE_TITLE" ]; then
-              echo "No issues to fix"
-              continue
-            fi
+            (
+              ISSUE_NUMBER=$(echo $ISSUE | cut -d' ' -f1)
+              ISSUE_TITLE=$(echo $ISSUE | cut -d' ' -f2-)
+              if [ -z "$ISSUE_TITLE" ]; then
+                echo "No issues to fix"
+                exit 0
+              fi
 
-            BRANCH="autofix/issue-$ISSUE_NUMBER"
-            git checkout -b "$BRANCH"
+              BRANCH="autofix/issue-$ISSUE_NUMBER"
+              git checkout -b "$BRANCH"
 
-            # Generate a commit message and try to fix using Copilot CLI
-            echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
-            chmod +x copilot-command.sh
-            # You must authenticate Copilot CLI before use
-            echo $COPILOT_TOKEN | github-copilot-cli auth login --stdin
+              # Generate a commit message and try to fix using Copilot CLI
+              echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
+              chmod +x copilot-command.sh
+              # You must authenticate Copilot CLI before use
+              echo $COPILOT_TOKEN | github-copilot-cli auth login --stdin
+              if ! github-copilot-cli auth status > /dev/null 2>&1; then
+                echo "Error: Copilot CLI authentication failed. Exiting."
+                exit 1
+              fi
+              SANITIZED_ISSUE_TITLE=$(echo "$ISSUE_TITLE" | sed "s/'/'\\\\''/g")
+              github-copilot-cli suggest --fix --issue "'$SANITIZED_ISSUE_TITLE'" --commit "fix: $ISSUE_TITLE [auto-copilot]"
 
-            # Attempt fix (this is pseudo; actual CLI usage may differ)
-            github-copilot-cli suggest --fix --issue "$ISSUE_TITLE" --commit "fix: $ISSUE_TITLE [auto-copilot]"
+              # Push branch if there are changes
+              if [ -n "$(git status --porcelain)" ]; then
+                git push --set-upstream origin "$BRANCH"
+                gh pr create --title "Auto Copilot Fix: $ISSUE_TITLE" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
+              else
+                echo "No changes made by Copilot for issue #$ISSUE_NUMBER"
+              fi
 
-            # Push branch if there are changes
-            if [ -n "$(git status --porcelain)" ]; then
-              git push --set-upstream origin "$BRANCH"
-              gh pr create --title "Auto Copilot Fix: $ISSUE_TITLE" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
-            else
-              echo "No changes made by Copilot for issue #$ISSUE_NUMBER"
-            fi
-
-            # Clean up branch
-            git checkout main
-            git branch -D "$BRANCH"
+              # Clean up branch
+              git checkout main
+              git branch -D "$BRANCH"
+            ) &
           done
+          wait
 
           for SCAN in $SCANS; do
             SCAN_NUMBER=$(echo $SCAN | cut -d' ' -f1)
@@ -98,8 +104,8 @@ jobs:
             chmod +x copilot-command.sh
             # You must authenticate Copilot CLI before use
             echo $COPILOT_TOKEN | github-copilot-cli auth login
-
-            # Attempt fix (this is pseudo; actual CLI usage may differ)
+            # Attempt fix using Copilot CLI. Refer to the official documentation for details: https://githubnext.com/github-copilot-cli/
+            github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
             github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
 
             # Push branch if there are changes
