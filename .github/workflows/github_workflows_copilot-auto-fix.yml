@@ -69,14 +69,14 @@ jobs:
               fi
 
               BRANCH="autofix/issue-$ISSUE_NUMBER"
-              
+
               # Check if branch already exists
               if git show-ref --verify --quiet refs/heads/$BRANCH; then
                 echo "Branch $BRANCH already exists, deleting it first"
                 git checkout main
                 git branch -D "$BRANCH" || true
               fi
-              
+
               git checkout -b "$BRANCH"
 
               # Try to fix using Copilot CLI
@@ -110,14 +110,14 @@ jobs:
             fi
 
             BRANCH="autofix/scan-$SCAN_NUMBER"
-            
+
             # Check if branch already exists
             if git show-ref --verify --quiet refs/heads/$BRANCH; then
               echo "Branch $BRANCH already exists, deleting it first"
               git checkout main
               git branch -D "$BRANCH" || true
             fi
-            
+
             git checkout -b "$BRANCH"
 
             # Attempt fix using Copilot CLI
