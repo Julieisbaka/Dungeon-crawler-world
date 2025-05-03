@@ -53,4 +53,23 @@ document.addEventListener('DOMContentLoaded', function() {
   largeTextToggle.addEventListener('click', function() {
     document.body.classList.toggle('large-text');
   });
+
+  // Functionality to handle collapsible sections
+  const collapsibleButtons = document.querySelectorAll('.collapsible');
+  collapsibleButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const content = this.nextElementSibling;
+      content.classList.toggle('active');
+      this.setAttribute('aria-expanded', content.classList.contains('active'));
+    });
+  });
+
+  // Add ARIA attributes for accessibility to the collapsible sections
+  collapsibleButtons.forEach(button => {
+    const content = button.nextElementSibling;
+    button.setAttribute('aria-controls', content.id);
+    button.setAttribute('aria-expanded', false);
+    content.setAttribute('role', 'region');
+    content.setAttribute('aria-hidden', true);
+  });
 });
