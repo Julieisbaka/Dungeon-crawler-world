@@ -28,7 +28,9 @@ jobs:
           node-version: 20
 
       - name: Install GitHub Copilot CLI
-        run: npm install -g @githubnext/github-copilot-cli
+        run: |
+          npm install -g @githubnext/github-copilot-cli
+          echo "$(npm bin -g)" >> $GITHUB_PATH
 
       - name: Find open issues and security alerts
         id: get-issues
@@ -61,10 +63,10 @@ jobs:
             echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
             chmod +x copilot-command.sh
             # You must authenticate Copilot CLI before use
-            echo $COPILOT_TOKEN | copilot auth login --stdin
+            echo $COPILOT_TOKEN | github-copilot-cli auth login --stdin
 
             # Attempt fix (this is pseudo; actual CLI usage may differ)
-            copilot suggest --fix --issue "$ISSUE_TITLE" --commit "fix: $ISSUE_TITLE [auto-copilot]"
+            github-copilot-cli suggest --fix --issue "$ISSUE_TITLE" --commit "fix: $ISSUE_TITLE [auto-copilot]"
 
             # Push branch if there are changes
             if [ -n "$(git status --porcelain)" ]; then
@@ -95,10 +97,10 @@ jobs:
             echo "copilot suggest --fix --alert \"$SCAN_RULE\"" > copilot-command.sh
             chmod +x copilot-command.sh
             # You must authenticate Copilot CLI before use
-            echo $COPILOT_TOKEN | copilot auth login --stdin
+            echo $COPILOT_TOKEN | github-copilot-cli auth login --stdin
 
             # Attempt fix (this is pseudo; actual CLI usage may differ)
-            copilot suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
+            github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
 
             # Push branch if there are changes
             if [ -n "$(git status --porcelain)" ]; then
