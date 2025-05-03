@@ -27,8 +27,7 @@ where players explore dungeons, fight monsters,
 and collect treasures.
 Our goal is to create an immersive and engaging experience.
 
-Information about Dungeon crawler Carl can be found on the [Dungeon crawler carl]
-(<https://dungeon-crawler-carl.fandom.com>) wiki.
+Information about Dungeon Crawler Carl can be found on the [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com).
 
 ## Game Features and Objectives
 
@@ -111,6 +110,8 @@ For any questions or feedback, please open an issue on GitHub or contact the
 project maintainers.
 
 ## Changelog
+
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/36>
 
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/55>
 
