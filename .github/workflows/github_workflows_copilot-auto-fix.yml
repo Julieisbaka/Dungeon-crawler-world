@@ -1,0 +1,75 @@
+name: Auto Fix Issues and Security Problems with Copilot
+
+on:
+  workflow_dispatch:      # Manual trigger
+  schedule:
+    - cron: "0 2 * * *"   # Every day at 2am UTC
+
+permissions:
+  contents: write         # For pushing branches
+  issues: read            # For reading issues
+  pull-requests: write    # For creating PRs
+  security-events: read   # For reading code scanning alerts
+
+jobs:
+  copilot-auto-fix:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }} # You must add this secret!
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (required for Copilot CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @githubnext/github-copilot-cli
+
+      - name: Find open issues and security alerts
+        id: get-issues
+        run: |
+          # Get open issues (title+number) and open code scanning alerts (summaries)
+          gh issue list --state open --json number,title,labels > issues.json
+          gh api repos/${{ github.repository }}/code-scanning/alerts > scans.json
+          # Optionally: Fetch Dependabot alerts (API preview required)
+          # gh api repos/${{ github.repository }}/dependabot/alerts > dependabot.json
+          echo "::set-output name=issues::$(cat issues.json)"
+          echo "::set-output name=scans::$(cat scans.json)"
+
+      - name: Process and Fix Issues with Copilot CLI
+        run: |
+          # For demo: only process first issue (customize for more)
+          ISSUE_TITLE=$(jq -r '.[0].title' issues.json)
+          ISSUE_NUMBER=$(jq -r '.[0].number' issues.json)
+          if [ -z "$ISSUE_TITLE" ]; then
+            echo "No issues to fix"
+            exit 0
+          fi
+
+          BRANCH="autofix/issue-$ISSUE_NUMBER"
+          git checkout -b "$BRANCH"
+
+          # Generate a commit message and try to fix using Copilot CLI
+          echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
+          chmod +x copilot-command.sh
+          # You must authenticate Copilot CLI before use
+          echo $COPILOT_TOKEN | copilot auth login --stdin
+
+          # Attempt fix (this is pseudo; actual CLI usage may differ)
+          copilot suggest --fix --issue "$ISSUE_TITLE" --commit "fix: $ISSUE_TITLE [auto-copilot]"
+
+          # Push branch if there are changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git push --set-upstream origin "$BRANCH"
+            gh pr create --title "Auto Copilot Fix: $ISSUE_TITLE" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
+          else
+            echo "No changes made by Copilot"
+          fi
+
+      # Optionally: Add similar steps for code scanning/security alerts
+
+    # You can expand this job to loop over multiple issues/alerts, and add error handling/logging.
