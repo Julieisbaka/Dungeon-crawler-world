@@ -45,50 +45,61 @@ jobs:
 
       - name: Process and Fix Issues with Copilot CLI
         env:
-          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }} # Set directly as GH_TOKEN at the step level
+          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
         run: |
+          # Authenticate once at the beginning
+          echo "Authenticating with Copilot CLI..."
+          github-copilot-cli auth
+          if ! github-copilot-cli auth status > /dev/null 2>&1; then
+            echo "Error: Copilot CLI authentication failed. Exiting."
+            exit 1
+          fi
+
           ISSUES=$(cat issues.json | jq -r '.[] | "\(.number) \(.title)"')
           SCANS=$(cat scans.json | jq -r '.[] | "\(.number) \(.rule.id) \(.state)"')
 
+          # Process issues
           for ISSUE in $ISSUES; do
             (
               ISSUE_NUMBER=$(echo $ISSUE | cut -d' ' -f1)
               ISSUE_TITLE=$(echo $ISSUE | cut -d' ' -f2-)
               if [ -z "$ISSUE_TITLE" ]; then
                 echo "No issues to fix"
-                exit 0
+                continue
               fi
 
               BRANCH="autofix/issue-$ISSUE_NUMBER"
+              
+              # Check if branch already exists
+              if git show-ref --verify --quiet refs/heads/$BRANCH; then
+                echo "Branch $BRANCH already exists, deleting it first"
+                git checkout main
+                git branch -D "$BRANCH" || true
+              fi
+              
               git checkout -b "$BRANCH"
 
-              # Generate a commit message and try to fix using Copilot CLI
-              echo "copilot suggest --fix --issue \"$ISSUE_TITLE\"" > copilot-command.sh
-              chmod +x copilot-command.sh
-              # You must authenticate Copilot CLI before use
-              github-copilot-cli auth
-              if ! github-copilot-cli auth status > /dev/null 2>&1; then
-                echo "Error: Copilot CLI authentication failed. Exiting."
-                exit 1
-              fi
+              # Try to fix using Copilot CLI
               SANITIZED_ISSUE_TITLE=$(echo "$ISSUE_TITLE" | sed "s/'/'\\\\''/g")
-              github-copilot-cli suggest --fix --issue "'$SANITIZED_ISSUE_TITLE'" --commit "fix: $ISSUE_TITLE [auto-copilot]"
+              echo "Attempting to fix issue #$ISSUE_NUMBER: $SANITIZED_ISSUE_TITLE"
+              github-copilot-cli suggest --fix --issue "$SANITIZED_ISSUE_TITLE" --commit "fix: Issue #$ISSUE_NUMBER [auto-copilot]"
 
               # Push branch if there are changes
               if [ -n "$(git status --porcelain)" ]; then
-                git push --set-upstream origin "$BRANCH"
-                gh pr create --title "Auto Copilot Fix: $ISSUE_TITLE" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
+                git push --set-upstream origin "$BRANCH" --force
+                gh pr create --title "Auto Copilot Fix: Issue #$ISSUE_NUMBER" --body "This PR fixes issue #$ISSUE_NUMBER using Copilot CLI." --head "$BRANCH"
               else
                 echo "No changes made by Copilot for issue #$ISSUE_NUMBER"
               fi
 
-              # Clean up branch
+              # Clean up
               git checkout main
-              git branch -D "$BRANCH"
+              git branch -D "$BRANCH" || true
             ) &
           done
           wait
 
+          # Process security scans
           for SCAN in $SCANS; do
             SCAN_NUMBER=$(echo $SCAN | cut -d' ' -f1)
             SCAN_RULE=$(echo $SCAN | cut -d' ' -f2)
@@ -99,26 +110,29 @@ jobs:
             fi
 
             BRANCH="autofix/scan-$SCAN_NUMBER"
+            
+            # Check if branch already exists
+            if git show-ref --verify --quiet refs/heads/$BRANCH; then
+              echo "Branch $BRANCH already exists, deleting it first"
+              git checkout main
+              git branch -D "$BRANCH" || true
+            fi
+            
             git checkout -b "$BRANCH"
 
-            # Generate a commit message and try to fix using Copilot CLI
-            echo "copilot suggest --fix --alert \"$SCAN_RULE\"" > copilot-command.sh
-            chmod +x copilot-command.sh
-            # You must authenticate Copilot CLI before use
-            github-copilot-cli auth
-            # Attempt fix using Copilot CLI. Refer to the official documentation for details: https://githubnext.com/github-copilot-cli/
-            github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
-            github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: $SCAN_RULE [auto-copilot]"
+            # Attempt fix using Copilot CLI
+            echo "Attempting to fix security alert #$SCAN_NUMBER: $SCAN_RULE"
+            github-copilot-cli suggest --fix --alert "$SCAN_RULE" --commit "fix: Security Alert #$SCAN_NUMBER [auto-copilot]"
 
             # Push branch if there are changes
             if [ -n "$(git status --porcelain)" ]; then
-              git push --set-upstream origin "$BRANCH"
-              gh pr create --title "Auto Copilot Fix: $SCAN_RULE" --body "This PR fixes security alert #$SCAN_NUMBER using Copilot CLI." --head "$BRANCH"
+              git push --set-upstream origin "$BRANCH" --force
+              gh pr create --title "Auto Copilot Fix: Security Alert #$SCAN_NUMBER" --body "This PR fixes security alert #$SCAN_NUMBER using Copilot CLI." --head "$BRANCH"
             else
               echo "No changes made by Copilot for scan alert #$SCAN_NUMBER"
             fi
 
-            # Clean up branch
+            # Clean up
             git checkout main
-            git branch -D "$BRANCH"
+            git branch -D "$BRANCH" || true
           done
