@@ -79,6 +79,14 @@ namespace Dungeon_Crawler_World.UI
         sound = settings.PhysicalSound
       };
 
+      // Validate shader config against schema
+      string error;
+      if (!SettingsPage.ValidateShaderConfig(shaderConfig, out error))
+      {
+        MessageBox.Show($"Shader config validation failed:\n{error}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        return;
+      }
+
       // Save shader config to separate file
       string shaderConfigPath = Path.Combine(path1: CONFIG_DIR, path2: "shader_config.json");
       string shaderConfigJson = JsonSerializer.Serialize(value: shaderConfig, options: options);
