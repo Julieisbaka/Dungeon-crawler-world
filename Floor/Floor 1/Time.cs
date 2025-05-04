@@ -62,7 +62,7 @@ namespace Dungeon_Crawler_World.Floor.Floor1
       }
 
       // Create and save time data
-      TimeData timeData = new TimeData() { Hours = hours };
+      TimeData timeData = new TimeData { Hours = hours };
       string json = JsonSerializer.Serialize(value: timeData);
       File.WriteAllText(path: TIME_FILE_PATH, contents: json);
     }

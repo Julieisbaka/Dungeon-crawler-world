@@ -32,11 +32,17 @@ namespace Dungeon_Crawler_World.UI
       int floorTime = TimeManager.LoadOrCreateTime();
 
       // Create a user-friendly message showing the stats and time
-      string statsMessage = "New game started!\n\nFloor Time: " + floorTime + ":00\n\nStats:";
+      System.Text.StringBuilder sb = new System.Text.StringBuilder();
+      sb.AppendLine(value: "New game started!");
+      sb.AppendLine();
+      sb.AppendLine(handler: $"Floor Time: {floorTime}:00");
+      sb.AppendLine();
+      sb.AppendLine(value: "Stats:");
       foreach (KeyValuePair<string, int> stat in stats)
       {
-        statsMessage += $"\n- {char.ToUpper(c: stat.Key[index: 0]) + stat.Key[1..]}: {stat.Value}";
+        sb.AppendLine(handler: $"- {char.ToUpper(c: stat.Key[index: 0]) + stat.Key[1..]}: {stat.Value}");
       }
+      string statsMessage = sb.ToString();
 
       MessageBox.Show(messageBoxText: statsMessage,
           caption: "Game Started",
