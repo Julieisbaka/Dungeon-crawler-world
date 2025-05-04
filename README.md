@@ -111,6 +111,14 @@ project maintainers.
 
 ## Changelog
 
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/73>
+
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/72>
+
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/71>
+
+Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/70>
+
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/39>
 
 Merged <https://github.com/Julieisbaka/Dungeon-crawler-world/pull/68>
