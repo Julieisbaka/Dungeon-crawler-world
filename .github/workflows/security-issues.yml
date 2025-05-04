@@ -32,8 +32,19 @@ jobs:
                       severity
                       advisory {
                         description
+                        summary
+                        cvss {
+                          score
+                          vectorString
+                        }
                         references { url }
+                        publishedAt
+                        identifiers {
+                          type
+                          value
+                        }
                       }
+                      vulnerableVersionRange
                     }
                     createdAt
                   }
@@ -50,9 +61,38 @@ jobs:
               labels: ['security-vulnerability']
             });
             for (const alert of alerts) {
-              const issueTitle = `Security Alert: ${alert.securityVulnerability.package.name}`;
-              const existingIssue = issues.data.find(issue => issue.title === issueTitle);
+              // Create a more descriptive title by using CVE ID or a summarized description
+              let cveId = "Unknown";
+              if (alert.securityVulnerability.advisory.identifiers) {
+                const cveIdentifier = alert.securityVulnerability.advisory.identifiers.find(id => id.type === 'CVE');
+                if (cveIdentifier) cveId = cveIdentifier.value;
+              }
+              
+              // Create a human-readable title
+              let title = alert.securityVulnerability.advisory.summary || 
+                         alert.securityVulnerability.advisory.description.substring(0, 60).trim() + '...';
+              
+              const issueTitle = `Security: ${alert.securityVulnerability.package.name} - ${cveId} - ${title}`;
+              
+              const existingIssue = issues.data.find(issue => 
+                issue.title.includes(alert.securityVulnerability.package.name) && 
+                issue.title.includes(cveId));
+                
               if (!existingIssue) {
+                // Format published date if available
+                const publishedDate = alert.securityVulnerability.advisory.publishedAt ? 
+                  new Date(alert.securityVulnerability.advisory.publishedAt).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                  }) : 'Unknown';
+                
+                // Get CVSS score and vector
+                const cvssScore = alert.securityVulnerability.advisory.cvss?.score || 'N/A';
+                const cvssVector = alert.securityVulnerability.advisory.cvss?.vectorString || 'N/A';
+                
+                // Get all identifiers
+                const identifiers = alert.securityVulnerability.advisory.identifiers ? 
+                  alert.securityVulnerability.advisory.identifiers.map(id => `${id.type}: ${id.value}`).join('\n- ') : 'None';
+                
                 await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -60,11 +100,18 @@ jobs:
                   body: [
                     '## Security Vulnerability Detected',
                     '',
-                    `- **Rule ID:** ${alert.rule.id}`,
                     `- **Package:** ${alert.securityVulnerability.package.name}`,
                     `- **Severity:** ${alert.securityVulnerability.severity}`,
-                    `- **Detected:** ${new Date(alert.createdAt).toDateString()}`,
-                    `- **Location:** ${alert.most_recent_instance.location.path}:${alert.most_recent_instance.location.start_line}`,
+                    `- **CVSS Score:** ${cvssScore}`,
+                    `- **CVSS Vector:** ${cvssVector}`,
+                    `- **Vulnerable Version Range:** ${alert.securityVulnerability.vulnerableVersionRange || 'Unknown'}`,
+                    `- **Published:** ${publishedDate}`,
+                    `- **Detected:** ${new Date(alert.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'long', day: 'numeric'
+                    })}`,
+                    '',
+                    '### Identifiers',
+                    `- ${identifiers}`,
                     '',
                     '### Description',
                     alert.securityVulnerability.advisory.description,
@@ -72,11 +119,16 @@ jobs:
                     '### References',
                     ...(alert.securityVulnerability.advisory.references.map(ref => `- ${ref.url}`)),
                     '',
+                    '### Recommended Actions',
+                    '1. Upgrade the affected package to a patched version',
+                    '2. If not possible, consider adding mitigations',
+                    '3. Document any decisions made regarding this vulnerability',
+                    '',
                     'Please address this security vulnerability as soon as possible.'
                   ].join('\n'),
-                  labels: ['security-vulnerability', alert.securityVulnerability.severity.toLowerCase()],
+                  labels: ['security-vulnerability', alert.securityVulnerability.severity.toLowerCase(), 'dependencies'],
                 });
-                console.log(`Created issue for ${alert.securityVulnerability.package.name}`);
+                console.log(`Created issue for ${alert.securityVulnerability.package.name} (${cveId})`);
               }
             }
             return alerts.length;
@@ -98,9 +150,35 @@ jobs:
               labels: ['code-scanning-alert']
             });
             for (const alert of alerts.data) {
-              const issueTitle = `Code Scanning Alert: ${alert.rule.id}`;
-              const existingIssue = issues.data.find(issue => issue.title === issueTitle);
+              // Create a more descriptive title from the rule description or name
+              const ruleShortDesc = alert.rule.description.length > 80 ? 
+                alert.rule.description.substring(0, 80).trim() + '...' : 
+                alert.rule.description;
+              
+              // Include file location in title to make it more specific
+              const filePathParts = alert.most_recent_instance.location.path.split('/');
+              const fileName = filePathParts[filePathParts.length - 1];
+              
+              const issueTitle = `Security: ${fileName} - ${ruleShortDesc}`;
+              
+              const existingIssue = issues.data.find(issue => 
+                issue.title.includes(fileName) && 
+                issue.title.includes(alert.rule.id));
+                
               if (!existingIssue) {
+                // Get affected code if available
+                let codeSnippet = '';
+                if (alert.most_recent_instance.location.start_line && alert.most_recent_instance.location.end_line) {
+                  codeSnippet = `\`\`\`\n// Code snippet from lines ${alert.most_recent_instance.location.start_line}-${alert.most_recent_instance.location.end_line}\n`;
+                  codeSnippet += `// This is a placeholder. GitHub API doesn't provide the actual code.\n\`\`\``;
+                }
+                
+                // Get additional details for more complete issue
+                const ruleTags = alert.rule.tags ? alert.rule.tags.join(', ') : 'None';
+                const alertCreatedAt = new Date(alert.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric', month: 'long', day: 'numeric'
+                });
+                
                 await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -109,18 +187,38 @@ jobs:
                     '## Code Scanning Alert',
                     '',
                     `- **Rule ID:** ${alert.rule.id}`,
+                    `- **Rule Name:** ${alert.rule.name || 'N/A'}`,
                     `- **Severity:** ${alert.rule.severity}`,
-                    `- **Description:** ${alert.rule.description}`,
-                    `- **Location:** ${alert.most_recent_instance.location.path}:${alert.most_recent_instance.location.start_line}`,
+                    `- **Security Level:** ${alert.rule.security_severity_level || 'N/A'}`,
+                    `- **Tags:** ${ruleTags}`,
+                    `- **Created:** ${alertCreatedAt}`,
+                    `- **File Location:** [${alert.most_recent_instance.location.path}:${alert.most_recent_instance.location.start_line}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${alert.most_recent_instance.location.path}#L${alert.most_recent_instance.location.start_line})`,
                     '',
-                    '### Details',
-                    `${alert.most_recent_instance.message.text}`,
+                    '### Description',
+                    alert.rule.description,
+                    '',
+                    '### Alert Message',
+                    alert.most_recent_instance.message.text,
+                    '',
+                    '### Affected Code',
+                    codeSnippet,
+                    '',
+                    '### Recommended Fix',
+                    alert.rule.help || 'Not provided in the alert data.',
+                    '',
+                    '### References',
+                    `${alert.rule.help_uri ? `- [Rule Documentation](${alert.rule.help_uri})` : '- No documentation URL provided.'}`,
+                    '',
+                    '### Recommended Actions',
+                    '1. Review the affected code',
+                    '2. Implement the suggested fix',
+                    '3. Run code scanning again to verify the issue is resolved',
                     '',
                     'Please address this security issue as soon as possible.'
                   ].join('\n'),
-                  labels: ['code-scanning-alert', alert.rule.severity?.toLowerCase() || 'unknown'],
+                  labels: ['code-scanning-alert', alert.rule.severity?.toLowerCase() || 'unknown', 'security'],
                 });
-                console.log(`Created issue for code scanning alert: ${alert.rule.id}`);
+                console.log(`Created issue for code scanning alert: ${alert.rule.id} in ${fileName}`);
               }
             }
             return alerts.data.length;
