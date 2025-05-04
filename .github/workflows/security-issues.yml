@@ -6,9 +6,9 @@ on:
     - cron: '0 0 * * *'  # Run daily at midnight UTC
 
 permissions:
-  security-events: read     # Read vulnerabilities
-  issues: write             # Create issues
-  contents: read            # Read code-scanning alerts
+  security-events: read
+  issues: write
+  contents: read
 
 jobs:
   find-and-create-issues:
@@ -33,16 +33,10 @@ jobs:
                       advisory {
                         description
                         summary
-                        cvss {
-                          score
-                          vectorString
-                        }
+                        cvss { score vectorString }
                         references { url }
                         publishedAt
-                        identifiers {
-                          type
-                          value
-                        }
+                        identifiers { type value }
                       }
                       vulnerableVersionRange
                     }
@@ -51,6 +45,7 @@ jobs:
                 }
               }
             }`;
+            
             const variables = { owner: context.repo.owner, repo: context.repo.repo };
             const result = await github.graphql(query, variables);
             const alerts = result.repository.vulnerabilityAlerts.nodes;
@@ -60,75 +55,141 @@ jobs:
               state: 'open',
               labels: ['security-vulnerability']
             });
+            
             for (const alert of alerts) {
-              // Create a more descriptive title by using CVE ID or a summarized description
-              let cveId = "Unknown";
-              if (alert.securityVulnerability.advisory.identifiers) {
+              // Get CVE ID or other primary identifier
+              let primaryId = "Unknown";
+              let allIds = [];
+              
+              if (alert.securityVulnerability.advisory.identifiers && 
+                  alert.securityVulnerability.advisory.identifiers.length > 0) {
+                
+                // First try to get a CVE
                 const cveIdentifier = alert.securityVulnerability.advisory.identifiers.find(id => id.type === 'CVE');
-                if (cveIdentifier) cveId = cveIdentifier.value;
+                if (cveIdentifier) {
+                  primaryId = cveIdentifier.value;
+                } else {
+                  // Fall back to any other identifier
+                  primaryId = `${alert.securityVulnerability.advisory.identifiers[0].type}:${alert.securityVulnerability.advisory.identifiers[0].value}`;
+                }
+                
+                // Store all identifiers
+                allIds = alert.securityVulnerability.advisory.identifiers.map(id => `${id.type}: ${id.value}`);
               }
               
-              // Create a human-readable title
-              let title = alert.securityVulnerability.advisory.summary || 
-                         alert.securityVulnerability.advisory.description.substring(0, 60).trim() + '...';
+              // Create a concise title (max 80 chars)
+              const pkgName = alert.securityVulnerability.package.name;
+              const shortSummary = (alert.securityVulnerability.advisory.summary || 
+                                   alert.securityVulnerability.advisory.description || 
+                                   "Security vulnerability")
+                                   .substring(0, 40).trim();
               
-              const issueTitle = `Security: ${alert.securityVulnerability.package.name} - ${cveId} - ${title}`;
+              const issueTitle = `Security: ${pkgName} (${primaryId.split('-')[0]}) - ${shortSummary}`;
               
+              // Check for existing issues to avoid duplicates
               const existingIssue = issues.data.find(issue => 
-                issue.title.includes(alert.securityVulnerability.package.name) && 
-                issue.title.includes(cveId));
+                issue.title.includes(pkgName) && 
+                issue.body.includes(primaryId));
                 
               if (!existingIssue) {
-                // Format published date if available
-                const publishedDate = alert.securityVulnerability.advisory.publishedAt ? 
-                  new Date(alert.securityVulnerability.advisory.publishedAt).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                  }) : 'Unknown';
-                
-                // Get CVSS score and vector
-                const cvssScore = alert.securityVulnerability.advisory.cvss?.score || 'N/A';
-                const cvssVector = alert.securityVulnerability.advisory.cvss?.vectorString || 'N/A';
-                
-                // Get all identifiers
-                const identifiers = alert.securityVulnerability.advisory.identifiers ? 
-                  alert.securityVulnerability.advisory.identifiers.map(id => `${id.type}: ${id.value}`).join('\n- ') : 'None';
-                
-                await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: issueTitle,
-                  body: [
-                    '## Security Vulnerability Detected',
-                    '',
-                    `- **Package:** ${alert.securityVulnerability.package.name}`,
-                    `- **Severity:** ${alert.securityVulnerability.severity}`,
-                    `- **CVSS Score:** ${cvssScore}`,
-                    `- **CVSS Vector:** ${cvssVector}`,
-                    `- **Vulnerable Version Range:** ${alert.securityVulnerability.vulnerableVersionRange || 'Unknown'}`,
-                    `- **Published:** ${publishedDate}`,
-                    `- **Detected:** ${new Date(alert.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'long', day: 'numeric'
-                    })}`,
-                    '',
-                    '### Identifiers',
-                    `- ${identifiers}`,
-                    '',
-                    '### Description',
-                    alert.securityVulnerability.advisory.description,
-                    '',
-                    '### References',
-                    ...(alert.securityVulnerability.advisory.references.map(ref => `- ${ref.url}`)),
-                    '',
-                    '### Recommended Actions',
-                    '1. Upgrade the affected package to a patched version',
-                    '2. If not possible, consider adding mitigations',
-                    '3. Document any decisions made regarding this vulnerability',
-                    '',
-                    'Please address this security vulnerability as soon as possible.'
-                  ].join('\n'),
-                  labels: ['security-vulnerability', alert.securityVulnerability.severity.toLowerCase(), 'dependencies'],
-                });
-                console.log(`Created issue for ${alert.securityVulnerability.package.name} (${cveId})`);
+                try {
+                  // Format dates
+                  const publishedDate = alert.securityVulnerability.advisory.publishedAt ? 
+                    new Date(alert.securityVulnerability.advisory.publishedAt).toISOString().split('T')[0] : 'Unknown';
+                  const detectedDate = new Date(alert.createdAt).toISOString().split('T')[0];
+                  
+                  // Get CVSS data
+                  const cvssScore = alert.securityVulnerability.advisory.cvss?.score || 'N/A';
+                  const cvssVector = alert.securityVulnerability.advisory.cvss?.vectorString || 'N/A';
+                  
+                  // Fetch additional vulnerability information from OSV API if available
+                  let osvData = "";
+                  if (primaryId.startsWith('CVE-')) {
+                    try {
+                      const osvResponse = await fetch(`https://api.osv.dev/v1/vulns/${primaryId}`);
+                      if (osvResponse.ok) {
+                        const osvInfo = await osvResponse.json();
+                        if (osvInfo.affected) {
+                          const affectedVersions = osvInfo.affected
+                            .filter(a => a.package?.name === pkgName)
+                            .map(a => a.ranges?.map(r => `${r.type} ${r.events.map(e => e.introduced || e.fixed).join(' to ')}`))
+                            .flat()
+                            .join(', ');
+                          
+                          osvData = [
+                            '### Additional Information from OSV',
+                            `- **Affected Versions**: ${affectedVersions || 'Not specified'}`,
+                            `- **Database Specific**: ${osvInfo.database_specific?.severity || 'Not available'}`,
+                            `- **More Details**: [OSV.dev entry](https://osv.dev/${primaryId})`,
+                            ''
+                          ].join('\n');
+                        }
+                      }
+                    } catch (e) {
+                      console.log(`Failed to fetch OSV data: ${e.message}`);
+                    }
+                  }
+                  
+                  // Determine risk level based on CVSS score
+                  let riskLevel = "Unknown";
+                  if (cvssScore !== 'N/A') {
+                    const score = parseFloat(cvssScore);
+                    if (score >= 9.0) riskLevel = "Critical";
+                    else if (score >= 7.0) riskLevel = "High";
+                    else if (score >= 4.0) riskLevel = "Medium";
+                    else riskLevel = "Low";
+                  } else {
+                    riskLevel = alert.securityVulnerability.severity;
+                  }
+                  
+                  // Create issue body
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: issueTitle,
+                    body: [
+                      `## Security Vulnerability (${riskLevel} Risk)`,
+                      '',
+                      `- **Package:** ${pkgName}`,
+                      `- **Severity:** ${alert.securityVulnerability.severity}`,
+                      `- **CVSS Score:** ${cvssScore} (${riskLevel})`,
+                      `- **CVSS Vector:** \`${cvssVector}\``,
+                      `- **Vulnerable Version:** ${alert.securityVulnerability.vulnerableVersionRange || 'Unknown'}`,
+                      `- **Published:** ${publishedDate}`,
+                      `- **Detected:** ${detectedDate}`,
+                      '',
+                      '### Identifiers',
+                      allIds.length > 0 ? allIds.map(id => `- ${id}`).join('\n') : '- None available',
+                      '',
+                      '### Description',
+                      alert.securityVulnerability.advisory.description || 'No description available',
+                      '',
+                      '### References',
+                      ...(alert.securityVulnerability.advisory.references?.map(ref => `- ${ref.url}`) || ['No references available']),
+                      '',
+                      osvData,
+                      '### Remediation',
+                      '1. **Update Package**: Upgrade to a non-vulnerable version as soon as possible',
+                      '2. **Temporary Mitigation**: If updating is not immediately possible:',
+                      '   - Consider using a different package',
+                      '   - Add input validation/sanitization if it addresses the vulnerability',
+                      '   - Limit access to affected components',
+                      '',
+                      '### Follow-up Actions',
+                      '- [ ] Assess impact on our application',
+                      '- [ ] Update the vulnerable package',
+                      '- [ ] Verify the fix is working',
+                      '- [ ] Document remediation for security compliance',
+                      '',
+                      `> Alert created automatically by the security workflow. Alert ID: ${alert.id.substring(0, 8)}`,
+                    ].join('\n'),
+                    labels: ['security-vulnerability', alert.securityVulnerability.severity.toLowerCase(), 'dependencies', `risk:${riskLevel.toLowerCase()}`],
+                  });
+                  
+                  console.log(`Created issue for ${pkgName} (${primaryId})`);
+                } catch (error) {
+                  console.error(`Error creating issue for ${pkgName}: ${error.message}`);
+                }
               }
             }
             return alerts.length;
@@ -143,82 +204,124 @@ jobs:
               repo: context.repo.repo,
               state: 'open'
             });
+            
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
               labels: ['code-scanning-alert']
             });
+            
             for (const alert of alerts.data) {
-              // Create a more descriptive title from the rule description or name
-              const ruleShortDesc = alert.rule.description.length > 80 ? 
-                alert.rule.description.substring(0, 80).trim() + '...' : 
-                alert.rule.description;
-              
-              // Include file location in title to make it more specific
-              const filePathParts = alert.most_recent_instance.location.path.split('/');
-              const fileName = filePathParts[filePathParts.length - 1];
-              
-              const issueTitle = `Security: ${fileName} - ${ruleShortDesc}`;
-              
-              const existingIssue = issues.data.find(issue => 
-                issue.title.includes(fileName) && 
-                issue.title.includes(alert.rule.id));
+              try {
+                // Create a concise, readable title (max 80 chars)
+                const ruleName = alert.rule.name || alert.rule.id;
+                const filePathParts = alert.most_recent_instance.location.path.split('/');
+                const fileName = filePathParts[filePathParts.length - 1];
+                const lineNumber = alert.most_recent_instance.location.start_line;
                 
-              if (!existingIssue) {
-                // Get affected code if available
-                let codeSnippet = '';
-                if (alert.most_recent_instance.location.start_line && alert.most_recent_instance.location.end_line) {
-                  codeSnippet = `\`\`\`\n// Code snippet from lines ${alert.most_recent_instance.location.start_line}-${alert.most_recent_instance.location.end_line}\n`;
-                  codeSnippet += `// This is a placeholder. GitHub API doesn't provide the actual code.\n\`\`\``;
+                // Create a short issue title that's informative but not too long
+                const issueTitle = `Code Alert: ${fileName}:${lineNumber} - ${ruleName.substring(0, 50)}`;
+                
+                // Check for existing issues
+                const existingIssue = issues.data.find(issue => 
+                  issue.body.includes(alert.rule.id) && 
+                  issue.body.includes(fileName) &&
+                  issue.body.includes(`line ${lineNumber}`));
+                  
+                if (!existingIssue) {
+                  // Get CWE information if available
+                  let cweInfo = "";
+                  if (alert.rule.tags) {
+                    const cweTags = alert.rule.tags.filter(tag => tag.startsWith('CWE-'));
+                    if (cweTags.length > 0) {
+                      const cweIds = cweTags.join(', ');
+                      try {
+                        cweInfo = [
+                          '### CWE Information',
+                          `- **CWE IDs**: ${cweIds}`,
+                          `- **Resources**: [MITRE CWE Database](https://cwe.mitre.org/data/definitions/${cweTags[0].replace('CWE-', '')}.html)`,
+                          ''
+                        ].join('\n');
+                      } catch (e) {
+                        console.log(`Failed to get CWE info: ${e.message}`);
+                      }
+                    }
+                  }
+                  
+                  // Determine security level with a fallback
+                  const securityLevel = alert.rule.security_severity_level || 
+                                       (alert.rule.severity === 'error' ? 'high' : 
+                                        alert.rule.severity === 'warning' ? 'medium' : 'low');
+                  
+                  // Format creation date
+                  const alertCreatedAt = new Date(alert.created_at).toISOString().split('T')[0];
+                  
+                  // Prepare rule tags in a readable format
+                  const ruleTags = alert.rule.tags ? 
+                    alert.rule.tags.map(tag => `\`${tag}\``).join(', ') : 
+                    'None';
+                  
+                  // Create better remediation advice based on rule info
+                  let remediationSteps = alert.rule.help ? 
+                    alert.rule.help : 
+                    'Review the code and fix the identified security issue.';
+                    
+                  // Add code pattern suggestions based on rule type
+                  if (alert.rule.tags) {
+                    if (alert.rule.tags.includes('sql-injection')) {
+                      remediationSteps += '\n\n**Suggestion**: Use parameterized queries instead of string concatenation.';
+                    } else if (alert.rule.tags.includes('xss')) {
+                      remediationSteps += '\n\n**Suggestion**: Use appropriate output encoding and content security policies.';
+                    } else if (alert.rule.tags.some(t => t.includes('injection'))) {
+                      remediationSteps += '\n\n**Suggestion**: Validate and sanitize all inputs before use.';
+                    }
+                  }
+                  
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: issueTitle,
+                    body: [
+                      `## Code Scanning Alert: ${securityLevel.toUpperCase()} Severity`,
+                      '',
+                      `- **Rule ID**: ${alert.rule.id}`,
+                      `- **Rule Name**: ${alert.rule.name || 'N/A'}`,
+                      `- **Severity**: ${alert.rule.severity || 'N/A'}`,
+                      `- **Security Level**: ${securityLevel}`,
+                      `- **Created**: ${alertCreatedAt}`,
+                      `- **File**: [${alert.most_recent_instance.location.path}:${lineNumber}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${alert.most_recent_instance.location.path}#L${lineNumber})`,
+                      `- **Tool**: ${alert.tool.name} ${alert.tool.version || ''}`,
+                      `- **Tags**: ${ruleTags}`,
+                      '',
+                      '### Description',
+                      alert.rule.description || alert.most_recent_instance.message.text,
+                      '',
+                      '### Alert Message',
+                      alert.most_recent_instance.message.text,
+                      '',
+                      cweInfo,
+                      '### Remediation',
+                      remediationSteps,
+                      '',
+                      '### References',
+                      `${alert.rule.help_uri ? `- [Rule Documentation](${alert.rule.help_uri})` : '- No documentation available.'}`,
+                      '',
+                      '### Follow-up Actions',
+                      '- [ ] Review the vulnerable code',
+                      '- [ ] Apply the recommended fix',
+                      '- [ ] Add tests to prevent regression',
+                      '- [ ] Run code scanning again to verify fix',
+                      '',
+                      `> Alert created automatically by the security workflow. Alert ID: ${alert.number}`,
+                    ].join('\n'),
+                    labels: ['code-scanning-alert', alert.rule.severity?.toLowerCase() || 'unknown', 'security', `risk:${securityLevel}`],
+                  });
+                  
+                  console.log(`Created issue for ${fileName}:${lineNumber} - ${alert.rule.id}`);
                 }
-                
-                // Get additional details for more complete issue
-                const ruleTags = alert.rule.tags ? alert.rule.tags.join(', ') : 'None';
-                const alertCreatedAt = new Date(alert.created_at).toLocaleDateString('en-US', {
-                  year: 'numeric', month: 'long', day: 'numeric'
-                });
-                
-                await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: issueTitle,
-                  body: [
-                    '## Code Scanning Alert',
-                    '',
-                    `- **Rule ID:** ${alert.rule.id}`,
-                    `- **Rule Name:** ${alert.rule.name || 'N/A'}`,
-                    `- **Severity:** ${alert.rule.severity}`,
-                    `- **Security Level:** ${alert.rule.security_severity_level || 'N/A'}`,
-                    `- **Tags:** ${ruleTags}`,
-                    `- **Created:** ${alertCreatedAt}`,
-                    `- **File Location:** [${alert.most_recent_instance.location.path}:${alert.most_recent_instance.location.start_line}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${alert.most_recent_instance.location.path}#L${alert.most_recent_instance.location.start_line})`,
-                    '',
-                    '### Description',
-                    alert.rule.description,
-                    '',
-                    '### Alert Message',
-                    alert.most_recent_instance.message.text,
-                    '',
-                    '### Affected Code',
-                    codeSnippet,
-                    '',
-                    '### Recommended Fix',
-                    alert.rule.help || 'Not provided in the alert data.',
-                    '',
-                    '### References',
-                    `${alert.rule.help_uri ? `- [Rule Documentation](${alert.rule.help_uri})` : '- No documentation URL provided.'}`,
-                    '',
-                    '### Recommended Actions',
-                    '1. Review the affected code',
-                    '2. Implement the suggested fix',
-                    '3. Run code scanning again to verify the issue is resolved',
-                    '',
-                    'Please address this security issue as soon as possible.'
-                  ].join('\n'),
-                  labels: ['code-scanning-alert', alert.rule.severity?.toLowerCase() || 'unknown', 'security'],
-                });
-                console.log(`Created issue for code scanning alert: ${alert.rule.id} in ${fileName}`);
+              } catch (error) {
+                console.error(`Error creating issue for alert ${alert.number}: ${error.message}`);
               }
             }
             return alerts.data.length;
