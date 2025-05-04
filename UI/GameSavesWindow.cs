@@ -2,7 +2,7 @@ using System.Windows;
 
 namespace Dungeon_Crawler_World.UI
 {
-  public class GameSavesWindow : Window
+  public partial class GameSavesWindow : Window
   {
     public GameSavesWindow()
     {

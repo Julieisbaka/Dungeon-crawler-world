@@ -81,9 +81,9 @@ namespace Dungeon_Crawler_World.UI
 
       // Validate shader config against schema
       string error;
-      if (!SettingsPage.ValidateShaderConfig(shaderConfig, out error))
+      if (!SettingsPage.ValidateShaderConfig(shaderConfig: shaderConfig, error: out error))
       {
-        MessageBox.Show($"Shader config validation failed:\n{error}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(messageBoxText: $"Shader config validation failed:\n{error}", caption: "Validation Error", button: MessageBoxButton.OK, icon: MessageBoxImage.Error);
         return;
       }
 
