@@ -161,91 +161,73 @@ jobs:
                 // Example fix snippet for dependencies
                 let exampleFix = '';
                 if (type === 'dependabot' && packageName) {
-                  exampleFix = `#### Example Fix\n\n\`\`\`bash\nnpm install ${packageName}@latest\n\`\`\`\n`;
+                  exampleFix = '#### Example Fix\n\n``bash\nnpm install ' + packageName + '@latest\n``\n';
                 } else if (type === 'code-scanning') {
-                  exampleFix = `#### Example Fix\n\n\`\`\`js\n// Example: Add input validation\nfunction validate(input) {\n  if (typeof input !== 'string') throw new Error('Invalid input');\n}\n\`\`\`\n`;
+                  exampleFix = '#### Example Fix\n\n``js\n// Example: Add input validation\nfunction validate(input) {\n  if (typeof input !== "string") throw new Error("Invalid input");\n}\n``\n';
                 }
 
                 // Checklist for reviewers
-                const checklist = `
-#### Review Checklist
-- [ ] Confirm vulnerability exists in our codebase
-- [ ] Assess exploitability in our context
-- [ ] Apply recommended fix or mitigation
-- [ ] Test after applying fix
-- [ ] Update documentation if needed
-`;
+                const checklist = [
+                  '#### Review Checklist',
+                  '- [ ] Confirm vulnerability exists in our codebase',
+                  '- [ ] Assess exploitability in our context',
+                  '- [ ] Apply recommended fix or mitigation',
+                  '- [ ] Test after applying fix',
+                  '- [ ] Update documentation if needed',
+                  ''
+                ].join('\n');
 
                 await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   title: `[Security Alert] ${alertSummary}`,
-                  body: `
-**Type:** ${type}
-**Package/Tool:** ${packageName}
-**Ecosystem/Rule:** ${ecosystem}
-**Severity:** ${alertSeverity}
-**Identifiers:** ${identifiers}
-**CVSS Score:** ${cvss}
-**State:** ${alertState}
-**Path:** ${filePath}
-**Ref:** ${fileRef}
-**Created At:** ${createdAt}
-**Updated At:** ${updatedAt}
-${dismissedAt ? `**Dismissed At:** ${dismissedAt}` : ''}
-${dismissedReason ? `**Dismissed Reason:** ${dismissedReason}` : ''}
-${dismissedBy ? `**Dismissed By:** ${dismissedBy}` : ''}
-
----
-
-### Vulnerability Description
-
-${alertDescription}
-
----
-
-### Suggestions / Recommendations
-
-${suggestions || practices}
-
-${exampleFix}
-
----
-
-### More Information
-
-${moreInfo || '_No additional references._'}
-
-#### Related Resources
-${extraLinks}
-
----
-
-### Ideas & Context
-
-_Add your remediation ideas, context, or related discussion here._
-
----
-
-${checklist}
-
-#### Timeline
-- Alert created: ${createdAt}
-- Issue created: ${new Date().toISOString()}
-- Status: Open
-
----
-
-#### Labels for Triage
-
-- \`security\`
-- \`${type}\`
-- \`${alertSeverity}\`
-- \`needs-triage\`
-- \`needs-review\`
-
-[View alert in Security tab](${alertUrl})
-                  `,
+                  body: [
+                    `**Type:** ${type}`,
+                    `**Package/Tool:** ${packageName}`,
+                    `**Ecosystem/Rule:** ${ecosystem}`,
+                    `**Severity:** ${alertSeverity}`,
+                    `**Identifiers:** ${identifiers}`,
+                    `**CVSS Score:** ${cvss}`,
+                    `**State:** ${alertState}`,
+                    `**Path:** ${filePath}`,
+                    `**Ref:** ${fileRef}`,
+                    `**Created At:** ${createdAt}`,
+                    `**Updated At:** ${updatedAt}`,
+                    dismissedAt ? `**Dismissed At:** ${dismissedAt}` : '',
+                    dismissedReason ? `**Dismissed Reason:** ${dismissedReason}` : '',
+                    dismissedBy ? `**Dismissed By:** ${dismissedBy}` : '',
+                    '\n---\n',
+                    '### Vulnerability Description\n',
+                    alertDescription,
+                    '\n---\n',
+                    '### Suggestions / Recommendations\n',
+                    suggestions || practices,
+                    '\n',
+                    exampleFix,
+                    '\n---\n',
+                    '### More Information\n',
+                    moreInfo || '_No additional references._',
+                    '\n#### Related Resources',
+                    extraLinks,
+                    '\n---\n',
+                    '### Ideas & Context\n',
+                    '_Add your remediation ideas, context, or related discussion here._',
+                    '\n---\n',
+                    checklist,
+                    '#### Timeline',
+                    `- Alert created: ${createdAt}`,
+                    `- Issue created: ${new Date().toISOString()}`,
+                    '- Status: Open',
+                    '\n---\n',
+                    '#### Labels for Triage\n',
+                    '- `security`',
+                    `- \`${type}\``,
+                    `- \`${alertSeverity}\``,
+                    '- `needs-triage`',
+                    '- `needs-review`',
+                    `\n[View alert in Security tab](${alertUrl})`
+                  ].filter(Boolean).join('\n')
+                  ,
                   labels: ['security', type, alertSeverity, 'needs-triage', 'needs-review']
                 });
               }
