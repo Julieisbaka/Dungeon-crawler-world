@@ -88,6 +88,9 @@ namespace Dungeon_Crawler_World.UI
       }
 
       // Save shader config to separate file
+      /// <summary>
+      /// The file path for the shader configuration JSON file.
+      /// </summary>
       string shaderConfigPath = Path.Combine(path1: CONFIG_DIR, path2: "shader_config.json");
       string shaderConfigJson = JsonSerializer.Serialize(value: shaderConfig, options: options);
       File.WriteAllText(path: shaderConfigPath, contents: shaderConfigJson);
