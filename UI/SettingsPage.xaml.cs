@@ -20,18 +20,13 @@ namespace Dungeon_Crawler_World.UI
             {
                 if (disposing)
                 {
-                    // TODO: Dispose managed resources here.
+                    // Dispose managed resources here, if any.
                 }
 
-                // TODO: Free unmanaged resources here (if any).
+                // Unmanaged resources are not used. If added in the future, free them here.
 
                 _disposed = true;
             }
-        }
-
-        ~SettingsPage()
-        {
-            Dispose(false);
         }
     }
 }
