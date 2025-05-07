@@ -4,7 +4,7 @@ import { join } from 'path';
 const MAX_LENGTH = 120;
 
 function isComment(line) {
-  return /^\s*<!--.*-->\s*$/.test(line);
+  return /^\s*<!--[\s\S]*?-->\s*$/.test(line);
 }
 
 function checkFile(filePath) {
