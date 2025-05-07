@@ -1,6 +1,6 @@
 # Set variables
 $certSubject = "CN=DungeonCrawlerWorld"
-$pfxPassword = "kelvincelciusfar"
+$pfxPassword = ""
 $pfxPath = Join-Path -Path $PSScriptRoot -ChildPath "DungeonCrawlerWorld.pfx"
 $encodedPath = Join-Path -Path $PSScriptRoot -ChildPath "DungeonCrawlerWorld_Encoded.txt"
 
