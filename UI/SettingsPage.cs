@@ -83,6 +83,7 @@ namespace Dungeon_Crawler_World.UI
       string error;
       if (!SettingsPage.ValidateShaderConfig(shaderConfig: shaderConfig, error: out error))
       {
+        Debug.WriteLine(message: $"Shader config validation failed: {error}");
         MessageBox.Show(messageBoxText: $"Shader config validation failed:\n{error}", caption: "Validation Error", button: MessageBoxButton.OK, icon: MessageBoxImage.Error);
         return;
       }
