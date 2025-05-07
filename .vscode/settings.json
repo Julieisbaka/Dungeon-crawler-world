@@ -20,7 +20,9 @@
       "!.devcontainer/**/*.json",
       "!package-lock.json",
       "!config.json",
-      "!Scheme/Shader.json"
+      "!Scheme/**",
+      "!global.json",
+      "!ID.json"
       ]
 
     },

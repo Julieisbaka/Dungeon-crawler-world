@@ -32,7 +32,7 @@ namespace Dungeon_Crawler_World.UI
                 error = $"File not found: {ex.Message}";
                 return false;
             }
-            catch (JsonReaderException ex)
+            catch (Newtonsoft.Json.JsonReaderException ex)
             {
                 error = $"JSON parsing error: {ex.Message}";
                 return false;
