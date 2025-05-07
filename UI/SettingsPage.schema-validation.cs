@@ -27,9 +27,24 @@ namespace Dungeon_Crawler_World.UI
                 }
                 return true;
             }
+            catch (FileNotFoundException ex)
+            {
+                error = $"File not found: {ex.Message}";
+                return false;
+            }
+            catch (JsonReaderException ex)
+            {
+                error = $"JSON parsing error: {ex.Message}";
+                return false;
+            }
+            catch (JSchemaException ex)
+            {
+                error = $"Schema validation error: {ex.Message}";
+                return false;
+            }
             catch (Exception ex)
             {
-                error = ex.Message;
+                error = $"Unexpected error: {ex.Message}";
                 return false;
             }
         }
