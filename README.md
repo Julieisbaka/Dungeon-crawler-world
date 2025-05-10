@@ -7,7 +7,6 @@
 - [Warning: Spoilers Ahead](#warning-spoilers-ahead)
 - [Dungeon Crawler World](#dungeon-crawler-world)
 - [Game Features and Objectives](#game-features-and-objectives)
-- [Screenshots](#screenshots)
 - [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
@@ -61,11 +60,6 @@ The AI present in the book is incredibly advanced and not possible to implement;
 This is not a one all solution the AI will not be as advanced as the one in the book as this is impossible unless you can Deepseek it x 100.
 IF you think you can be a Deepseak x 100 dev then contact me.
 I will not leave my contact information here because you are not.
-
-## Screenshots
-
-Currently the art for the game has not been created so their are no screenshots
-... yet
 
 ## Credits
 
