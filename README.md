@@ -61,6 +61,10 @@ This is not a one all solution the AI will not be as advanced as the one in the 
 IF you think you can be a Deepseak x 100 dev then contact me.
 I will not leave my contact information here because you are not.
 
+[Model](https://huggingface.co/Appleinteligence/Dungeon-crawler-world)
+
+[Dataset](https://huggingface.co/datasets/Appleinteligence/Dungeon-crawler-world)
+
 ## Credits
 
 Dungeon Crawler World is developed by the following contributors:
