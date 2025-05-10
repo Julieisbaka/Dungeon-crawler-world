@@ -66,6 +66,23 @@ namespace Dungeon_Crawler_World.Floor.Floor1
       string json = JsonSerializer.Serialize(value: timeData);
       File.WriteAllText(path: TIME_FILE_PATH, contents: json);
     }
+
+    public static void UpdateAIBehaviorBasedOnTime(int hours)
+    {
+      // Example logic to influence AI behavior based on time of day
+      if (hours >= 12 && hours < 18)
+      {
+        // AI behavior for daytime
+      }
+      else if (hours >= 18 && hours < 24)
+      {
+        // AI behavior for evening
+      }
+      else
+      {
+        // AI behavior for night
+      }
+    }
   }
 
   // Simple class to store time data

@@ -62,5 +62,23 @@ namespace Dungeon_Crawler_World.Floor.Floor1
       string json = JsonSerializer.Serialize(value: stats);
       File.WriteAllText(path: STATS_FILE_PATH, contents: json);
     }
+
+    public static void UpdateAIBehaviorBasedOnStats(Dictionary<string, int> stats)
+    {
+      // Example logic to influence AI behavior based on character statistics
+      int walkingStat = stats.ContainsKey("walking") ? stats["walking"] : 0;
+      int breathingStat = stats.ContainsKey("breathing") ? stats["breathing"] : 0;
+
+      // Adjust AI behavior based on stats
+      if (walkingStat > 4)
+      {
+        // AI character moves faster
+      }
+
+      if (breathingStat < 3)
+      {
+        // AI character gets tired more quickly
+      }
+    }
   }
 }

@@ -75,6 +75,38 @@
           </StackPanel>
         </StackPanel>
       </TabItem>
+      <TabItem Header="Accessibility">
+        <StackPanel Margin="10">
+          <GroupBox Header="Accessibility Features">
+            <Grid Margin="5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+
+              <TextBlock Text="Customizable Controls:"
+                         Grid.Row="0"
+                         Grid.Column="0"/>
+              <CheckBox x:Name="CustomizableControlsCheckBox"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        IsChecked="{Binding CustomizableControls}"/>
+
+              <TextBlock Text="Colorblind Mode:"
+                         Grid.Row="1"
+                         Grid.Column="0"/>
+              <CheckBox x:Name="ColorblindModeCheckBox"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        IsChecked="{Binding ColorblindMode}"/>
+            </Grid>
+          </GroupBox>
+        </StackPanel>
+      </TabItem>
     </TabControl>
   </Grid>
 </Window>
