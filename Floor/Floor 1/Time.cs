@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System;
 
 namespace Dungeon_Crawler_World.Floor.Floor1
 {
@@ -8,9 +9,9 @@ namespace Dungeon_Crawler_World.Floor.Floor1
     private static readonly Random random = new Random();
     private const string TIME_FILE_PATH = "Floor/Floor 1/time_data.json";
 
+    // Load existing time data or create new time if not found
     public static int LoadOrCreateTime()
     {
-      // Try to load existing time data first
       if (File.Exists(path: TIME_FILE_PATH))
       {
         try
@@ -19,21 +20,21 @@ namespace Dungeon_Crawler_World.Floor.Floor1
           TimeData? timeData = JsonSerializer.Deserialize<TimeData>(json: json);
           return timeData?.Hours ?? GenerateRandomTime();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-          // If any error occurs during loading, generate new time
+          LogError(message: $"Error loading time: {ex.Message}");
           return GenerateRandomTime();
         }
       }
       else
       {
-        // No existing time data, generate and save new time
         int hours = GenerateRandomTime();
         SaveTime(hours: hours);
         return hours;
       }
     }
 
+    // Generate random time for a new game
     private static int GenerateRandomTime()
     {
       double u1 = 1.0 - random.NextDouble();
@@ -52,19 +53,35 @@ namespace Dungeon_Crawler_World.Floor.Floor1
       return randomTime;
     }
 
+    // Save time to a file
     public static void SaveTime(int hours)
     {
-      // Ensure directory exists
+      try
+      {
+        EnsureDirectoryExists();
+        string json = JsonSerializer.Serialize(value: new TimeData { Hours = hours });
+        File.WriteAllText(path: TIME_FILE_PATH, contents: json);
+      }
+      catch (Exception ex)
+      {
+        LogError(message: $"Error saving time: {ex.Message}");
+      }
+    }
+
+    // Ensure the directory for the time file exists
+    private static void EnsureDirectoryExists()
+    {
       string? directory = Path.GetDirectoryName(path: TIME_FILE_PATH);
       if (!string.IsNullOrEmpty(value: directory))
       {
         Directory.CreateDirectory(path: directory);
       }
+    }
 
-      // Create and save time data
-      TimeData timeData = new TimeData { Hours = hours };
-      string json = JsonSerializer.Serialize(value: timeData);
-      File.WriteAllText(path: TIME_FILE_PATH, contents: json);
+    // Log errors to the console
+    private static void LogError(string message)
+    {
+      Console.WriteLine(value: $"[ERROR] {message}");
     }
   }
 

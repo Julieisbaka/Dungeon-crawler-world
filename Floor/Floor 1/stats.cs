@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System;
 
 namespace Dungeon_Crawler_World.Floor.Floor1
 {
@@ -7,9 +8,9 @@ namespace Dungeon_Crawler_World.Floor.Floor1
   {
     private const string STATS_FILE_PATH = "Floor/Floor 1/stats_data.json";
 
+    // Load existing stats or create new ones if not found
     public static Dictionary<string, int> LoadOrCreateStats()
     {
-      // Try to load existing stats first
       if (File.Exists(path: STATS_FILE_PATH))
       {
         try
@@ -18,21 +19,21 @@ namespace Dungeon_Crawler_World.Floor.Floor1
           Dictionary<string, int>? stats = JsonSerializer.Deserialize<Dictionary<string, int>>(json: json);
           return stats ?? GenerateRandomStats();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-          // If any error occurs during loading, generate new stats
+          LogError(message: $"Error loading stats: {ex.Message}");
           return GenerateRandomStats();
         }
       }
       else
       {
-        // No existing stats, generate and save new ones
         Dictionary<string, int> stats = GenerateRandomStats();
         SaveStats(stats: stats);
         return stats;
       }
     }
 
+    // Generate random stats for a new game
     private static Dictionary<string, int> GenerateRandomStats()
     {
       Random random = new Random();
@@ -40,7 +41,6 @@ namespace Dungeon_Crawler_World.Floor.Floor1
 
       string[] statNames = { "walking", "breathing", "blinking", "talking", "jumping", "writing", "reading", "climbing" };
 
-      // Generate 8 numbers between 3 and 5 (inclusive)
       foreach (string statName in statNames)
       {
         stats[key: statName] = random.Next(minValue: 3, maxValue: 6);
@@ -49,18 +49,35 @@ namespace Dungeon_Crawler_World.Floor.Floor1
       return stats;
     }
 
+    // Save stats to a file
     public static void SaveStats(Dictionary<string, int> stats)
     {
-      // Ensure directory exists
+      try
+      {
+        EnsureDirectoryExists();
+        string json = JsonSerializer.Serialize(value: stats);
+        File.WriteAllText(path: STATS_FILE_PATH, contents: json);
+      }
+      catch (Exception ex)
+      {
+        LogError(message: $"Error saving stats: {ex.Message}");
+      }
+    }
+
+    // Ensure the directory for the stats file exists
+    private static void EnsureDirectoryExists()
+    {
       string? directory = Path.GetDirectoryName(path: STATS_FILE_PATH);
       if (!string.IsNullOrEmpty(value: directory))
       {
         Directory.CreateDirectory(path: directory);
       }
+    }
 
-      // Serialize and save stats
-      string json = JsonSerializer.Serialize(value: stats);
-      File.WriteAllText(path: STATS_FILE_PATH, contents: json);
+    // Log errors to the console
+    private static void LogError(string message)
+    {
+      Console.WriteLine(value: $"[ERROR] {message}");
     }
   }
 }

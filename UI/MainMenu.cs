@@ -7,12 +7,13 @@ namespace Dungeon_Crawler_World.UI
   {
     public MainMenu()
     {
-      //#32
+      // Initialize the main menu components
       InitializeComponent();
     }
 
     private void PlayButton_Click(object sender, RoutedEventArgs e)
     {
+      // Display a message indicating that the game is not ready to be played yet
       MessageBox.Show(messageBoxText: "The game is not ready to be played yet.",
           caption: "Coming Soon",
           button: MessageBoxButton.OK,
@@ -21,6 +22,7 @@ namespace Dungeon_Crawler_World.UI
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
+      // Open the settings page
       SettingsPage? settingsPage = new SettingsPage();
       settingsPage.ShowDialog();
     }
@@ -44,6 +46,7 @@ namespace Dungeon_Crawler_World.UI
       }
       string statsMessage = sb.ToString();
 
+      // Display the stats and time message
       MessageBox.Show(messageBoxText: statsMessage,
           caption: "Game Started",
           button: MessageBoxButton.OK,
@@ -52,6 +55,7 @@ namespace Dungeon_Crawler_World.UI
 
     private void GameSavesButton_Click(object sender, RoutedEventArgs e)
     {
+      // Open the game saves window
       GameSavesWindow savesWindow = new GameSavesWindow();
       savesWindow.ShowDialog();
     }

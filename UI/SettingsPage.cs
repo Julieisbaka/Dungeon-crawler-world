@@ -20,6 +20,9 @@ namespace Dungeon_Crawler_World.UI
       DataContext = currentSettings;
     }
 
+    /// <summary>
+    /// Loads the settings from the configuration file or creates default settings if the file does not exist.
+    /// </summary>
     private void LoadSettings()
     {
       try
@@ -47,11 +50,18 @@ namespace Dungeon_Crawler_World.UI
       }
     }
 
+    /// <summary>
+    /// Creates default settings for the application.
+    /// </summary>
+    /// <returns>A new instance of the Settings class with default values.</returns>
     private static Settings CreateDefaultSettings()
     {
       return new Settings();
     }
 
+    /// <summary>
+    /// Ensures that the configuration directory exists. If it does not exist, it will be created.
+    /// </summary>
     private static void EnsureConfigDirectoryExists()
     {
       if (!Directory.Exists(path: CONFIG_DIR))
@@ -60,6 +70,10 @@ namespace Dungeon_Crawler_World.UI
       }
     }
 
+    /// <summary>
+    /// Saves the settings to the configuration file and validates the shader configuration against the schema.
+    /// </summary>
+    /// <param name="settings">The settings to save.</param>
     private static void SaveSettings(Settings settings)
     {
       JsonSerializerOptions? options = new JsonSerializerOptions
@@ -97,6 +111,9 @@ namespace Dungeon_Crawler_World.UI
       File.WriteAllText(path: shaderConfigPath, contents: shaderConfigJson);
     }
 
+    /// <summary>
+    /// Handles the click event for the Save button. Saves the current settings and closes the window.
+    /// </summary>
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
       try
@@ -114,18 +131,27 @@ namespace Dungeon_Crawler_World.UI
       }
     }
 
+    /// <summary>
+    /// Handles the click event for the Cancel button. Closes the window without saving changes.
+    /// </summary>
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
       DialogResult = false;
       Close();
     }
 
+    /// <summary>
+    /// Handles the click event for the Exit button. Closes the window without saving changes.
+    /// </summary>
     private void ExitButton_Click(object sender, RoutedEventArgs e)
     {
       DialogResult = false;
       Close();
     }
 
+    /// <summary>
+    /// Disposes of the resources used by the SettingsPage.
+    /// </summary>
     public void Dispose()
     {
       if (!isDisposed)
