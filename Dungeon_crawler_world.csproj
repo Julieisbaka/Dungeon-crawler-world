@@ -9,5 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
     <PackageReference Include="Parquet.Net" Version="5.1.1" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" />
+    <PackageReference Include="dotnet-format" Version="5.1.225507" />
   </ItemGroup>
 </Project>
