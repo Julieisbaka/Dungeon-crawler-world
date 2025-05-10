@@ -1,5 +1,3 @@
-using System.Windows;
-
 namespace Dungeon_Crawler_World.UI
 {
     public partial class GameSavesWindow : Window

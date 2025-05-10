@@ -7,7 +7,6 @@
 - [Warning: Spoilers Ahead](#warning-spoilers-ahead)
 - [Dungeon Crawler World](#dungeon-crawler-world)
 - [Game Features and Objectives](#game-features-and-objectives)
-- [Screenshots](#screenshots)
 - [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
@@ -62,11 +61,6 @@ This is not a one all solution the AI will not be as advanced as the one in the 
 IF you think you can be a Deepseak x 100 dev then contact me.
 I will not leave my contact information here because you are not.
 
-## Screenshots
-
-Currently the art for the game has not been created so their are no screenshots
-... yet
-
 ## Credits
 
 Dungeon Crawler World is developed by the following contributors:
@@ -76,6 +70,10 @@ Dungeon Crawler World is developed by the following contributors:
 Special thanks to the following resources and libraries used in the project:
 
 - [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com)
+
+- [Newtonsoft.Json.Schema](https://github.com/JamesNK/Newtonsoft.Json.Schema)
+
+- [Parquet.Net](https://github.com/elastacloud/parquet-dotnet)
 
 ## [Contributing](CONTRIBUTING.md)
 

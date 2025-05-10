@@ -1,6 +1,3 @@
-using System.IO;
-using System.Text;
-
 class IndexGenerator
 {
   public static void GenerateIndex()

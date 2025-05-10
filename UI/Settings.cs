@@ -1,6 +1,3 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
 namespace Dungeon_Crawler_World.UI
 {
   public class Settings : INotifyPropertyChanged

@@ -1,4 +1,3 @@
-using System.Windows;
 using Dungeon_Crawler_World.Floor.Floor1;
 
 namespace Dungeon_Crawler_World.UI
