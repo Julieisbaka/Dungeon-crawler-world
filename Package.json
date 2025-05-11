@@ -15,5 +15,21 @@
   },
   "scripts": {
     "markdownlint-linelength": "markdownlint-cli2 ."
+  },
+  "prettier": {  "experimentalTernaries": true,
+  "editorconfig": true,
+  "embeddedLanguageFormatting": "auto",
+  "useTabs": false,
+  "tabWidth": 2,
+  "endOfLine": "crlf",
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "insertPragma": false,
+  "plugins": []},
+  "readme": "ReadME.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JulieISBaka/dungeon-crawler-world.git",
+    "directory": "./"
   }
 }
