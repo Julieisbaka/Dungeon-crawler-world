@@ -1,6 +1,7 @@
 name: Create Issue from Security Alert
 
 on:
+  workflow_dispatch: # Allows manual triggering
   code_scanning_alert:
     types: [created] # Trigger only when a new code scanning alert is created
   dependabot_alert:
