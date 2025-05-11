@@ -4,26 +4,25 @@
   "description": "This schema is used for validation and reading of the shader config json file!",
   "properties": {
     "fog": {
-        "type": "integer",
-        "description": "0 is no fog\n 1 is fast fog\n 2 is default fog\n 3 is fancy fog",
-        "default": 2,
-        "minimum": 0,
-        "maximum": 3
-     },
+      "type": "integer",
+      "description": "0 is no fog\n 1 is fast fog\n 2 is default fog\n 3 is fancy fog",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 3
+    },
     "lighting": {
-        "type": "integer",
-        "description": "0 is no dynamic lighting\n 1 is non shader based lighting\n 2 is simple shader based lighting\n 3 is normal shader based lighting\n 4 is fancy shader based lighting\n 5 is the highest quality",
-        "default": 3,
-        "minimum": 0,
-        "maximum": 5
+      "type": "integer",
+      "description": "0 is no dynamic lighting\n 1 is non shader based lighting\n 2 is simple shader based lighting\n 3 is normal shader based lighting\n 4 is fancy shader based lighting\n 5 is the highest quality",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 5
     },
     "sound": {
-        "type": "boolean",
-        "description": "Enable physically based sound? If set to true then the game sound engine will apply reverb and other sound affects otherwise if set to false the sound engine will not use physically aware calculations and methods when playing sound like music and other ambience.",
-        "default": true
+      "type": "boolean",
+      "description": "Enable physically based sound? If set to true then the game sound engine will apply reverb and other sound affects otherwise if set to false the sound engine will not use physically aware calculations and methods when playing sound like music and other ambience.",
+      "default": true
     }
   },
   "additionalItems": false,
   "additionalProperties": false
-
 }

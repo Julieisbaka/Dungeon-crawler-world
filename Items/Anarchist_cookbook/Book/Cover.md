@@ -3,6 +3,7 @@
 ## _version_'s edition
 
 <!-- Cover image below -->
+
 ![The Anarchist's cookbook](Cover.png)
 
 <!-- The cover image is Licensed under a creative commons license so the usage of it in a creative work is allowed,

@@ -33,25 +33,26 @@ Dungeon Crawler World offers a variety of exciting features and objectives for
 players to enjoy:
 
 - **Exploration**: Traverse through procedurally generated dungeons filled with
-secrets and surprises.
+  secrets and surprises.
 - **Combat**: Engage in real-time battles with a wide range of enemies, each with
-unique abilities and behaviors.
+  unique abilities and behaviors.
 - **Loot**: Discover and collect powerful weapons, armor, and items to enhance your
-character's abilities.
+  character's abilities.
 - **Quests**: Complete challenging quests and missions to earn rewards and progress
-through the game.
+  through the game.
 - **Character Progression**: Level up your character, unlock new skills, and
-customize your playstyle.
-- **Multiplayer***: Team up with friends or other players online to tackle dungeons
-together.
+  customize your playstyle.
+- **Multiplayer\***: Team up with friends or other players online to tackle dungeons
+  together.
 
 <details>
   <summary>Note</summary>
 
-  Due to some features in the game affecting time true multiplayer is not possible unless we invent time travel.
-  The multiplayer that will be implemented is still with real people but gameplay is altered.
-  If you want to play with just friends you can create a private server or use LAN; if you choose to due this then gameplay will not be altered
-  (by default although this is toggleable in the server settings)
+Due to some features in the game affecting time true multiplayer is not possible unless we invent time travel.
+The multiplayer that will be implemented is still with real people but gameplay is altered.
+If you want to play with just friends you can create a private server or use LAN; if you choose to due this then gameplay will not be altered
+(by default although this is toggleable in the server settings)
+
 </details>
 
 ## AI
