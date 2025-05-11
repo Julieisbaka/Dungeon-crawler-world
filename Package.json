@@ -13,16 +13,15 @@
     "markdownlint-linelength": "markdownlint-cli2 ."
   },
   "prettier": {
-  "experimentalTernaries": true,
-  "editorconfig": true,
-  "embeddedLanguageFormatting": "auto",
-  "useTabs": false,
-  "tabWidth": 2,
-  "endOfLine": "crlf",
-  "trailingComma": "none",
-  "bracketSpacing": true,
-  "insertPragma": false,
-  "plugins": []
+    "experimentalTernaries": true,
+    "editorconfig": true,
+    "embeddedLanguageFormatting": "auto",
+    "useTabs": false,
+    "tabWidth": 2,
+    "endOfLine": "crlf",
+    "trailingComma": "none",
+    "bracketSpacing": true,
+    "insertPragma": false,
+    "plugins": []
   }
-
 }

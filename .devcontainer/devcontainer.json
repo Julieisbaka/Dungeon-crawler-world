@@ -40,19 +40,21 @@
             "url": "https://raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/refs/heads/Main/Scheme/schema.json",
             "fileMatch": [
               "**/*.json",
-              "!.vscode/settings.json",
-              "!.devcontainer/devcontainer.json",
               "!.vscode/**/*.json",
               "!.devcontainer/**/*.json",
               "!package-lock.json",
               "!config.json",
               "!Scheme/**",
               "!global.json",
-              "!ID.json"
+              "!ID.json",
+              "!Save.json"
             ]
           },
           {
             "url": "Scheme/Shader.json"
+          },
+          {
+            "url": "./Scheme/common-definitions.json"
           }
         ],
         "json.validate.enable": true,
@@ -70,9 +72,6 @@
           "Julieisbaka",
           "Skolopendra"
         ],
-        "files.associations": {
-          ".prettierrc": "json"
-        },
         "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
         "omnisharp.enableRoslynAnalyzers": true,
         "omnisharp.enableEditorConfigSupport": true
@@ -90,4 +89,3 @@
     "ASPNETCORE_ENVIRONMENT": "Development"
   }
 }
-

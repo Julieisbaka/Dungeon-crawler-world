@@ -20,7 +20,7 @@ name: Snyk Security
 
 on:
   push:
-    branches: ["Main" ]
+    branches: ["Main"]
   pull_request:
     branches: ["Main"]
 

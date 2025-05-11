@@ -13,21 +13,22 @@
     {
       "url": "https://raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/refs/heads/Main/Scheme/schema.json",
       "fileMatch": [
-      "**/*.json",
-      "!.vscode/settings.json",
-      "!.devcontainer/devcontainer.json",
-      "!.vscode/**/*.json",
-      "!.devcontainer/**/*.json",
-      "!package-lock.json",
-      "!config.json",
-      "!Scheme/**",
-      "!global.json",
-      "!ID.json"
+        "**/*.json",
+        "!.vscode/**/*.json",
+        "!.devcontainer/**/*.json",
+        "!package-lock.json",
+        "!config.json",
+        "!Scheme/**",
+        "!global.json",
+        "!ID.json",
+        "!Save.json"
       ]
-
     },
     {
       "url": "Scheme/Shader.json"
+    },
+    {
+      "url": "./Scheme/common-definitions.json"
     }
   ],
   "json.validate.enable": true,
@@ -44,8 +45,5 @@
     "Necro",
     "Perlin",
     "Skolopendra"
-  ],
-  "files.associations": {
-    ".prettierrc": "json"
-  }
+  ]
 }

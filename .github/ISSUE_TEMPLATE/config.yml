@@ -12,4 +12,3 @@ issue_templates:
     about: Suggest a new feature or enhancement
     template: feature_request.md
     labels: [enhancement]
-

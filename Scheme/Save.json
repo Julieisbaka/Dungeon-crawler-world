@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Save state",
+  "description": "This schema is used for validation and reading of the save state json file!",
+  "additionalItems": true,
+  "additionalProperties": false
+}

@@ -4,8 +4,8 @@
   "requirements": [
     {
       "Views": 500000000000,
-      "skills": { 
-        "Explosives Handling Skill": 5 
+      "skills": {
+        "Explosives Handling Skill": 5
       }
     }
   ],
@@ -16,4 +16,3 @@
     }
   ]
 }
-
