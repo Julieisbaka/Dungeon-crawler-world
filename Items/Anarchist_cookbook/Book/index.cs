@@ -1,3 +1,6 @@
+using System.IO;
+using System.Text;
+
 class IndexGenerator
 {
   public static void GenerateIndex()
@@ -5,11 +8,10 @@ class IndexGenerator
     const string directoryPath = "Items/Anarchist_cookbook/Book";
     string outputPath = Path.Combine(path1: directoryPath, path2: "index.md");
 
-    List<string?> filesNullable = Directory.GetFiles(path: directoryPath, searchPattern: "*.md")
+    List<string?> filesNullable = [.. Directory.GetFiles(path: directoryPath, searchPattern: "*.md")
                          .Select(selector: Path.GetFileName)
-                         .OrderBy(keySelector: f => f)
-                         .ToList();
-    List<string> files = filesNullable.Where(predicate: f => f != null).Cast<string>().ToList();
+                         .OrderBy(keySelector: f => f)];
+    List<string> files = [.. filesNullable.Where(predicate: f => f != null).Cast<string>()];
 
     StringBuilder sb = new StringBuilder();
     sb.AppendLine(value: "# Index");

@@ -1,3 +1,6 @@
+using System.IO;
+using System.Text;
+
 class TableOfContentsGenerator
 {
   public static void GenerateTableOfContents()
@@ -5,10 +8,9 @@ class TableOfContentsGenerator
     string directoryPath = "Items/Anarchist_cookbook/Book";
     string outputPath = Path.Combine(path1: directoryPath, path2: "Table_of_contents.md");
 
-    List<string?>? files = Directory.GetFiles(path: directoryPath, searchPattern: "*.md")
+    List<string?>? files = [.. Directory.GetFiles(path: directoryPath, searchPattern: "*.md")
                          .Select(selector: Path.GetFileName)
-                         .OrderBy(keySelector: f => f)
-                         .ToList();
+                         .OrderBy(keySelector: f => f)];
 
     StringBuilder? sb = new StringBuilder();
     sb.AppendLine(value: "# Table of contents");

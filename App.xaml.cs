@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Navigation;
 
 namespace Dungeon_Crawler_World
 {
@@ -7,6 +8,10 @@ namespace Dungeon_Crawler_World
     protected override void OnStartup(StartupEventArgs e)
     {
       base.OnStartup(e: e);
+
+      NavigationWindow navigationWindow = new NavigationWindow(); // Unnecessary assignment of a value to 'navigationWindow'IDE0059
+
+
 
       // Generate index and table of contents at startup
       IndexGenerator.GenerateIndex();
