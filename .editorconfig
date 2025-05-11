@@ -9,6 +9,9 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 spaces_around_operators = true
 
+[*.cs]
+# IDE0090: Use 'new(...)'
+csharp_style_implicit_object_creation_when_type_is_apparent = false
+
 [*.md]
 trim_trailing_whitespace = false
-
