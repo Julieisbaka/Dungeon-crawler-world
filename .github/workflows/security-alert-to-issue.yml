@@ -1,0 +1,135 @@
+name: Create Issue from Security Alert
+
+on:
+  code_scanning_alert:
+    types: [created] # Trigger only when a new code scanning alert is created
+  dependabot_alert:
+    types: [created] # Trigger only when a new Dependabot alert is created
+
+permissions:
+  issues: write         # Required to create issues
+  security-events: read # Required to read security alert payloads
+
+jobs:
+  create_issue_from_code_scan:
+    if: github.event_name == 'code_scanning_alert' && github.event.action == 'created'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Code Scanning Alert Data and Create Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const alert = github.event.alert;
+            const rule = alert.rule;
+            const instance = alert.most_recent_instance;
+
+            const title = `Code Scan Alert (${rule.severity || 'N/A'}): ${rule.name || rule.description.substring(0, 50) + '...'}`;
+            let body = `
+            ## 🚨 Code Scanning Alert Details
+
+            **Rule ID:** ${rule.id || 'N/A'}
+            **Rule Name:** ${rule.name || 'N/A'}
+            **Severity:** ${rule.severity || 'N/A'}
+            **Description:** ${rule.description || 'No description provided.'}
+            **Tool:** ${alert.tool.name || 'N/A'}
+            **File:** \`${instance.location.path || 'N/A'}\`
+            **Lines:** ${instance.location.start_line || 'N/A'} - ${instance.location.end_line || 'N/A'}
+            **Message:** 
+            \`\`\`
+            ${instance.message.text || 'No message provided.'}
+            \`\`\`
+            **Alert URL:** [View Alert](${alert.html_url})
+
+            ---
+            `;
+
+            if (rule.help && rule.help.trim() !== "") {
+              body += `
+              ## 💡 Potential Fixes / Further Information
+
+              ${rule.help}
+              `;
+            } else {
+              body += `
+              ## 💡 Potential Fixes / Further Information
+
+              No specific fix information provided directly in the alert rule help. Please investigate the alert details and the affected code.
+              Refer to the [alert details](${alert.html_url}) for more information.
+              `;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'code-scanning-alert', `severity:${rule.severity || 'unknown'}`]
+            });
+            console.log(`Created issue for code scanning alert: ${alert.html_url}`);
+
+  create_issue_from_dependabot:
+    if: github.event_name == 'dependabot_alert' && github.event.action == 'created'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Dependabot Alert Data and Create Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const alert = github.event.alert;
+            const advisory = alert.security_advisory;
+            const vulnerability = alert.security_vulnerability;
+            const dependency = alert.dependency;
+
+            const title = `Dependabot Alert (${advisory.severity || 'N/A'}): Vulnerability in ${dependency.package.name || 'unknown package'}`;
+            let cve_list = "N/A";
+            if (advisory.cves && advisory.cves.length > 0) {
+              cve_list = advisory.cves.map(cve => cve.identifier).join(', ');
+            }
+
+            let body = `
+            ## 🚨 Dependabot Alert Details
+
+            **Package Name:** \`${dependency.package.name || 'N/A'}\`
+            **Ecosystem:** ${dependency.package.ecosystem || 'N/A'}
+            **Manifest File:** \`${dependency.manifest_path || 'N/A'}\`
+            **Severity:** ${advisory.severity || 'N/A'}
+            **Summary:** ${advisory.summary || 'No summary provided.'}
+            **Vulnerable Version Range:** \`${vulnerability.vulnerable_version_range || 'N/A'}\`
+            **CVEs:** ${cve_list}
+            **GHSA ID:** ${advisory.ghsa_id || 'N/A'}
+            **Alert URL:** [View Alert](${alert.html_url})
+
+            ---
+            ## 📖 Description
+            ${advisory.description || 'No description provided.'}
+
+            ---
+            `;
+
+            let fix_suggestion = "No direct patched version identified. Please review the advisory for mitigation steps.";
+            if (vulnerability.first_patched_version && vulnerability.first_patched_version.identifier) {
+              fix_suggestion = `Update \`${dependency.package.name}\` to version **${vulnerability.first_patched_version.identifier}** or later.`;
+            }
+
+            body += `
+            ## 🛠️ Recommended Fix
+
+            ${fix_suggestion}
+            Refer to the [alert details](${alert.html_url}) and the advisory for more information.
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: [
+                'security', 
+                'dependabot-alert', 
+                `severity:${advisory.severity || 'unknown'}`, 
+                `package:${dependency.package.name || 'unknown'}`
+              ]
+            });
+            console.log(`Created issue for Dependabot alert: ${alert.html_url}`);
