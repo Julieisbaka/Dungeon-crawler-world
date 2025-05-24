@@ -1,3 +1,5 @@
+The project is not currently runable, once we acheive consistant builds we will start using a changelog based on keep a changelog.
+
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/73>
 
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/72>
