@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "fs-extra";
+import { readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 
 const MAX_LENGTH = 120;
