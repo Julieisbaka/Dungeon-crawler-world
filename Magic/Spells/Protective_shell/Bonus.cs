@@ -1,4 +1,4 @@
-// level is spell level not player level
+// level is spell level, not player level
 // Var values for modifiers are temporary until their code is added.
 // The values assigned currently just make the spell do normal damage.
 var level = 1;

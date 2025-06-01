@@ -4,4 +4,3 @@ package-lock.json
 node_modules
 Cert/DungeonCrawlerWorld_Encoded.txt
 Cert/DungeonCrawlerWorld.pfx
-.trunk

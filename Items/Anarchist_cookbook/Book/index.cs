@@ -5,7 +5,7 @@ class IndexGenerator
 {
   public static void GenerateIndex()
   {
-    const string directoryPath = "Items/Anarchist_cookbook/Book";
+    const string directoryPath = "Items/Anarchist_cookbook/Book/";
     string outputPath = Path.Combine(path1: directoryPath, path2: "index.md");
 
     List<string?> filesNullable = [.. Directory.GetFiles(path: directoryPath, searchPattern: "*.md")

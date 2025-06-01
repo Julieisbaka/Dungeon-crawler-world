@@ -1,9 +1,9 @@
-namespace Dungeon_Crawler_World.Floor.Floor1
+namespace Dungeon_Crawler_World.Floor.Floor_1
 {
   public static class TimeManager
   {
     private static readonly Random random = new Random();
-    private const string TIME_FILE_PATH = "Floor/Floor 1/time_data.json"; // Temp file path, Var is unused
+    private const string TIME_FILE_PATH = "Floor/Floor_1/time_data.json";
 
     private static int GenerateRandomTime() // Unused
     {

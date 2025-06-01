@@ -1,15 +1,15 @@
-namespace Dungeon_Crawler_World.Floor.Floor1
+namespace Dungeon_Crawler_World.Floor.Floor_1
 {
   public static class StatsManager
   {
-    private const string STATS_FILE_PATH = "Floor/Floor 1/stats_data.json"; // Temp file path, Var is unused
+    private const string STATS_FILE_PATH = "Floor/Floor_1/stats_data.json";
 
     private static Dictionary<string, int> GenerateRandomStats() // Unused
     {
       Random random = new Random();
 #pragma warning disable IDE0028 // Simplify collection initialization
       Dictionary<string, int> stats = new Dictionary<string, int>();
-#pragma warning restore IDE0028 // Simplify collection initialization
+#pragma warning restore IDE0028
 
       string[] statNames = ["walking", "breathing", "blinking", "talking", "jumping", "writing", "reading"];
 
