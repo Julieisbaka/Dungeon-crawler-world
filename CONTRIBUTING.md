@@ -68,7 +68,6 @@ When modifying the schema.json file:
 - Follow the JSON Schema draft-07 standard
 - Add clear descriptions for each property
 - Include appropriate validation rules (type, min/max values, etc.)
-- Maintain backward compatibility when / where possible
 - Document all changes especially breaking changes
 
 ## Issue Reporting
@@ -81,7 +80,7 @@ When reporting issues, please include:
 4. Expected behavior
 5. Actual behavior
 6. Screenshots if applicable
-7. Your environment (OS, browser, etc.)
+7. Your environment
 
 ---
 

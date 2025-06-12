@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "version": "0.0.4.9",
+  "version": "0.0.5",
   "devDependencies": {
     "fs-extra": "^11.2.0",
     "path": "^0.12.7",

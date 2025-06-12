@@ -15,19 +15,14 @@
       "fileMatch": [
         "**/*.json",
         "!.vscode/**/*.json",
-        "!.devcontainer/**/*.json",
         "!config.json",
         "!Scheme/**",
-        "!global.json",
         "!ID.json",
         "!Save.json"
       ]
     },
     {
       "url": "Scheme/Shader.json"
-    },
-    {
-      "url": "./Scheme/common-definitions.json"
     }
   ],
   "json.validate.enable": true,
@@ -44,6 +39,5 @@
     "Necro",
     "Perlin",
     "Skolopendra"
-  ],
-  "C_Cpp.default.compilerPath": "cl.exe"
+  ]
 }

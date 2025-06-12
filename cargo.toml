@@ -1,0 +1,6 @@
+[package]
+
+name = "Dungeon-Crawler-World"
+version = "0.0.5"
+
+[dependencies]

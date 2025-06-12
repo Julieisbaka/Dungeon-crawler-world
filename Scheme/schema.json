@@ -526,50 +526,5 @@
       "range": "Range must be a positive number in centimeters",
       "duration": "Duration must be a positive number in seconds"
     }
-  },
-  "examples": [
-    {
-      "name": "Fireball",
-      "type": ["fire", "arcane"],
-      "range": 1000,
-      "duration": 0,
-      "cost": 25,
-      "cooldown": 5,
-      "requirements": [
-        {
-          "skills": {
-            "id": "destruction_magic",
-            "level": 3
-          }
-        }
-      ],
-      "description": "A powerful fire spell that engulfs enemies in flames."
-    },
-    {
-      "name": "Ice Lance",
-      "id": "ice_lance",
-      "type": ["ice", "physical"],
-      "target_type": "line",
-      "scaling": {
-        "attribute": "intelligence",
-        "factor": 1.5
-      },
-      "effects": [
-        {
-          "id": "chilled",
-          "name": "Chilled",
-          "duration": 5,
-          "stackable": true,
-          "max_stacks": 3,
-          "modifiers": [
-            {
-              "attribute": "dexterity",
-              "value": -10,
-              "type": "percentage"
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  }
 }
