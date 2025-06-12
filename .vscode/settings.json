@@ -44,5 +44,6 @@
     "Necro",
     "Perlin",
     "Skolopendra"
-  ]
+  ],
+  "C_Cpp.default.compilerPath": "cl.exe"
 }
