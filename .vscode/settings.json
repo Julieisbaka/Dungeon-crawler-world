@@ -16,7 +16,6 @@
         "**/*.json",
         "!.vscode/**/*.json",
         "!.devcontainer/**/*.json",
-        "!package-lock.json",
         "!config.json",
         "!Scheme/**",
         "!global.json",
