@@ -1,5 +1,7 @@
 The project is not currently runnable, once we achieve consistent builds we will start using a changelog based on keep a changelog.
 
+Refactor codebase to use Rust and Cpp
+
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/73>
 
 Fixed <https://github.com/Julieisbaka/Dungeon-crawler-world/issues/72>

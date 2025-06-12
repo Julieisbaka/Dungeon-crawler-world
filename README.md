@@ -72,10 +72,6 @@ Special thanks to the following resources and libraries used in the project:
 
 - [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com)
 
-- [Newtonsoft.Json.Schema](https://github.com/JamesNK/Newtonsoft.Json.Schema)
-
-- [Parquet.Net](https://github.com/elastacloud/parquet-dotnet)
-
 - And of course, last and certainly not least, the Dungeon Crawler Carl series by [Matt Dinniman](https://www.mattdinniman.com/).
 
 ## [Contributing](CONTRIBUTING.md)
