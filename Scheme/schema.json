@@ -90,9 +90,7 @@
               "factor": {
                 "type": "number",
                 "minimum": 0,
-                "maximum": 5,
-                "description": "Multiplier that determines how strongly the attribute affects the ability (0-5). Example: 1.5 means 150% of attribute value",
-                "examples": [1.0, 1.5, 2.0]
+                "description": "Multiplier that determines how strongly the attribute affects the ability (0-5). Example: 1.5 means 150% of attribute value"
               }
             },
             "required": ["attribute", "factor"]
@@ -303,9 +301,6 @@
         "charges": {
           "type": "number"
         },
-        "durability": {
-          "type": "number"
-        },
         "value": {
           "type": "number"
         }
@@ -327,9 +322,6 @@
               "type": "number"
             },
             "intelligence": {
-              "type": "number"
-            },
-            "wisdom": {
               "type": "number"
             },
             "charisma": {
@@ -371,7 +363,6 @@
   "definitions": {
     "attributeValue": {
       "type": "number",
-      "minimum": 1,
       "description": "Value for attributes like Strength, Dexterity, etc."
     },
     "skillRequirement": {
