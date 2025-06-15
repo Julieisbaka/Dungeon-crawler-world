@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Dungeon Crawler World Schema",
   "description": "Schema for the Dungeon Crawler World game data files. Defines all available properties and their validation rules.",
-  "$comment": "Version 2.0 - Updated with enhanced validation and documentation",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -54,8 +53,7 @@
             "type": "string",
             "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
             "description": "Unique identifier for the ability",
-            "examples": ["fireball", "healing_touch"],
-            "errorMessage": "Ability ID must start with a letter and contain only letters, numbers, and underscores"
+            "examples": ["fireball", "healing_touch"]
           },
           "name": {
             "type": "string",
@@ -260,32 +258,6 @@
       "minimum": 0,
       "description": "This is the range of the ability. This is measured in Centimeters.",
       "$comment": "Its measured in Centimeters because that is the smallest measurement unit used regarding range."
-    },
-    "duration": {
-      "type": "number",
-      "description": "This is the duration of the ability.",
-      "$comment": "Do not use this because it is preferred for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
-    },
-    "cost": {
-      "type": "number",
-      "description": "This is the cost of using the ability.",
-      "$comment": "Do not use this because it is preferred for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
-    },
-    "cooldown": {
-      "type": "number",
-      "minimum": 0,
-      "description": "This is the cooldown period for using the ability.",
-      "$comment": "Do not use this because it is preferred for most items to create a Csharp file with the calculation for this number in it; although for some items this property still applies!"
-    },
-    "Duration_level_mod": {
-      "type": "number",
-      "description": "This property is deprecated and should not be used!",
-      "$comment": "This property should not be used!"
-    },
-    "cooldown_level_mod": {
-      "type": "number",
-      "description": "This property is deprecated and should not be used!",
-      "$comment": "This property should not be used!"
     },
     "effects": {
       "type": "array",
@@ -515,16 +487,6 @@
       ],
       "description": "Can be either a direct string description or a reference to a markdown file"
     }
-  },
-  "errorMessage": {
-    "type": "Must be a valid JSON object",
-    "required": {
-      "name": "Name is required"
-    },
-    "properties": {
-      "level": "Level must be a number >= 0 or one of: 'x' or '?'",
-      "range": "Range must be a positive number in centimeters",
-      "duration": "Duration must be a positive number in seconds"
-    }
+  }
   }
 }
