@@ -1,4 +1,6 @@
 {
-  "name": "Anarchist's Cookbook",
-  "description": ""
+  "name": "The Dungeon Anarchist's Cookbook",
+  "description": {
+    "markdown_file": "Items/Anarchist_cookbook/description.md"
+  }
 }
