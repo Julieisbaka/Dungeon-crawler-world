@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 
 const MAX_LENGTH = 120;
 
@@ -31,9 +31,6 @@ function findMarkdownFiles(dir) {
   });
   return results;
 }
-
-// Usage: node scripts/markdown-lint-ignore-comments.js [directory]
-import { resolve } from "path";
 
 const ROOT_DIR = process.cwd(); // Define a safe root directory
 const targetDir = process.argv[2] ? resolve(process.argv[2]) : ROOT_DIR;

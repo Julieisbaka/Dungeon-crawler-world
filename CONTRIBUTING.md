@@ -22,7 +22,7 @@ communicate professionally.
 ## Getting Started
 
 1. **Fork the repository** - Create your own fork of the project
-2. **Clone your fork** - `git clone https://github.com/YOUR-USERNAME/Dungeon-crawler-world.git`
+2. **Clone your fork** - `git clone https://github.com/JulieISBaka/Dungeon-crawler-world.git`
 3. **Create a branch** - `git checkout -b feature/your-feature-name`
 4. **Make your changes** - Follow the project's coding standards
 5. **Test your changes** - Ensure all features work as expected

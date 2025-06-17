@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Dungeon Crawler World Schema",
-  "description": "Schema for the Dungeon Crawler World game data files. Defines all available properties and their validation rules.",
+  "description": "Schema for the Dungeon Crawler World game data files. Defines most available properties and their validation rules.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -478,6 +478,5 @@
       ],
       "description": "Can be either a direct string description or a reference to a markdown file"
     }
-  }
   }
 }

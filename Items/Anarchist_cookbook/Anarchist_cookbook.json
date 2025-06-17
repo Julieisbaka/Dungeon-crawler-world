@@ -1,10 +1,4 @@
 {
   "name": "Anarchist's Cookbook",
-  "description": "It looks like an ordinary book filled with recipes.",
-  "requirements": [
-    {
-      "property": "classes",
-      "value": "compensated anarchist"
-    }
-  ]
+  "description": ""
 }
