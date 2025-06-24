@@ -22,7 +22,7 @@
       ]
     },
     {
-      "url": "Scheme/Shader.json"
+      "url": "Scheme/Settings.json"
     }
   ],
   "json.validate.enable": true,
