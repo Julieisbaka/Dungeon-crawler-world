@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Celestial Schema",
+    "description": "Schema for defining celestial entities in the Dungeon Crawler World.",
+    "type": "object",
+    "properties": {},
+    "additionalProperties": {
+        "$ref": "Common.json#/properties"
+    },
+    "required": [
+        "name",
+        "description"
+    ]
+}

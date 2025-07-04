@@ -1,0 +1,24 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Entity Schema",
+    "description": "Schema for defining entities in the Dungeon Crawler World.",
+    "type": "object",
+    "properties": {
+        "level": {
+            "type": "integer", 
+            "description": "The level of the entity."
+        },
+        "skills": {
+            "type": "array",
+            "description": "A list of skills associated with the entity.",
+            "$comment": "Each skill should match an existing skill in the skills folder."
+        }
+    },
+    "additionalProperties": {
+        "$ref": "Common.json#/properties"
+    },
+    "required": [
+        "name",
+        "description"
+    ]
+}

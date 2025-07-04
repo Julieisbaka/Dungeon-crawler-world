@@ -5,6 +5,7 @@ fn main() {
         .file("Floor/Floor_1/kruskal.cpp")
         .file("Floor/Floor_1/stats.cpp")
         .file("Floor/Floor_1/time.cpp")
+        .file("data/data.cpp")
         .compile("floor_cpp");
     // Add more files as needed above.
 }

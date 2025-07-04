@@ -22,7 +22,7 @@ communicate professionally.
 ## Getting Started
 
 1. **Fork the repository** - Create your own fork of the project
-2. **Clone your fork** - `git clone https://github.com/JulieISBaka/Dungeon-crawler-world.git`
+2. **Clone your fork** - `git clone https://github.com/Username/Dungeon-crawler-world.git`
 3. **Create a branch** - `git checkout -b feature/your-feature-name`
 4. **Make your changes** - Follow the project's coding standards
 5. **Test your changes** - Ensure all features work as expected
@@ -43,8 +43,8 @@ There are many ways to contribute to Dungeon Crawler World:
 ## Pull Request Process
 
 1. Ensure your code adheres to the project's coding standards
-2. Update the README.md with details of changes if applicable
-3. Update the schema.json file if you're adding new data structures
+2. Update the `README.md` with details of changes if applicable
+3. Update the `schema.json` file if you're adding new data structures
 4. Your PR should contain a clear description of the changes and their purpose
 5. The PR must pass all automated tests
 6. A project maintainer will review your PR and may request changes
