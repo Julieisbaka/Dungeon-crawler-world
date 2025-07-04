@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Item Schema",
+    "description": "Schema for defining items in Dungeon Crawler World.",
+    "type": "object",
+    "properties": {
+        "skills": {
+            "type": "object",
+            "description": "A dictionary of skills and values associated with the item.",
+            "$comment": "Each skill should match an existing skill in the skills folder."
+        }
+    },
+    "additionalProperties": {
+        "$ref": "Common.json#/properties"
+    },
+    "required": [
+        "name", 
+        "description"
+    ]
+}
