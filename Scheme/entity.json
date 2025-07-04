@@ -12,6 +12,21 @@
             "type": "array",
             "description": "A list of skills associated with the entity.",
             "$comment": "Each skill should match an existing skill in the skills folder."
+        },
+        "spells": {
+            "type": "array",
+            "description": "A list of spells associated with the entity.",
+            "$comment": "Each spell should match an existing spell in the spells folder."
+        },
+        "effects": {
+            "type": "array",
+            "description": "A list of effects associated with the entity.",
+            "$comment": "Each effect should match an existing effect in the effects folder."
+        },
+        "items": {
+            "type": "array",
+            "description": "A list of items associated with the entity.",
+            "$comment": "Each item should match an existing item in the items folder."
         }
     },
     "additionalProperties": {

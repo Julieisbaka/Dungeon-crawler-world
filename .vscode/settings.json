@@ -17,8 +17,8 @@
         "!.vscode/**/*.json",
         "!config.json",
         "!Scheme/**",
-        "!ID.json",
-        "!Save.json"
+        "!Save.json",
+        "!.markdownlint.json"
       ]
     },
     {
