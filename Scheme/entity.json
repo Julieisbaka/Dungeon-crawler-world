@@ -6,7 +6,7 @@
     "properties": {
         "level": {
             "type": "integer", 
-            "description": "The level of the entity."
+            "description": "The level of the entity. THIS SHOULD NOT BE USED FOR ENTITIES THAT HAVE DYNAMIC LEVELLING."
         },
         "skills": {
             "type": "array",
