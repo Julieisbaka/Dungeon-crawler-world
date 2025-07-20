@@ -6,11 +6,11 @@ use egui::{CentralPanel, Context, RichText, Style, Visuals};
 // This struct will hold any state your application needs.
 // For a simple menu, it might not need any fields, but it's essential
 // for eframe to manage your application's lifecycle.
-struct DungeonCrawlerCarl;
+struct DungeonCrawlerworld;
 
-// Implement the Default trait for DungeonCrawlerCarl.
+// Implement the Default trait for DungeonCrawlerworld.
 // This allows eframe to create a default instance of your app when it starts.
-impl Default for DungeonCrawlerCarl {
+impl Default for DungeonCrawlerworld {
     fn default() -> Self {
         Self {} // No fields to initialize for this simple menu
     }
@@ -19,7 +19,7 @@ impl Default for DungeonCrawlerCarl {
 // Implement the eframe::App trait for your MyApp struct.
 // This trait defines the core behavior of your egui application,
 // specifically the `update` method which is called repeatedly to redraw the UI.
-impl App for DungeonCrawlerCarl {
+impl App for DungeonCrawlerworld {
     // The `update` method is where you define your UI layout and logic.
     // `ctx`: The egui context, used to interact with the GUI.
     // `_frame`: The eframe frame, used for window operations (e.g., closing the app).
@@ -36,10 +36,10 @@ impl App for DungeonCrawlerCarl {
 
                 // Create buttons and handle their clicks.
                 // When a button is clicked, its `clicked()` method returns true.
-                if ui.button("Start Game").clicked() {
+                if ui.button("New Game").clicked() {
                 }
-                if ui.button("Load Game").clicked() {
-                    // Handle loading game state.
+                if ui.button("Saves").clicked() {
+                    // Handle loading game states.
                 }
                 if ui.button("Settings").clicked() {
                     // Handle opening settings menu.
@@ -61,7 +61,7 @@ fn main() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([400.0, 300.0]) // Initial window size (width, height)
             .with_min_inner_size([300.0, 200.0]) // Minimum resizable size
-            .with_title("Dungeon crawler Carl"), // Window title
+            .with_title("Dungeon crawler world"), // Window title
         ..Default::default() // Use default values for other options
     };
 
@@ -69,7 +69,7 @@ fn main() -> eframe::Result<()> {
     // This function takes the application name, options, and a closure
     // that creates and returns your App instance.
     eframe::run_native(
-        "Dungeon crawler Carl", // The name of your application (also used as default window title)
+        "Dungeon crawler world", // The name of your application (also used as default window title)
         options,
         Box::new(|creation_context| {
             // This closure is called once when the application starts.

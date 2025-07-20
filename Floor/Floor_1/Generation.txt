@@ -1,4 +1,3 @@
-Use Kruskal's least cost minimum spanning tree algorithm.
 Connections represent hallways.
 Node represent rooms.
 Overlapping nodes result in a larger room.
