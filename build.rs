@@ -3,23 +3,23 @@ use std::path::PathBuf;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    
+
     // Build C++ backend files
     build_cpp_backend();
-    
+
     // Setup Vulkan
     setup_vulkan();
-    
+
     // Handle JSON data files
     handle_json_data();
-    
+
     // Setup include paths and linking
     setup_linking();
 }
 
 fn build_cpp_backend() {
     let mut build = cc::Build::new();
-    
+
     build
         .cpp(true)
         .std("c++17")
@@ -34,21 +34,21 @@ fn build_cpp_backend() {
         .file("Floor/Floor_1/time.cpp")
         // Data files
         .file("cpp/data/data.cpp");
-    
+
     // Add debug/release specific flags
     if env::var("PROFILE").unwrap() == "debug" {
         build.flag_if_supported("-g").flag_if_supported("-O0");
     } else {
         build.flag_if_supported("-O3").flag_if_supported("-DNDEBUG");
     }
-    
+
     // Platform-specific configurations
     if cfg!(target_os = "windows") {
         build.flag_if_supported("/std:c++17");
     }
-    
+
     build.compile("dungeon_crawler_backend");
-    
+
     println!("cargo:rerun-if-changed=Floor/");
     println!("cargo:rerun-if-changed=cpp/");
 }
@@ -66,7 +66,7 @@ fn setup_vulkan() {
         println!("cargo:rustc-link-lib=framework=Metal");
         println!("cargo:rustc-link-lib=framework=MetalKit");
     }
-    
+
     println!("cargo:rerun-if-env-changed=VULKAN_SDK");
 }
 
@@ -74,11 +74,11 @@ fn handle_json_data() {
     // Copy JSON data files to output directory if needed
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-    
+
     // Add JSON files that should trigger rebuilds
     println!("cargo:rerun-if-changed=data/");
     println!("cargo:rerun-if-changed=assets/");
-    
+
     // If you need to process JSON at build time, add logic here
     // For example, validating JSON schemas or converting formats
 }

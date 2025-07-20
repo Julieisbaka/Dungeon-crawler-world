@@ -3,21 +3,16 @@
     "title": "Celestial Schema",
     "description": "Schema for defining celestial entities in the Dungeon Crawler World.",
     "type": "object",
-    "properties": {        
-        "spells": {
-            "type": "array",
-            "description": "A list of spells associated with the entity.",
-            "$comment": "Each spell should match an existing spell in the spells folder."
-        },        
+    "allOf": [
+        { 
+            "$ref": "entity.json#/properties" 
+        }
+    ],
+    "properties": {             
         "level": {
             "type": "integer", 
             "description": "The level of the entity.",
             "$comment": "Most gods are level 200, 250, or 300. Most lower Demons are between 80 and 120. Most upper demons are between 120 and 200."
-        },
-        "skills": {
-            "type": "array",
-            "description": "A list of skills associated with the entity.",
-            "$comment": "Each skill should match an existing skill in the skills folder."
         }
     },
     "additionalProperties": {

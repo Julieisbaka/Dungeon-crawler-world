@@ -63,7 +63,7 @@ There are many ways to contribute to Dungeon Crawler World:
 
 ## Schema Guidelines
 
-When modifying the schema.json file:
+When modifying the `schema.json` file:
 
 - Follow the JSON Schema draft-07 standard
 - Add clear descriptions for each property

@@ -16,7 +16,7 @@ impl Default for DungeonCrawlerworld {
     }
 }
 
-// Implement the eframe::App trait for your MyApp struct.
+// Implement the `eframe::App` trait for your MyApp struct.
 // This trait defines the core behavior of your egui application,
 // specifically the `update` method which is called repeatedly to redraw the UI.
 impl App for DungeonCrawlerworld {
@@ -36,13 +36,12 @@ impl App for DungeonCrawlerworld {
 
                 // Create buttons and handle their clicks.
                 // When a button is clicked, its `clicked()` method returns true.
-                if ui.button("New Game").clicked() {
-                }
+                if ui.button("New Game").clicked() {}
                 if ui.button("Saves").clicked() {
                     // Handle loading game states.
                 }
                 if ui.button("Settings").clicked() {
-                    // Handle opening settings menu.
+                    // Handle opening settings menu. The `settings.rs` file.
                 }
                 if ui.button("Quit").clicked() {
                     // Request the eframe window to close.
@@ -78,8 +77,8 @@ fn main() -> eframe::Result<()> {
                 visuals: Visuals::dark(), // Set egui to use its default dark theme
                 ..Default::default()
             });
-            // Return a boxed instance of your DungeonCrawlerCarl.
-            Box::new(DungeonCrawlerCarl::default())
+            // Return a boxed instance of your DungeonCrawlerworld.
+            Box::new(DungeonCrawlerworld::default())
         }),
     )
 }
