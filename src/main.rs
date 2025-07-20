@@ -25,9 +25,9 @@ impl App for DungeonCrawlerworld {
     // `_frame`: The eframe frame, used for window operations (e.g., closing the app).
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         // Create a CentralPanel, which is a good default for the main content area.
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show(ctx, |ui: &mut egui::Ui| {
             // Arrange UI elements vertically and centered within the panel.
-            ui.vertical_centered(|ui| {
+            ui.vertical_centered(|ui: &mut egui::Ui| {
                 // Add a heading for the menu.
                 // RichText allows for styling like size.
                 ui.heading(RichText::new("Game Menu").size(30.0));
@@ -56,7 +56,7 @@ impl App for DungeonCrawlerworld {
 // It sets up the eframe environment and runs your egui application.
 fn main() -> eframe::Result<()> {
     // Define native window options, such as initial size and title.
-    let options = NativeOptions {
+    let options: NativeOptions = NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([400.0, 300.0]) // Initial window size (width, height)
             .with_min_inner_size([300.0, 200.0]) // Minimum resizable size
@@ -70,7 +70,7 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Dungeon crawler world", // The name of your application (also used as default window title)
         options,
-        Box::new(|creation_context| {
+        Box::new(|creation_context: &eframe::CreationContext<'_>| {
             // This closure is called once when the application starts.
             // It's a good place to set up global egui styles.
             creation_context.egui_ctx.set_style(Style {
