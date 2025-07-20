@@ -9,22 +9,6 @@
   "prettier.bracketSpacing": true,
   "prettier.embeddedLanguageFormatting": "auto",
   "json.format.enable": false,
-  "json.schemas": [
-    {
-      "url": "https://raw.githubusercontent.com/Julieisbaka/Dungeon-crawler-world/refs/heads/Main/Scheme/schema.json",
-      "fileMatch": [
-        "**/*.json",
-        "!.vscode/**/*.json",
-        "!config.json",
-        "!Scheme/**",
-        "!Save.json",
-        "!.markdownlint.json"
-      ]
-    },
-    {
-      "url": "Scheme/Settings.json"
-    }
-  ],
   "json.validate.enable": true,
   "cSpell.words": [
     "Dewatta",
