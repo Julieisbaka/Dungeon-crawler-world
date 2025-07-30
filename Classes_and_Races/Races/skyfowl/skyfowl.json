@@ -1,3 +1,5 @@
 {
-  "name": "skyfowl"
+  "$schema": "../../../Scheme/selection.json",
+  "name": "skyfowl",
+  "description": ""
 }

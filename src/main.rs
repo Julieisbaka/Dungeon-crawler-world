@@ -1,53 +1,55 @@
 // Import necessary crates and modules from eframe and egui
 use eframe::{App, Frame, NativeOptions};
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
+mod settings;
+use settings::{Settings, settings_ui};
 
-// Define your main application struct.
-// This struct will hold any state your application needs.
-// For a simple menu, it might not need any fields, but it's essential
-// for eframe to manage your application's lifecycle.
-struct DungeonCrawlerworld;
 
-// Implement the Default trait for DungeonCrawlerworld.
-// This allows eframe to create a default instance of your app when it starts.
+// Main app struct with settings state
+struct DungeonCrawlerworld {
+    show_settings: bool,
+    settings: Settings,
+}
+
+
 impl Default for DungeonCrawlerworld {
     fn default() -> Self {
-        Self {} // No fields to initialize for this simple menu
+        Self {
+            show_settings: false,
+            settings: Settings::default(),
+        }
     }
 }
 
-// Implement the `eframe::App` trait for your MyApp struct.
-// This trait defines the core behavior of your egui application,
-// specifically the `update` method which is called repeatedly to redraw the UI.
-impl App for DungeonCrawlerworld {
-    // The `update` method is where you define your UI layout and logic.
-    // `ctx`: The egui context, used to interact with the GUI.
-    // `_frame`: The eframe frame, used for window operations (e.g., closing the app).
-    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        // Create a CentralPanel, which is a good default for the main content area.
-        egui::CentralPanel::default().show(ctx, |ui: &mut egui::Ui| {
-            // Arrange UI elements vertically and centered within the panel.
-            ui.vertical_centered(|ui: &mut egui::Ui| {
-                // Add a heading for the menu.
-                // RichText allows for styling like size.
-                ui.heading(RichText::new("Game Menu").size(30.0));
-                // Add some vertical space for better layout.
-                ui.add_space(20.0);
 
-                // Create buttons and handle their clicks.
-                // When a button is clicked, its `clicked()` method returns true.
-                if ui.button("New Game").clicked() {}
-                if ui.button("Saves").clicked() {
-                    // Handle loading game states.
-                }
-                if ui.button("Settings").clicked() {
-                    // Handle opening settings menu. The `settings.rs` file.
-                }
-                if ui.button("Quit").clicked() {
-                    // Request the eframe window to close.
-                    _frame.close();
-                }
-            });
+impl App for DungeonCrawlerworld {
+    fn update(&mut self, ctx: &Context, frame: &mut Frame) {
+        CentralPanel::default().show(ctx, |ui| {
+            if self.show_settings {
+                ui.vertical_centered(|ui| {
+                    ui.heading(RichText::new("Settings").size(28.0));
+                    settings_ui(ui, &mut self.settings);
+                    ui.add_space(16.0);
+                    if ui.button("Back").clicked() {
+                        self.show_settings = false;
+                    }
+                });
+            } else {
+                ui.vertical_centered(|ui| {
+                    ui.heading(RichText::new("Game Menu").size(30.0));
+                    ui.add_space(20.0);
+                    if ui.button("New Game").clicked() {}
+                    if ui.button("Saves").clicked() {
+                        // Handle loading game states.
+                    }
+                    if ui.button("Settings").clicked() {
+                        self.show_settings = true;
+                    }
+                    if ui.button("Quit").clicked() {
+                        frame.close();
+                    }
+                });
+            }
         });
     }
 }

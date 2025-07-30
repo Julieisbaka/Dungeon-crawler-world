@@ -2,9 +2,9 @@
   "$schema": "https://json.schemastore.org/package",
   "version": "0.0.5",
   "devDependencies": {
+    "markdownlint-cli2": "0.17.2",
     "path": "^0.12.7",
-    "prettier": "3.5.3",
-    "markdownlint-cli2": "0.17.2"
+    "prettier": "^3.5.3"
   },
   "scripts": {
     "markdownlint-linelength": "markdownlint-cli2 ."

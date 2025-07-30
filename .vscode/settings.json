@@ -8,7 +8,6 @@
   "prettier.trailingComma": "none",
   "prettier.bracketSpacing": true,
   "prettier.embeddedLanguageFormatting": "auto",
-  "json.format.enable": false,
   "json.validate.enable": true,
   "cSpell.words": [
     "Dewatta",

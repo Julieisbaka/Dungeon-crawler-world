@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "properties": {
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "race": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skill": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                }
+              },
+              "required": ["name", "level"],
+              "additionalProperties": false
+            }
+          },
+          "spell": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                }
+              },
+              "required": ["name", "level"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false,
+        "minProperties": 1,
+        "maxProperties": 1
+      }
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "race": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skill": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                }
+              },
+              "required": ["name", "level"],
+              "additionalProperties": false
+            }
+          },
+          "spell": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                }
+              },
+              "required": ["name", "level"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false,
+        "minProperties": 1,
+        "maxProperties": 1
+      }
+    }
+  },
+  "additionalProperties": {
+    "$ref": "Common.json#/properties"
+  }
+}
