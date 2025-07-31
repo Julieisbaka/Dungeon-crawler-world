@@ -8,7 +8,13 @@
             "type": "number"
         },
         "spells": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+                "type": "number"
+            },
+            "propertyNames": {
+                "type": "string"
+            }
         },
         "inventory": {
             "type": "object"
