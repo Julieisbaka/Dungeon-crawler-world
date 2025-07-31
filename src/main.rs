@@ -1,3 +1,5 @@
+use std::error::Error;
+
 // Import necessary crates and modules from eframe and egui
 use eframe::{App, Frame, NativeOptions};
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
@@ -23,15 +25,15 @@ impl Default for DungeonCrawlerworld {
 
 
 impl App for DungeonCrawlerworld {
-    fn update(&mut self, ctx: &Context, frame: &mut Frame) {
+    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            if self.show_settings {
+            if (*self).show_settings {
                 ui.vertical_centered(|ui| {
                     ui.heading(RichText::new("Settings").size(28.0));
-                    settings_ui(ui, &mut self.settings);
+                    settings_ui(ui, &mut (*self).settings);
                     ui.add_space(16.0);
                     if ui.button("Back").clicked() {
-                        self.show_settings = false;
+                        (*self).show_settings = false;
                     }
                 });
             } else {
@@ -46,7 +48,7 @@ impl App for DungeonCrawlerworld {
                         self.show_settings = true;
                     }
                     if ui.button("Quit").clicked() {
-                        frame.close();
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                     }
                 });
             }
@@ -72,15 +74,15 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Dungeon crawler world", // The name of your application (also used as default window title)
         options,
-        Box::new(|creation_context: &eframe::CreationContext<'_>| {
+        Box::new(|creation_context: &eframe::CreationContext<'_>| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {
             // This closure is called once when the application starts.
             // It's a good place to set up global egui styles.
-            creation_context.egui_ctx.set_style(Style {
+            (*creation_context).egui_ctx.set_style(Style {
                 visuals: Visuals::dark(), // Set egui to use its default dark theme
                 ..Default::default()
             });
             // Return a boxed instance of your DungeonCrawlerworld.
-            Box::new(DungeonCrawlerworld::default())
+            Ok(Box::new(DungeonCrawlerworld::default()))
         }),
     )
 }

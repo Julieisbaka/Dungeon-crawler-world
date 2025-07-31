@@ -151,10 +151,14 @@ fn setup_vulkan() {
 }
 
 fn setup_bullet_physics() {
-    // Check for Bullet Physics library
+    // Link Bullet Physics C++ libraries
+    // On Windows, set BULLET_DIR env variable to Bullet install path, or ensure Bullet libs are in your library path
     if let Ok(bullet_dir) = env::var("BULLET_DIR") {
         println!("cargo:rustc-link-search=native={}/lib", bullet_dir);
         println!("cargo:include={}/include/bullet", bullet_dir);
+        println!("cargo:rustc-link-lib=BulletDynamics");
+        println!("cargo:rustc-link-lib=BulletCollision");
+        println!("cargo:rustc-link-lib=LinearMath");
     } else {
         // Try to find Bullet via pkg-config on Linux/macOS
         if !cfg!(target_os = "windows")
@@ -242,8 +246,8 @@ fn setup_markdown_support() {
 }
 
 fn print_build_info() {
-    let target: String = env::var("TARGET").unwrap_or_else(|_| "unknown".to_string());
-    let profile: String = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
+    let target: String = env::var("TARGET").unwrap_or_else(|_| -> String { "unknown".to_string() });
+    let profile: String = env::var("PROFILE").unwrap_or_else(|_| -> String { "debug".to_string() });
 
     println!("cargo:warning=Building for target: {}", target);
     println!("cargo:warning=Build profile: {}", profile);

@@ -1,5 +1,4 @@
-use eframe::{App, Frame, NativeOptions};
-use egui::{Color32, RichText, Style, Visuals, Ui};
+use egui::{Ui};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Settings {
@@ -23,8 +22,8 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings) {
 
 	ui.horizontal(|ui| {
 		ui.label("Fog:");
-		egui::ComboBox::from_id_source("fog_combo")
-			.selected_text(match settings.fog {
+		egui::ComboBox::from_id_salt("fog_combo")
+			.selected_text(match (*settings).fog {
 				0 => "No fog",
 				1 => "Fast fog",
 				2 => "Default fog",
@@ -32,17 +31,17 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings) {
 				_ => "Unknown",
 			})
 			.show_ui(ui, |ui| {
-				ui.selectable_value(&mut settings.fog, 0, "No fog");
-				ui.selectable_value(&mut settings.fog, 1, "Fast fog");
-				ui.selectable_value(&mut settings.fog, 2, "Default fog");
-				ui.selectable_value(&mut settings.fog, 3, "Fancy fog");
+				ui.selectable_value(&mut (*settings).fog, 0, "No fog");
+				ui.selectable_value(&mut (*settings).fog, 1, "Fast fog");
+				ui.selectable_value(&mut (*settings).fog, 2, "Default fog");
+				ui.selectable_value(&mut (*settings).fog, 3, "Fancy fog");
 			});
 	});
 
 	ui.horizontal(|ui| {
 		ui.label("Lighting:");
-		egui::ComboBox::from_id_source("lighting_combo")
-			.selected_text(match settings.lighting {
+		egui::ComboBox::from_id_salt("lighting_combo")
+			.selected_text(match (*settings).lighting {
 				0 => "No dynamic lighting",
 				1 => "Non-shader lighting",
 				2 => "Simple shader lighting",
@@ -52,17 +51,17 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings) {
 				_ => "Unknown",
 			})
 			.show_ui(ui, |ui| {
-				ui.selectable_value(&mut settings.lighting, 0, "No dynamic lighting");
-				ui.selectable_value(&mut settings.lighting, 1, "Non-shader lighting");
-				ui.selectable_value(&mut settings.lighting, 2, "Simple shader lighting");
-				ui.selectable_value(&mut settings.lighting, 3, "Normal shader lighting");
-				ui.selectable_value(&mut settings.lighting, 4, "Fancy shader lighting");
-				ui.selectable_value(&mut settings.lighting, 5, "Highest quality");
+				ui.selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting");
+				ui.selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting");
+				ui.selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting");
+				ui.selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting");
+				ui.selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting");
+				ui.selectable_value(&mut (*settings).lighting, 5, "Highest quality");
 			});
 	});
 
 	ui.horizontal(|ui| {
 		ui.label("Physically based sound:");
-		ui.checkbox(&mut settings.sound, "Enable");
+		ui.checkbox(&mut (*settings).sound, "Enable");
 	});
 }

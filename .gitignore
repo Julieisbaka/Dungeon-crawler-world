@@ -1,3 +1,4 @@
 package-lock.json
-node_modules
-target
+node_modules/
+target/
+bullet3/
