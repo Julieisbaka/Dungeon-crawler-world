@@ -58,9 +58,7 @@ If you want to play with just friends you can create a private server or use LAN
 
 ## AI
 
-[Model](https://huggingface.co/Appleinteligence/Dungeon-crawler-world)
-
-[Dataset](https://huggingface.co/datasets/Appleinteligence/Dungeon-crawler-world)
+[Dataset collection](https://huggingface.co/collections/Appleinteligence/dungeon-crawler-world-688ac8b951065cefb12578ae)
 
 ## Credits
 
