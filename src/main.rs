@@ -23,7 +23,6 @@ impl Default for DungeonCrawlerworld {
     }
 }
 
-
 impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| {

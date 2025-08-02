@@ -23,9 +23,6 @@ fn main() {
     // Setup include paths and linking
     setup_linking();
 
-    // Configure Markdown rendering support
-    setup_markdown_support();
-
     // Print build information
     print_build_info();
 }
@@ -35,7 +32,7 @@ fn check_dependencies() {
     println!("cargo:warning=Checking for required build dependencies...");
 
     // For packaging, these would be needed but not required for the build itself
-    if cfg!(feature = "package") {
+    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() { // TODO: IDK if this actually works so please check that it does
         if cfg!(target_os = "windows") {
             // Check for WiX Toolset (for MSI creation)
             let wix: bool = Command::new("where").arg("candle").output().is_ok();
@@ -194,7 +191,7 @@ fn setup_bullet_physics() {
 fn handle_json_data() {
     // Copy JSON data files to output directory if needed
     let out_dir: PathBuf = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()); // manifest_dir is Unused
 
     // Add JSON files that should trigger rebuilds
     println!("cargo:rerun-if-changed=data/");
@@ -205,6 +202,7 @@ fn handle_json_data() {
     println!("cargo:rerun-if-changed=Items/");
     println!("cargo:rerun-if-changed=Magic/");
     println!("cargo:rerun-if-changed=Skills/");
+    println!("cargo:rerun-if-changed=Benefits/");
 
     // Create resources.rs with embedded files if needed
     let resources_path: PathBuf = out_dir.join("resources.rs");
@@ -237,12 +235,6 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=framework=CoreFoundation");
         println!("cargo:rustc-link-lib=c++"); // Required for C++ libraries on macOS
     }
-}
-
-fn setup_markdown_support() {
-    // We use egui's built-in markdown support, just make sure the feature is enabled
-    // This is mostly a reminder, as the actual configuration is in Cargo.toml
-    println!("cargo:warning=Ensure 'markdown' feature is enabled for egui in Cargo.toml");
 }
 
 fn print_build_info() {
