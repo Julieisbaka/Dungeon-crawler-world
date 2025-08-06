@@ -20,6 +20,7 @@ Expand-Archive -Path $bulletZip -DestinationPath $bulletDir
 New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
 
 cmake -S "$bulletDir\$bulletSrcDir" -B $buildDir -G "MinGW Makefiles"
+
 mingw32-make -C $buildDir
 
 Write-Host "Bullet Physics built successfully. Libraries are in $buildDir\lib\Release"
