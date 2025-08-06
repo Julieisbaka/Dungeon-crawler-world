@@ -19,10 +19,7 @@ Expand-Archive -Path $bulletZip -DestinationPath $bulletDir
 # Create build directory
 New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
 
-# Run CMake to generate Visual Studio solution
-cmake -S "$bulletDir\$bulletSrcDir" -B $buildDir -G "Visual Studio 16 2019" -A x64
-
-# Build using MSBuild
-msbuild "$buildDir\ALL_BUILD.vcxproj" /p:Configuration=Release
+cmake -S "$bulletDir\$bulletSrcDir" -B $buildDir -G "MinGW Makefiles"
+mingw32-make -C $buildDir
 
 Write-Host "Bullet Physics built successfully. Libraries are in $buildDir\lib\Release"

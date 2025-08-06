@@ -3,6 +3,8 @@ use std::error::Error;
 // Import necessary crates and modules from eframe and egui
 use eframe::{App, Frame, NativeOptions};
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
+mod saves;
+use saves::show_save_ui;
 mod settings;
 use settings::{Settings, settings_ui};
 
@@ -10,7 +12,9 @@ use settings::{Settings, settings_ui};
 // Main app struct with settings state
 struct DungeonCrawlerworld {
     show_settings: bool,
+    show_saves: bool,
     settings: Settings,
+    save_menu_state: saves::SaveMenuState,
 }
 
 
@@ -18,7 +22,9 @@ impl Default for DungeonCrawlerworld {
     fn default() -> Self {
         Self {
             show_settings: false,
+            show_saves: false,
             settings: Settings::default(),
+            save_menu_state: saves::SaveMenuState::default(),
         }
     }
 }
@@ -35,13 +41,22 @@ impl App for DungeonCrawlerworld {
                         (*self).show_settings = false;
                     }
                 });
+            } else if (*self).show_saves {
+                ui.vertical_centered(|ui: &mut egui::Ui| {
+                    ui.heading(RichText::new("Saves Menu").size(28.0));
+                    show_save_ui(ui, &mut (*self).save_menu_state);
+                    ui.add_space(16.0);
+                    if ui.button("Back").clicked() {
+                        (*self).show_saves = false;
+                    }
+                });
             } else {
                 ui.vertical_centered(|ui| {
                     ui.heading(RichText::new("Game Menu").size(30.0));
                     ui.add_space(20.0);
                     if ui.button("New Game").clicked() {}
                     if ui.button("Saves").clicked() {
-                        // Handle loading game states.
+                        (*self).show_saves = true;
                     }
                     if ui.button("Settings").clicked() {
                         self.show_settings = true;
