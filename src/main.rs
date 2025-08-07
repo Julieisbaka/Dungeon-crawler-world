@@ -6,8 +6,11 @@ use egui::{CentralPanel, Context, RichText, Style, Visuals};
 mod saves;
 use saves::show_save_ui;
 mod settings;
-use settings::{Settings, settings_ui};
+use settings::{settings_ui, Settings};
 
+// Set this to true to enable developer mode options in the settings menu.
+// Set to false for release builds to hide developer options.
+const DEV_MODE_ENABLED: bool = false;
 
 // Main app struct with settings state
 struct DungeonCrawlerworld {
@@ -35,7 +38,7 @@ impl App for DungeonCrawlerworld {
             if (*self).show_settings {
                 ui.vertical_centered(|ui| {
                     ui.heading(RichText::new("Settings").size(28.0));
-                    settings_ui(ui, &mut (*self).settings);
+                    settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
                     ui.add_space(16.0);
                     if ui.button("Back").clicked() {
                         (*self).show_settings = false;

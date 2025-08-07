@@ -5,6 +5,10 @@ pub struct Settings {
 	pub fog: i32,
 	pub lighting: i32,
 	pub sound: bool,
+	pub developer_mode: bool,
+	pub verbose_logging: bool,
+	pub show_console: bool,
+	pub show_fps_graph: bool,
 }
 
 impl Default for Settings {
@@ -13,11 +17,15 @@ impl Default for Settings {
 			fog: 2,
 			lighting: 3,
 			sound: true,
+			developer_mode: false,
+			verbose_logging: false,
+			show_console: false,
+			show_fps_graph: false,
 		}
 	}
 }
 
-pub fn settings_ui(ui: &mut Ui, settings: &mut Settings) {
+pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: bool) {
 	ui.heading("Settings");
 
 	ui.horizontal(|ui| {
@@ -64,4 +72,19 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings) {
 		ui.label("Physically based sound:");
 		ui.checkbox(&mut (*settings).sound, "Enable");
 	});
+
+	if dev_mode_available {
+		ui.separator();
+
+		ui.checkbox(&mut settings.developer_mode, "Developer Mode");
+
+		if settings.developer_mode {
+			ui.group(|ui| {
+				ui.heading("Developer Options");
+				ui.checkbox(&mut settings.verbose_logging, "Verbose Logging");
+				ui.checkbox(&mut settings.show_console, "In-game Console");
+				ui.checkbox(&mut settings.show_fps_graph, "FPS Graph");
+			});
+		}
+	}
 }
