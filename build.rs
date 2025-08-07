@@ -5,25 +5,18 @@ use std::process::Command;
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
-    // Check for required dependencies
     check_dependencies();
 
-    // Build C++ backend files
     build_cpp_backend();
 
-    // Setup Vulkan
     setup_vulkan();
 
-    // Setup Bullet Physics
-    setup_bullet_physics();
+    // setup_bullet_physics();
 
-    // Handle JSON data files
     handle_json_data();
 
-    // Setup include paths and linking
     setup_linking();
 
-    // Print build information
     print_build_info();
 }
 
