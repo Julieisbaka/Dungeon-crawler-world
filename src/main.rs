@@ -1,3 +1,14 @@
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
+
+// Global current_save variable
+pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> = Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
+
+pub fn set_current_save(save_name: &str) {
+    let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE.lock().unwrap();
+    *current = Some(save_name.to_string());
+    log::info!("Current save set to: {}", save_name);
+}
 use std::error::Error;
 
 // Import necessary crates and modules from eframe and egui
@@ -11,7 +22,7 @@ use settings::{settings_ui, Settings};
 
 // Set this to true to enable developer mode options in the settings menu.
 // Set to false for release builds to hide developer options.
-const DEV_MODE_ENABLED: bool = true;
+const DEV_MODE_ENABLED: bool = false;
 
 // Main app struct with settings state
 struct DungeonCrawlerworld {
@@ -37,38 +48,31 @@ impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| {
             if (*self).show_settings {
-                ui.vertical_centered(|ui| {
-                    ui.heading(RichText::new("Settings").size(28.0));
-                    settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
-                    ui.add_space(16.0);
-                    if ui.button("Back").clicked() {
-                        (*self).show_settings = false;
-                    }
-                });
+                ui.heading(RichText::new("Settings").size(28.0));
+                settings_ui(ui, &mut self.settings, DEV_MODE_ENABLED);
+                ui.add_space(16.0);
+                if ui.button("Back").clicked() {
+                    (*self).show_settings = false;
+                }
             } else if (*self).show_saves {
-                ui.vertical_centered(|ui: &mut egui::Ui| {
-                    ui.heading(RichText::new("Saves Menu").size(28.0));
-                    show_save_ui(ui, &mut (*self).save_menu_state);
-                    ui.add_space(16.0);
-                    if ui.button("Back").clicked() {
-                        (*self).show_saves = false;
-                    }
-                });
+                ui.heading(RichText::new("Saves Menu").size(28.0));
+                show_save_ui(ui, &mut (*self).save_menu_state);
+                ui.add_space(16.0);
+                if ui.button("Back").clicked() {
+                    (*self).show_saves = false;
+                }
             } else {
-                ui.vertical_centered(|ui| {
-                    ui.heading(RichText::new("Game Menu").size(30.0));
-                    ui.add_space(20.0);
-                    if ui.button("New Game").clicked() {}
-                    if ui.button("Saves").clicked() {
-                        (*self).show_saves = true;
-                    }
-                    if ui.button("Settings").clicked() {
-                        self.show_settings = true;
-                    }
-                    if ui.button("Quit").clicked() {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                    }
-                });
+                ui.heading(RichText::new("Game Menu").size(30.0));
+                ui.add_space(20.0);
+                if ui.button("Saves").clicked() {
+                    (*self).show_saves = true;
+                }
+                if ui.button("Settings").clicked() {
+                    (*self).show_settings = true;
+                }
+                if ui.button("Quit").clicked() {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
             }
         });
     }

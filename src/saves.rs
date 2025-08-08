@@ -4,6 +4,11 @@ use crate::new_save::{show_new_save_ui, NewSaveState};
 pub struct SaveMenuState {
     pub show_menu: bool,
     pub new_save_state: NewSaveState,
+    pub in_new_save_menu: bool,
+    pub editing_save: Option<String>,
+    pub edit_save_name: String,
+    pub confirm_delete: bool,
+    pub delete_target: Option<String>,
 }
 
 impl Default for SaveMenuState {
@@ -11,6 +16,11 @@ impl Default for SaveMenuState {
         Self { 
             show_menu: false,
             new_save_state: NewSaveState::default(),
+            in_new_save_menu: false,
+            editing_save: None,
+            edit_save_name: String::new(),
+            confirm_delete: false,
+            delete_target: None,
         }
     }
 }
@@ -24,16 +34,78 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     use image::ImageReader as ImageReader;
     use image::GenericImageView;
 
-    if (*state).new_save_state.show_new_save {
+    // Handle delete confirmation dialog
+    if (*state).confirm_delete {
+        egui::Window::new("Confirm Delete")
+            .collapsible(false)
+            .resizable(false)
+            .show(ui.ctx(), |ui| {
+                ui.label("Are you sure you want to delete this save? This cannot be undone.");
+                ui.horizontal(|ui| {
+                    if ui.button("Delete").clicked() {
+                        if let Some(ref folder) = (*state).delete_target {
+                            let _ = fs::remove_dir_all(Path::new("saves").join(folder));
+                        }
+                        (*state).confirm_delete = false;
+                        (*state).delete_target = None;
+                        (*state).editing_save = None;
+                    }
+                    if ui.button("Cancel").clicked() {
+                        (*state).confirm_delete = false;
+                        (*state).delete_target = None;
+                    }
+                });
+            });
+    }
+
+    if (*state).in_new_save_menu {
         if show_new_save_ui(ui, &mut (*state).new_save_state) {
-            state.new_save_state.show_new_save = false;
-            state.new_save_state.reset();
+            (*state).in_new_save_menu = false;
+            (*state).new_save_state.reset();
         }
         return;
     }
 
+    // Edit save UI
+    if let Some(ref folder_name) = (*state).editing_save {
+        let folder_name: String = folder_name.clone(); // Clone to avoid borrowing issues
+        let display_name: String = folder_name.replace('_', " ");
+        egui::Window::new("Edit Save")
+            .collapsible(false)
+            .resizable(false)
+            .show(ui.ctx(), |ui| {
+                ui.label(format!("Editing save: {}", display_name));
+                ui.horizontal(|ui| {
+                    ui.label("New name:");
+                    ui.text_edit_singleline(&mut state.edit_save_name);
+                });
+                ui.add_space(10.0);
+                ui.horizontal(|ui| {
+                    if ui.button("Rename").clicked() {
+                        let new_folder: String = state.edit_save_name.trim().replace(' ', "_");
+                        if !new_folder.is_empty() && new_folder != *folder_name {
+                            let old_path: std::path::PathBuf = Path::new("saves").join(folder_name.clone());
+                            let new_path: std::path::PathBuf = Path::new("saves").join(&new_folder);
+                            if !new_path.exists() {
+                                let _ = fs::rename(&old_path, &new_path);
+                                (*state).editing_save = Some(new_folder);
+                            }
+                        }
+                    }
+                    if ui.button("Delete").clicked() {
+                        (*state).confirm_delete = true;
+                        (*state).delete_target = Some(folder_name);
+                    }
+                    if ui.button("Done").clicked() {
+                        (*state).editing_save = None;
+                    }
+                });
+            });
+        return;
+    }
+
     if ui.button("Create New Save").clicked() {
-        state.new_save_state.show_new_save = true;
+        (*state).in_new_save_menu = true;
         (*state).new_save_state.reset();
     }
 
@@ -45,7 +117,8 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         for entry in entries.flatten() {
             let path: std::path::PathBuf = entry.path();
             if path.is_dir() {
-                let save_name: std::borrow::Cow<'_, str> = path.file_name().unwrap().to_string_lossy();
+                let folder_name: std::borrow::Cow<'_, str> = path.file_name().unwrap().to_string_lossy();
+                let save_name: String = folder_name.replace('_', " ");
                 
                 // Try to read save.json to get additional info
                 let save_json_path: std::path::PathBuf = path.join("save.json");
@@ -97,9 +170,15 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                         if !created_at_text.is_empty() {
                             ui.label(created_at_text);
                         }
-                        if ui.button("Load Save").clicked() {
-                            // TODO: Implement save loading logic
-                        }
+                        ui.horizontal(|ui| {
+                            if ui.button("Load Save").clicked() {
+                                crate::set_current_save(&folder_name);
+                            }
+                            if ui.button("Edit").clicked() {
+                                (*state).editing_save = Some(folder_name.to_string());
+                                (*state).edit_save_name = save_name.clone();
+                            }
+                        });
                     });
                 });
                 ui.add_space(16.0); // Space between saves

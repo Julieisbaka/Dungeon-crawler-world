@@ -14,7 +14,9 @@ dependencies = [
  "env_logger",
  "image",
  "log",
+ "once_cell",
  "pkg-config",
+ "serde",
  "serde_json",
 ]
 

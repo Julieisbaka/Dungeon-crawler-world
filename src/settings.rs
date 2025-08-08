@@ -1,6 +1,9 @@
 use egui::{Ui};
+use serde::{Serialize, Deserialize};
+use std::fs;
+use std::path::Path;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
 	pub fog: i32,
 	pub lighting: i32,
@@ -11,22 +14,47 @@ pub struct Settings {
 	pub show_fps_graph: bool,
 }
 
+const SETTINGS_FILE: &str = "setting.json";
+
+impl Settings {
+    pub fn save(&self) {
+        if let Ok(json) = serde_json::to_string_pretty(self) {
+            let _ = fs::write(SETTINGS_FILE, json);
+        }
+    }
+
+    pub fn load() -> Self {
+        if Path::new(SETTINGS_FILE).exists() {
+            if let Ok(data) = fs::read_to_string(SETTINGS_FILE) {
+                if let Ok(settings) = serde_json::from_str::<Settings>(&data) {
+                    return settings;
+                }
+            }
+        }
+        Settings::default_inner()
+    }
+
+    fn default_inner() -> Self {
+        Self {
+            fog: 2,
+            lighting: 3,
+            sound: true,
+            developer_mode: false,
+            verbose_logging: false,
+            show_console: false,
+            show_fps_graph: false,
+        }
+    }
+}
+
 impl Default for Settings {
-	fn default() -> Self {
-		Self {
-			fog: 2,
-			lighting: 3,
-			sound: true,
-			developer_mode: false,
-			verbose_logging: false,
-			show_console: false,
-			show_fps_graph: false,
-		}
-	}
+    fn default() -> Self {
+        Settings::load()
+    }
 }
 
 pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: bool) {
-	ui.heading("Settings");
+	// Only show heading once in the settings menu (handled in main.rs)
 
 	ui.horizontal(|ui| {
 		ui.label("Fog:");
@@ -39,10 +67,10 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 				_ => "Unknown",
 			})
 			.show_ui(ui, |ui| {
-				ui.selectable_value(&mut (*settings).fog, 0, "No fog");
-				ui.selectable_value(&mut (*settings).fog, 1, "Fast fog");
-				ui.selectable_value(&mut (*settings).fog, 2, "Default fog");
-				ui.selectable_value(&mut (*settings).fog, 3, "Fancy fog");
+				if ui.selectable_value(&mut (*settings).fog, 0, "No fog").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).fog, 1, "Fast fog").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).fog, 2, "Default fog").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).fog, 3, "Fancy fog").changed() { settings.save(); }
 			});
 	});
 
@@ -59,31 +87,31 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 				_ => "Unknown",
 			})
 			.show_ui(ui, |ui| {
-				ui.selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting");
-				ui.selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting");
-				ui.selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting");
-				ui.selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting");
-				ui.selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting");
-				ui.selectable_value(&mut (*settings).lighting, 5, "Highest quality");
+				if ui.selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting").changed() { settings.save(); }
+				if ui.selectable_value(&mut (*settings).lighting, 5, "Highest quality").changed() { settings.save(); }
 			});
 	});
 
 	ui.horizontal(|ui| {
 		ui.label("Physically based sound:");
-		ui.checkbox(&mut (*settings).sound, "Enable");
+		if ui.checkbox(&mut (*settings).sound, "Enable").changed() { settings.save(); }
 	});
 
 	if dev_mode_available {
 		ui.separator();
 
-		ui.checkbox(&mut settings.developer_mode, "Developer Mode");
+		if ui.checkbox(&mut (*settings).developer_mode, "Developer Mode").changed() { settings.save(); }
 
-		if settings.developer_mode {
+		if (*settings).developer_mode {
 			ui.group(|ui| {
 				ui.heading("Developer Options");
-				ui.checkbox(&mut settings.verbose_logging, "Verbose Logging");
-				ui.checkbox(&mut settings.show_console, "In-game Console");
-				ui.checkbox(&mut settings.show_fps_graph, "FPS Graph");
+				if ui.checkbox(&mut (*settings).verbose_logging, "Verbose Logging").changed() { settings.save(); }
+				if ui.checkbox(&mut (*settings).show_console, "In-game Console").changed() { settings.save(); }
+				if ui.checkbox(&mut (*settings).show_fps_graph, "FPS Graph").changed() { settings.save(); }
 			});
 		}
 	}
