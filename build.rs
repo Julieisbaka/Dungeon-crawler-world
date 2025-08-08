@@ -141,6 +141,7 @@ fn setup_vulkan() {
     println!("cargo:rerun-if-env-changed=VULKAN_SDK");
 }
 
+// We don't use bullet for anything yet so for the sake of easy building we can just not use it in the build.rs file
 fn setup_bullet_physics() {
     // Link Bullet Physics C++ libraries
     // On Windows, set BULLET_DIR env variable to Bullet install path, or ensure Bullet libs are in your library path

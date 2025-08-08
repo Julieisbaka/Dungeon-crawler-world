@@ -5,12 +5,13 @@ use eframe::{App, Frame, NativeOptions};
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
 mod saves;
 use saves::show_save_ui;
+mod new_save;
 mod settings;
 use settings::{settings_ui, Settings};
 
 // Set this to true to enable developer mode options in the settings menu.
 // Set to false for release builds to hide developer options.
-const DEV_MODE_ENABLED: bool = false;
+const DEV_MODE_ENABLED: bool = true;
 
 // Main app struct with settings state
 struct DungeonCrawlerworld {

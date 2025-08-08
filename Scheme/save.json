@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Save File Schema",
+    "description": "Schema for save.json files in the saves directory",
+    "type": "object",
+    "properties": {
+        "save_name": {
+            "type": "string",
+            "description": "The unique name of the save"
+        },
+        "difficulty": {
+            "type": "string",
+            "enum": ["Easy", "Medium", "Hard"],
+            "description": "The difficulty level of the save"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of when the save was created"
+        }
+    }
+}
