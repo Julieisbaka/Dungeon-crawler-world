@@ -9,3 +9,5 @@
 - [ ] Create normals for wood
 
 - [ ] Create textures for wood
+
+- [ ] Create models for leaves
