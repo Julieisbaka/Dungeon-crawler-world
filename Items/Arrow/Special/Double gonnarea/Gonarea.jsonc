@@ -4,7 +4,7 @@
   "effects": [
     {
       "name": "Double_Gonorrhea",
-      "duration": -1 // Infinite
+      "duration": -1
     }
   ]
 }
