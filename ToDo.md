@@ -36,7 +36,7 @@
 
 - [ ] Implement saving mechanism for settings
 
-- [ ] Fix bugs with UI not taking uo the whole screen
+- [ ] Fix bugs with UI not taking up the whole screen
 
 - [ ] Create contributing guidlines
 
