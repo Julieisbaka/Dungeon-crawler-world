@@ -44,7 +44,7 @@ There are many ways to contribute to Dungeon Crawler World:
 
 1. Ensure your code adheres to the project's coding standards
 2. Update the `README.md` with details of changes if applicable
-3. Update the `schema.json` file if you're adding new data structures
+3. Update the Schema files if you're adding new data structures
 4. Your PR should contain a clear description of the changes and their purpose
 5. The PR must pass all automated tests
 6. A project maintainer will review your PR and may request changes
@@ -62,8 +62,6 @@ There are many ways to contribute to Dungeon Crawler World:
 - Write unit tests for new functionality when applicable
 
 ## Schema Guidelines
-
-When modifying the `schema.json` file:
 
 - Follow the JSON Schema draft-07 standard
 - Add clear descriptions for each property
