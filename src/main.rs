@@ -81,6 +81,17 @@ impl App for DungeonCrawlerworld {
 // The `main` function is the entry point of your Rust executable.
 // It sets up the eframe environment and runs your egui application.
 fn main() -> eframe::Result<()> {
+    // Initialize logger early
+    env_logger::init();
+    
+    // Load settings early to check developer mode
+    let settings = Settings::default();
+    
+    // Log warning if developer mode is enabled
+    if settings.developer_mode {
+        log::warn!("Warning!: If this is a development environment this message can be safely ignored. Developer mode is enabled; this is not meant for normal gameplay.");
+    }
+    
     // Define native window options, such as initial size and title.
     let options: NativeOptions = NativeOptions {
         viewport: egui::ViewportBuilder::default()

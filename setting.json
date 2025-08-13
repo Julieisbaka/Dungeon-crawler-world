@@ -1,0 +1,9 @@
+{
+  "fog": 2,
+  "lighting": 3,
+  "sound": true,
+  "developer_mode": true,
+  "verbose_logging": false,
+  "show_console": false,
+  "show_fps_graph": false
+}
