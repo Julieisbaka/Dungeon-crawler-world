@@ -89,7 +89,7 @@ fn main() -> eframe::Result<()> {
     
     // Log warning if developer mode is enabled
     if settings.developer_mode {
-        log::warn!("Warning!: If this is a development environment this message can be safely ignored. Developer mode is enabled; this is not meant for normal gameplay.");
+        log::warn!("Warning: If this is a development environment this message can be safely ignored. Developer mode is enabled; this is not meant for normal gameplay.");
     }
     
     // Define native window options, such as initial size and title.
