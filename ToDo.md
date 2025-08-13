@@ -28,7 +28,7 @@
 
 - [ ] Setup Vulkan Graphics with physics engine
 
-- [ ] Create PR and issue templates
+- [x] Create PR and issue templates
 
 - [ ] Implement the FPS graphing feature
 
@@ -38,7 +38,7 @@
 
 - [ ] Fix bugs with UI not taking up the whole screen
 
-- [ ] Create contributing guidlines
+- [x] Create contributing guidlines
 
 - [ ] Add simple keybind support
 
