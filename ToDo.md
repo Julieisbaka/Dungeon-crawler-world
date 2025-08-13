@@ -28,4 +28,18 @@
 
 - [ ] Setup Vulkan Graphics with physics engine
 
+- [ ] Create PR and issue templates
+
+- [ ] Implement the FPS graphing feature
+
+- [ ] Implement the in game console feature
+
+- [ ] Implement saving mechanism for settings
+
+- [ ] Fix bugs with UI not taking uo the whole screen
+
+- [ ] Create contributing guidlines
+
+- [ ] Add simple keybind support
+
 - [ ] Create logic for tree creation and distribution
