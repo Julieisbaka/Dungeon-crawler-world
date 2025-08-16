@@ -10,7 +10,11 @@
         },
         "difficulty": {
             "type": "string",
-            "enum": ["Easy", "Medium", "Hard"],
+            "enum": [
+                "Easy", 
+                "Medium", 
+                "Hard"
+            ],
             "description": "The difficulty level of the save"
         },
         "created_at": {
@@ -34,7 +38,14 @@
                     "type": "number"
                 }
             }
-        }
+        },
+        "gamerules": {
+            "type": "array",
+            "enum": [
+                "Online", 
+                "Real-time"
+            ]    
+        } 
             
     }
 }

@@ -1,29 +1,29 @@
-This is a game that uses Vulkan for the graphics API
+- This is a game that uses Vulkan for the graphics API
 
-AI components and UI components of this game sre made with rust
+- AI components and UI components of this game are made with rust
 
-CPP is used for tbe backend
+- CPP is used for the backend
 
-Cargo is used to build the application
+- Cargo is used to build the application
 
-The game is based on the Dungeon crawler Carl series by Matt Diniman
+- The game is based on the Dungeon Crawler Carl series by Matt Dinniman
 
-JSON is used for data storage
+- JSON is used for data storage
 
-Markdown is used to present textual elements to the user in some scenerios
+- Markdown is used to present textual elements to the user in some scenarios
 
-Javascript and powershell are used for development scripts
+- Javascript and Powershell are used for development scripts
 
-A package.json file is used to store project info and access certain developer tools
+- A package.json file is used to store project info and access certain developer tools
 
-A TOML file is used for the Cargo configuration
+- A TOML file is used for the Cargo configuration
 
-YAML and YML files are used for Github action workflows
+- YAML and YML files are used for Github action workflows
 
-Txt files are used for developer notes
+- Txt files are used for developer notes
 
-.gitignore and .gitattributes are for Git settings
+- `.gitignore` and `.gitattributes` are for Git settings
 
-.editorconfig is for editor settings
+- `.editorconfig` is for editor settings
 
-.lock is used to lock the Cargo configuration
+- `.lock` is used to lock the Cargo configuration

@@ -18,13 +18,13 @@
 
 - [ ] Crawler current floor should be saved to player.json
 
-- [ ] Add gamerule "Real time" when enabled it should use the full times for the time generstion range, save to save.json
+- [ ] Add gamerule "Real time" when enabled it should use the full times for the time generation range, save to save.json
 
 - [ ] Update UI and Json files for gamerule support
 
 - [ ] Create patches and fixed for non-windows operating systems
 
-- [ ] Research potential alternatives to bullet physics as it is no longer mantained
+- [ ] Research potential alternatives to bullet physics as it is no longer maintained
 
 - [ ] Setup Vulkan Graphics with physics engine
 
@@ -38,7 +38,7 @@
 
 - [ ] Fix bugs with UI not taking up the whole screen
 
-- [x] Create contributing guidlines
+- [x] Create contributing guidelines
 
 - [ ] Add simple keybind support
 
