@@ -19,17 +19,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check if Rust is already installed
+        id: check_rust
+        run: |
+          if command -v rustup &> /dev/null; then
+            echo "rust_installed=true" >> $GITHUB_OUTPUT
+          else
+            echo "rust_installed=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Rust toolchain
+        if: steps.check_rust.outputs.rust_installed == 'false'
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy, rustfmt
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
 
       - name: Run cargo clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run cargo check (sanity build test)
+        run: cargo check
 
       - name: Run cargo audit (dependency vulnerabilities)
         uses: actions-rs/audit-check@v1

@@ -25,7 +25,8 @@ fn check_dependencies() {
     println!("cargo:warning=Checking for required build dependencies...");
 
     // For packaging, these would be needed but not required for the build itself
-    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() { // TODO: IDK if this actually works so please check that it does
+    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() {
+        // TODO: IDK if this actually works so please check that it does
         if cfg!(target_os = "windows") {
             // Check for WiX Toolset (for MSI creation)
             let wix: bool = Command::new("where").arg("candle").output().is_ok();
@@ -61,7 +62,7 @@ fn build_cpp_backend() {
         .file("Floor/Floor_1/time.cpp")
         // Data files
         .file("cpp/data/json.cpp");
-        // .file("cpp/data/save.cpp");
+    // .file("cpp/data/save.cpp");
 
     // Find and add all other .cpp files
     if let Ok(entries) = std::fs::read_dir("cpp") {
@@ -70,7 +71,7 @@ fn build_cpp_backend() {
             if path.is_file()
                 && path
                     .extension()
-                    .map_or(false, |ext: &std::ffi::OsStr| ext == "cpp")
+                    .is_some_and(|ext: &std::ffi::OsStr| ext == "cpp")
             {
                 build.file(path);
             }
@@ -78,7 +79,7 @@ fn build_cpp_backend() {
     }
 
     // Add debug/release specific flags
-    if env::var("PROFILE").unwrap() == "debug" {
+    if env::var("PROFILE").unwrap_or_default() == "debug" {
         build.flag_if_supported("-g").flag_if_supported("-O0");
     } else {
         build.flag_if_supported("-O3").flag_if_supported("-DNDEBUG");
@@ -142,6 +143,7 @@ fn setup_vulkan() {
 }
 
 // We don't use bullet for anything yet so for the sake of easy building we can just not use it in the build.rs file
+#[allow(dead_code)]
 fn setup_bullet_physics() {
     // Link Bullet Physics C++ libraries
     // On Windows, set BULLET_DIR env variable to Bullet install path, or ensure Bullet libs are in your library path
@@ -168,8 +170,8 @@ fn setup_bullet_physics() {
 
             let libs: std::borrow::Cow<'_, str> = String::from_utf8_lossy(&output.stdout);
             for lib in libs.split_whitespace() {
-                if lib.starts_with("-l") {
-                    println!("cargo:rustc-link-lib={}", &lib[2..]);
+                if let Some(stripped) = lib.strip_prefix("-l") {
+                    println!("cargo:rustc-link-lib={}", stripped);
                 }
             }
         } else {
@@ -185,8 +187,8 @@ fn setup_bullet_physics() {
 
 fn handle_json_data() {
     // Copy JSON data files to output directory if needed
-    let out_dir: PathBuf = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()); // manifest_dir is Unused
+    let out_dir: PathBuf = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR environment variable not set"));
+    let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR environment variable not set")); // manifest_dir is Unused
 
     // Add JSON files that should trigger rebuilds
     println!("cargo:rerun-if-changed=data/");
@@ -202,7 +204,8 @@ fn handle_json_data() {
     // Create resources.rs with embedded files if needed
     let resources_path: PathBuf = out_dir.join("resources.rs");
     if !resources_path.exists() {
-        std::fs::write(&resources_path, "// Auto-generated resource mappings\n").unwrap();
+        std::fs::write(&resources_path, "// Auto-generated resource mappings\n")
+            .expect("Failed to write resources.rs file");
     }
 }
 

@@ -1,11 +1,12 @@
-use std::sync::Mutex;
 use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 // Global current_save variable
-pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> = Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
+pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
+    Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
 
 pub fn set_current_save(save_name: &str) {
-    let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE.lock().unwrap();
+    let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE.lock().expect("Failed to lock CURRENT_SAVE mutex");
     *current = Some(save_name.to_string());
     log::info!("Current save set to: {}", save_name);
 }
@@ -25,6 +26,7 @@ use settings::{settings_ui, Settings};
 const DEV_MODE_ENABLED: bool = true;
 
 // Main app struct with settings state
+#[derive(Default)]
 struct DungeonCrawlerworld {
     show_settings: bool,
     show_saves: bool,
@@ -33,42 +35,32 @@ struct DungeonCrawlerworld {
 }
 
 
-impl Default for DungeonCrawlerworld {
-    fn default() -> Self {
-        Self {
-            show_settings: false,
-            show_saves: false,
-            settings: Settings::default(),
-            save_menu_state: saves::SaveMenuState::default(),
-        }
-    }
-}
 
 impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            if (*self).show_settings {
+            if self.show_settings {
                 ui.heading(RichText::new("Settings").size(28.0));
                 settings_ui(ui, &mut self.settings, DEV_MODE_ENABLED);
                 ui.add_space(16.0);
                 if ui.button("Back").clicked() {
-                    (*self).show_settings = false;
+                    self.show_settings = false;
                 }
-            } else if (*self).show_saves {
+            } else if self.show_saves {
                 ui.heading(RichText::new("Saves Menu").size(28.0));
-                show_save_ui(ui, &mut (*self).save_menu_state);
+                show_save_ui(ui, &mut self.save_menu_state);
                 ui.add_space(16.0);
                 if ui.button("Back").clicked() {
-                    (*self).show_saves = false;
+                    self.show_saves = false;
                 }
             } else {
                 ui.heading(RichText::new("Game Menu").size(30.0));
                 ui.add_space(20.0);
                 if ui.button("Saves").clicked() {
-                    (*self).show_saves = true;
+                    self.show_saves = true;
                 }
                 if ui.button("Settings").clicked() {
-                    (*self).show_settings = true;
+                    self.show_settings = true;
                 }
                 if ui.button("Quit").clicked() {
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
@@ -99,7 +91,7 @@ fn main() -> eframe::Result<()> {
         Box::new(|creation_context: &eframe::CreationContext<'_>| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {
             // This closure is called once when the application starts.
             // It's a good place to set up global egui styles.
-            (*creation_context).egui_ctx.set_style(Style {
+            creation_context.egui_ctx.set_style(Style {
                 visuals: Visuals::dark(), // Set egui to use its default dark theme
                 ..Default::default()
             });

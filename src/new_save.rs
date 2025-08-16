@@ -1,7 +1,7 @@
-use egui::{Ui, TextEdit};
+use egui::{TextEdit, Ui};
+use serde_json::{json, Value};
 use std::fs;
 use std::path::Path;
-use serde_json::{json, Value};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Difficulty {
@@ -21,6 +21,7 @@ impl std::fmt::Display for Difficulty {
 }
 
 pub struct NewSaveState {
+    #[allow(dead_code)]
     pub show_new_save: bool,
     pub save_name: String,
     pub selected_difficulty: Difficulty,
@@ -42,71 +43,80 @@ impl Default for NewSaveState {
 
 impl NewSaveState {
     pub fn reset(&mut self) {
-        (*self).save_name.clear();
-        (*self).selected_difficulty = Difficulty::Medium;
-        (*self).error_message.clear();
-        (*self).success_message.clear();
+        self.save_name.clear();
+        self.selected_difficulty = Difficulty::Medium;
+        self.error_message.clear();
+        self.success_message.clear();
     }
 }
 
 pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     let mut should_close = false;
-    
+
     ui.vertical_centered(|ui| {
         ui.heading("Create New Save");
         ui.add_space(20.0);
-        
+
         // Save name input
         ui.horizontal(|ui| {
             ui.label("Save Name:");
-            ui.add(TextEdit::singleline(&mut (*state).save_name)
-                .hint_text("Enter a unique save name..."));
+            ui.add(
+                TextEdit::singleline(&mut state.save_name)
+                    .hint_text("Enter a unique save name..."),
+            );
         });
-        
+
         ui.add_space(10.0);
-        
+
         // Difficulty selection
         ui.horizontal(|ui| {
             ui.label("Difficulty:");
-            ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Easy, "Easy");
-            ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Medium, "Medium");
-            ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Hard, "Hard");
+            ui.radio_value(&mut state.selected_difficulty, Difficulty::Easy, "Easy");
+            ui.radio_value(
+                &mut state.selected_difficulty,
+                Difficulty::Medium,
+                "Medium",
+            );
+            ui.radio_value(&mut state.selected_difficulty, Difficulty::Hard, "Hard");
         });
-        
+
         ui.add_space(20.0);
-        
+
         // Error message
-        if !(*state).error_message.is_empty() {
-            ui.colored_label(egui::Color32::RED, &(*state).error_message);
+        if !state.error_message.is_empty() {
+            ui.colored_label(egui::Color32::RED, &state.error_message);
             ui.add_space(10.0);
         }
-        
+
         // Success message
-        if !(*state).success_message.is_empty() {
-            ui.colored_label(egui::Color32::GREEN, &(*state).success_message);
+        if !state.success_message.is_empty() {
+            ui.colored_label(egui::Color32::GREEN, &state.success_message);
             ui.add_space(10.0);
         }
-        
+
         // Buttons
         ui.horizontal(|ui| {
             if ui.button("Create Save").clicked() {
-                if let Err(error) = create_new_save(&(*state).save_name, &(*state).selected_difficulty) {
-                    (*state).error_message = error;
-                    (*state).success_message.clear();
+                if let Err(error) =
+                    create_new_save(&state.save_name, &state.selected_difficulty)
+                {
+                    state.error_message = error;
+                    state.success_message.clear();
                 } else {
-                    (*state).success_message = format!("Save '{}' created successfully!", state.save_name);
-                    (*state).error_message.clear();
+                    state.success_message =
+                        format!("Save '{}' created successfully!", state.save_name);
+                    state.error_message.clear();
                     // Clear the save name after successful creation
-                    (*state).save_name.clear();
+                    state.save_name.clear();
                 }
             }
-            
+
             if ui.button("Cancel").clicked() {
                 should_close = true;
             }
         });
     });
-    
+
     should_close
 }
 
@@ -129,12 +139,14 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty) -> Result<(), Strin
     }
     // Create saves directory if it doesn't exist
     if !saves_dir.exists() {
-        fs::create_dir_all(saves_dir)
-            .map_err(|e: std::io::Error| -> String { format!("Failed to create saves directory: {}", e) })?;
+        fs::create_dir_all(saves_dir).map_err(|e: std::io::Error| -> String {
+            format!("Failed to create saves directory: {}", e)
+        })?;
     }
     // Create save directory
-    fs::create_dir_all(&save_path)
-        .map_err(|e: std::io::Error| -> String { format!("Failed to create save directory: {}", e) })?;
+    fs::create_dir_all(&save_path).map_err(|e: std::io::Error| -> String {
+        format!("Failed to create save directory: {}", e)
+    })?;
     // Create save.json file (metadata only)
     let save_data: Value = json!({
         "save_name": save_name.trim(),
@@ -142,8 +154,12 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty) -> Result<(), Strin
         "created_at": chrono::Utc::now().to_rfc3339()
     });
     let save_file_path: std::path::PathBuf = save_path.join("save.json");
-    fs::write(&save_file_path, serde_json::to_string_pretty(&save_data).unwrap())
-        .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
+    fs::write(
+        &save_file_path,
+        serde_json::to_string_pretty(&save_data)
+            .map_err(|e| format!("Failed to serialize save data: {}", e))?,
+    )
+    .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
     let player_data: Value = json!({
         "name": "",
@@ -158,7 +174,11 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty) -> Result<(), Strin
         "has_manager": false
     });
     let player_file_path: std::path::PathBuf = save_path.join("player.json");
-    fs::write(&player_file_path, serde_json::to_string_pretty(&player_data).unwrap())
-        .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
+    fs::write(
+        &player_file_path,
+        serde_json::to_string_pretty(&player_data)
+            .map_err(|e| format!("Failed to serialize player data: {}", e))?,
+    )
+    .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
     Ok(())
 }
