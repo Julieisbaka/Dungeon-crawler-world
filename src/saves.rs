@@ -13,8 +13,6 @@ pub struct SaveMenuState {
     pub delete_target: Option<String>,
 }
 
-
-
 pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     use egui::ColorImage;
     use egui::TextureHandle;

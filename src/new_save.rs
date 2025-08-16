@@ -61,8 +61,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         ui.horizontal(|ui| {
             ui.label("Save Name:");
             ui.add(
-                TextEdit::singleline(&mut state.save_name)
-                    .hint_text("Enter a unique save name..."),
+                TextEdit::singleline(&mut state.save_name).hint_text("Enter a unique save name..."),
             );
         });
 
@@ -72,11 +71,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         ui.horizontal(|ui| {
             ui.label("Difficulty:");
             ui.radio_value(&mut state.selected_difficulty, Difficulty::Easy, "Easy");
-            ui.radio_value(
-                &mut state.selected_difficulty,
-                Difficulty::Medium,
-                "Medium",
-            );
+            ui.radio_value(&mut state.selected_difficulty, Difficulty::Medium, "Medium");
             ui.radio_value(&mut state.selected_difficulty, Difficulty::Hard, "Hard");
         });
 
@@ -97,9 +92,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         // Buttons
         ui.horizontal(|ui| {
             if ui.button("Create Save").clicked() {
-                if let Err(error) =
-                    create_new_save(&state.save_name, &state.selected_difficulty)
-                {
+                if let Err(error) = create_new_save(&state.save_name, &state.selected_difficulty) {
                     state.error_message = error;
                     state.success_message.clear();
                 } else {

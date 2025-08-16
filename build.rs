@@ -187,8 +187,11 @@ fn setup_bullet_physics() {
 
 fn handle_json_data() {
     // Copy JSON data files to output directory if needed
-    let out_dir: PathBuf = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR environment variable not set"));
-    let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR environment variable not set")); // manifest_dir is Unused
+    let out_dir: PathBuf =
+        PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR environment variable not set"));
+    let _manifest_dir: PathBuf = PathBuf::from(
+        env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR environment variable not set"),
+    ); // manifest_dir is Unused
 
     // Add JSON files that should trigger rebuilds
     println!("cargo:rerun-if-changed=data/");

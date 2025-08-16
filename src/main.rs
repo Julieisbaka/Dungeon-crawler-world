@@ -6,7 +6,9 @@ pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
     Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
 
 pub fn set_current_save(save_name: &str) {
-    let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE.lock().expect("Failed to lock CURRENT_SAVE mutex");
+    let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE
+        .lock()
+        .expect("Failed to lock CURRENT_SAVE mutex");
     *current = Some(save_name.to_string());
     log::info!("Current save set to: {}", save_name);
 }
@@ -33,8 +35,6 @@ struct DungeonCrawlerworld {
     settings: Settings,
     save_menu_state: saves::SaveMenuState,
 }
-
-
 
 impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
