@@ -11,11 +11,7 @@ function checkFile(filePath) {
   // Ensure the file is within the allowed root directory
   let absPath;
   try {
-    absPath = resolve(filePath);
-    absPath = statSync(absPath).isSymbolicLink
-      ? absPath // fallback if not a symlink
-      : absPath;
-    absPath = require("fs").realpathSync(absPath);
+    absPath = require("fs").realpathSync(filePath);
   } catch (e) {
     console.warn(`Warning: Could not resolve path for ${filePath}: ${e.message}`);
     return;
@@ -39,10 +35,21 @@ function findMarkdownFiles(dir) {
   let results = [];
   readdirSync(dir).forEach((file) => {
     const fullPath = join(dir, file);
-    if (statSync(fullPath).isDirectory()) {
-      results = results.concat(findMarkdownFiles(fullPath));
+    let realFullPath;
+    try {
+      realFullPath = require("fs").realpathSync(fullPath);
+    } catch (e) {
+      // Skip files/dirs we can't resolve
+      return;
+    }
+    if (!realFullPath.startsWith(ROOT_DIR)) {
+      // Skip files/dirs outside the root
+      return;
+    }
+    if (statSync(realFullPath).isDirectory()) {
+      results = results.concat(findMarkdownFiles(realFullPath));
     } else if (file.endsWith(".md")) {
-      results.push(fullPath);
+      results.push(realFullPath);
     }
   });
   return results;
