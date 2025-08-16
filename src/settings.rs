@@ -1,17 +1,17 @@
-use egui::{Ui};
-use serde::{Serialize, Deserialize};
+use egui::Ui;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
-	pub fog: i32,
-	pub lighting: i32,
-	pub sound: bool,
-	pub developer_mode: bool,
-	pub verbose_logging: bool,
-	pub show_console: bool,
-	pub show_fps_graph: bool,
+    pub fog: i32,
+    pub lighting: i32,
+    pub sound: bool,
+    pub developer_mode: bool,
+    pub verbose_logging: bool,
+    pub show_console: bool,
+    pub show_fps_graph: bool,
 }
 
 const SETTINGS_FILE: &str = "setting.json";
@@ -54,65 +54,137 @@ impl Default for Settings {
 }
 
 pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: bool) {
-	// Only show heading once in the settings menu (handled in main.rs)
+    // Only show heading once in the settings menu (handled in main.rs)
 
-	ui.horizontal(|ui| {
-		ui.label("Fog:");
-		egui::ComboBox::from_id_salt("fog_combo")
-			.selected_text(match (*settings).fog {
-				0 => "No fog",
-				1 => "Fast fog",
-				2 => "Default fog",
-				3 => "Fancy fog",
-				_ => "Unknown",
-			})
-			.show_ui(ui, |ui| {
-				if ui.selectable_value(&mut (*settings).fog, 0, "No fog").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).fog, 1, "Fast fog").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).fog, 2, "Default fog").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).fog, 3, "Fancy fog").changed() { settings.save(); }
-			});
-	});
+    ui.horizontal(|ui| {
+        ui.label("Fog:");
+        egui::ComboBox::from_id_salt("fog_combo")
+            .selected_text(match (*settings).fog {
+                0 => "No fog",
+                1 => "Fast fog",
+                2 => "Default fog",
+                3 => "Fancy fog",
+                _ => "Unknown",
+            })
+            .show_ui(ui, |ui| {
+                if ui
+                    .selectable_value(&mut (*settings).fog, 0, "No fog")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).fog, 1, "Fast fog")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).fog, 2, "Default fog")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).fog, 3, "Fancy fog")
+                    .changed()
+                {
+                    settings.save();
+                }
+            });
+    });
 
-	ui.horizontal(|ui| {
-		ui.label("Lighting:");
-		egui::ComboBox::from_id_salt("lighting_combo")
-			.selected_text(match (*settings).lighting {
-				0 => "No dynamic lighting",
-				1 => "Non-shader lighting",
-				2 => "Simple shader lighting",
-				3 => "Normal shader lighting",
-				4 => "Fancy shader lighting",
-				5 => "Highest quality",
-				_ => "Unknown",
-			})
-			.show_ui(ui, |ui| {
-				if ui.selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting").changed() { settings.save(); }
-				if ui.selectable_value(&mut (*settings).lighting, 5, "Highest quality").changed() { settings.save(); }
-			});
-	});
+    ui.horizontal(|ui| {
+        ui.label("Lighting:");
+        egui::ComboBox::from_id_salt("lighting_combo")
+            .selected_text(match (*settings).lighting {
+                0 => "No dynamic lighting",
+                1 => "Non-shader lighting",
+                2 => "Simple shader lighting",
+                3 => "Normal shader lighting",
+                4 => "Fancy shader lighting",
+                5 => "Highest quality",
+                _ => "Unknown",
+            })
+            .show_ui(ui, |ui| {
+                if ui
+                    .selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut (*settings).lighting, 5, "Highest quality")
+                    .changed()
+                {
+                    settings.save();
+                }
+            });
+    });
 
-	ui.horizontal(|ui| {
-		ui.label("Physically based sound:");
-		if ui.checkbox(&mut (*settings).sound, "Enable").changed() { settings.save(); }
-	});
+    ui.horizontal(|ui| {
+        ui.label("Physically based sound:");
+        if ui.checkbox(&mut (*settings).sound, "Enable").changed() {
+            settings.save();
+        }
+    });
 
-	if dev_mode_available {
-		ui.separator();
+    if dev_mode_available {
+        ui.separator();
 
-		if ui.checkbox(&mut (*settings).developer_mode, "Developer Mode").changed() { settings.save(); }
+        if ui
+            .checkbox(&mut (*settings).developer_mode, "Developer Mode")
+            .changed()
+        {
+            settings.save();
+        }
 
-		if (*settings).developer_mode {
-			ui.group(|ui| {
-				ui.heading("Developer Options");
-				if ui.checkbox(&mut (*settings).verbose_logging, "Verbose Logging").changed() { settings.save(); }
-				if ui.checkbox(&mut (*settings).show_console, "In-game Console").changed() { settings.save(); }
-				if ui.checkbox(&mut (*settings).show_fps_graph, "FPS Graph").changed() { settings.save(); }
-			});
-		}
-	}
+        if (*settings).developer_mode {
+            ui.group(|ui| {
+                ui.heading("Developer Options");
+                if ui
+                    .checkbox(&mut (*settings).verbose_logging, "Verbose Logging")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .checkbox(&mut (*settings).show_console, "In-game Console")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .checkbox(&mut (*settings).show_fps_graph, "FPS Graph")
+                    .changed()
+                {
+                    settings.save();
+                }
+            });
+        }
+    }
 }

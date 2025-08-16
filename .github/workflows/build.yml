@@ -16,15 +16,40 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      
+      - name: Debug environment
+        run: |
+          echo "Environment variables:"
+          echo "PATH: $env:PATH"
+          echo "RUSTUP_HOME: $env:RUSTUP_HOME"
+          echo "CARGO_HOME: $env:CARGO_HOME"
+          if (Get-Command rustc -ErrorAction SilentlyContinue) {
+            echo "Rust already installed:"
+            rustc --version
+            cargo --version
+          } else {
+            echo "Rust not found, will install"
+          }
+        shell: pwsh
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
+      
+      - name: Verify Rust installation
+        run: |
+          echo "Rust installation verified:"
+          rustc --version
+          cargo --version
+        shell: pwsh
+      
       - name: Install MinGW
         run: choco install mingw -y
+      
       - name: Build Bullet Physics
         shell: pwsh
         run: Scripts/bullet.ps1
+      
       - name: Build with Cargo
         run: cargo build --verbose

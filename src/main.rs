@@ -1,8 +1,9 @@
-use std::sync::Mutex;
 use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 // Global current_save variable
-pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> = Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
+pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
+    Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
 
 pub fn set_current_save(save_name: &str) {
     let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE.lock().unwrap();
@@ -31,7 +32,6 @@ struct DungeonCrawlerworld {
     settings: Settings,
     save_menu_state: saves::SaveMenuState,
 }
-
 
 impl Default for DungeonCrawlerworld {
     fn default() -> Self {

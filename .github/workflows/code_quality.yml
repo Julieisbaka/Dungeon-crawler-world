@@ -19,11 +19,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug environment
+        run: |
+          echo "Environment variables:"
+          echo "PATH: $PATH"
+          echo "RUSTUP_HOME: $RUSTUP_HOME"
+          echo "CARGO_HOME: $CARGO_HOME"
+          if command -v rustc &> /dev/null; then
+            echo "Rust already installed:"
+            rustc --version
+            cargo --version
+          else
+            echo "Rust not found, will install"
+          fi
+
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: clippy, rustfmt
+
+      - name: Verify Rust installation
+        run: |
+          echo "Rust installation verified:"
+          rustc --version
+          cargo --version
 
       - name: Run cargo fmt
         run: cargo fmt --all -- --check

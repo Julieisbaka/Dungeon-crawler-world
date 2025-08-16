@@ -25,7 +25,8 @@ fn check_dependencies() {
     println!("cargo:warning=Checking for required build dependencies...");
 
     // For packaging, these would be needed but not required for the build itself
-    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() { // TODO: IDK if this actually works so please check that it does
+    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() {
+        // TODO: IDK if this actually works so please check that it does
         if cfg!(target_os = "windows") {
             // Check for WiX Toolset (for MSI creation)
             let wix: bool = Command::new("where").arg("candle").output().is_ok();
@@ -61,7 +62,7 @@ fn build_cpp_backend() {
         .file("Floor/Floor_1/time.cpp")
         // Data files
         .file("cpp/data/json.cpp");
-        // .file("cpp/data/save.cpp");
+    // .file("cpp/data/save.cpp");
 
     // Find and add all other .cpp files
     if let Ok(entries) = std::fs::read_dir("cpp") {
