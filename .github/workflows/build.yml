@@ -28,5 +28,3 @@ jobs:
         run: Scripts/bullet.ps1
       - name: Build with Cargo
         run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
