@@ -68,7 +68,7 @@ Dungeon Crawler World is developed and maintained by the following contributors:
 
 Special thanks to the following resources and libraries used in the project:
 
-- [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com)
+- The unofficial [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com)
 
 - And of course, last and certainly not least, the Dungeon Crawler Carl series by [Matt Dinniman](https://www.mattdinniman.com/).
 
