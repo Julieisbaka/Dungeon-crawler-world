@@ -8,7 +8,23 @@ function isComment(line) {
 }
 
 function checkFile(filePath) {
-  const lines = readFileSync(filePath, "utf8").split("\n");
+  // Ensure the file is within the allowed root directory
+  let absPath;
+  try {
+    absPath = resolve(filePath);
+    absPath = statSync(absPath).isSymbolicLink
+      ? absPath // fallback if not a symlink
+      : absPath;
+    absPath = require("fs").realpathSync(absPath);
+  } catch (e) {
+    console.warn(`Warning: Could not resolve path for ${filePath}: ${e.message}`);
+    return;
+  }
+  if (!absPath.startsWith(ROOT_DIR)) {
+    console.warn(`Warning: Skipping file outside root: ${filePath}`);
+    return;
+  }
+  const lines = readFileSync(absPath, "utf8").split("\n");
   lines.forEach((line, idx) => {
     if (!isComment(line) && line.length > MAX_LENGTH) {
       console.log(
