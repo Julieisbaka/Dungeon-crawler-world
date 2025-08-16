@@ -12,7 +12,7 @@ function checkFile(filePath) {
   lines.forEach((line, idx) => {
     if (!isComment(line) && line.length > MAX_LENGTH) {
       console.log(
-        `${filePath}:${idx + 1}: Line exceeds ${MAX_LENGTH} characters`
+        `${filePath}:${idx + 1}: Line exceeds ${MAX_LENGTH} characters`,
       );
     }
   });
@@ -38,7 +38,7 @@ const targetDir = process.argv[2] ? resolve(process.argv[2]) : ROOT_DIR;
 // Ensure the target directory is within the safe root directory
 if (!targetDir.startsWith(ROOT_DIR)) {
   console.error(
-    `Error: The specified directory is outside the allowed root directory: ${ROOT_DIR}`
+    `Error: The specified directory is outside the allowed root directory: ${ROOT_DIR}`,
   );
   process.exit(1);
 }
