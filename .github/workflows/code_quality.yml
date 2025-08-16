@@ -1,0 +1,119 @@
+name: Comprehensive Code Quality
+
+on:
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - '**/*.cpp'
+      - '**/*.h'
+      - '**/*.hpp'
+  push:
+    branches: [ main ]
+
+jobs:
+  rust:
+    name: Rust Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+
+      - name: Run cargo clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run cargo audit (dependency vulnerabilities)
+        uses: actions-rs/audit-check@v1
+
+      - name: Run cargo-deny (dependency policy/lint)
+        uses: EmbarkStudios/cargo-deny-action@v1
+
+      - name: Run cargo udeps (unused dependencies)
+        run: cargo install cargo-udeps && cargo udeps --all-targets --all-features
+
+      - name: Run cargo outdated (dependency updates)
+        run: cargo install cargo-outdated && cargo outdated || true
+
+      - name: Run cargo spellcheck (spelling)
+        run: cargo install cargo-spellcheck && cargo spellcheck
+
+  cpp:
+    name: C++ Quality Checks
+    runs-on: ubuntu-latest
+    env:
+      CXX: clang++
+      CC: clang
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install C++ tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang-format cppcheck iwyu vera++
+
+      - name: Find C++ files
+        id: find_cpp
+        run: |
+          echo "files=$(find . -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \))" >> $GITHUB_OUTPUT
+
+      - name: Clang-Format Check
+        run: |
+          for file in ${{ steps.find_cpp.outputs.files }}; do
+            clang-format --dry-run --Werror "$file"
+          done
+
+      - name: Clang-Tidy
+        run: |
+          for file in ${{ steps.find_cpp.outputs.files }}; do
+            clang-tidy "$file" -- -std=c++17 || exit 1
+          done
+
+      - name: cppcheck (Static Analysis)
+        run: |
+          cppcheck --enable=all --inline-suppr --error-exitcode=1 $(echo ${{ steps.find_cpp.outputs.files }})
+
+      - name: Vera++ (Style checker)
+        run: |
+          vera++ $(echo ${{ steps.find_cpp.outputs.files }})
+
+      - name: IWYU (Include-What-You-Use)
+        continue-on-error: true  # IWYU may be noisy; adjust as needed
+        run: |
+          for file in ${{ steps.find_cpp.outputs.files }}; do
+            iwyu_tool.py -p . "$file" || true
+          done
+
+      - name: Check for duplicate code (jscpd)
+        run: |
+          npx jscpd --min-tokens 50 --languages cpp .
+
+      - name: Run lizard (code complexity)
+        run: |
+          pip install lizard
+          lizard $(echo ${{ steps.find_cpp.outputs.files }})
+
+      - name: Check spelling (codespell)
+        run: |
+          pip install codespell
+          codespell $(echo ${{ steps.find_cpp.outputs.files }})
+
+  security:
+    name: Security Analysis (CodeQL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: cpp, rust
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
