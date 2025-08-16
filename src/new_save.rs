@@ -119,7 +119,19 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     should_close
 }
 
-/// Helper function to write JSON data to a file with proper error handling
+/// Writes JSON data to a file with proper error handling.
+///
+/// # Parameters
+/// - `path`: The file system path where the JSON data should be written.
+/// - `data`: The JSON value to serialize and write to the file.
+/// - `file_type`: A string describing the type of file being written (used in error messages).
+///
+/// # Returns
+/// - `Ok(())` if the file was written successfully.
+/// - `Err(String)` containing an error message if serialization or file writing fails.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails or if writing to the file system fails.
 fn write_json_file(path: &std::path::Path, data: &Value, file_type: &str) -> Result<(), String> {
     let json_string = serde_json::to_string_pretty(data)
         .map_err(|e| format!("Failed to serialize JSON for {}: {}", file_type, e))?;
