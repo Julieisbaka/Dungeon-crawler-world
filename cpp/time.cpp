@@ -11,7 +11,7 @@
 extern "C"
 {
     // Returns a random time with specified min, max, and mean
-    int32_t generate_random_time_range(int32_t min, int32_t max, double mean)
+    int32_t random_time_range(int32_t min, int32_t max, double mean)
     {
         static std::random_device rd;
         static std::mt19937 gen(rd()); // std::mersenne_twister_engine<unsigned int, 32Ui64, 624Ui64, 397Ui64, 31Ui64, 2567483615U, 11Ui64, 4294967295U, 7Ui64, 2636928640U, 15Ui64, 4022730752U, 18Ui64, 1812433253U> 

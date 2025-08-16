@@ -52,15 +52,8 @@ fn build_cpp_backend() {
         .flag_if_supported("-Wall")
         .flag_if_supported("-Wextra")
         .include("Floor")
-        .include("cpp")
-        .include("cpp/data")
-        .include("cpp/include") // Add include directory for headers
+        .include("cpp");
         // Floor files
-        .file("Floor/Floor_1/kruskal.cpp")
-        .file("Floor/Floor_1/stats.cpp")
-        .file("Floor/Floor_1/time.cpp")
-        // Data files
-        .file("cpp/data/json.cpp");
         // .file("cpp/data/save.cpp");
 
     // Find and add all other .cpp files
