@@ -33,6 +33,8 @@ jobs:
 
       - name: Run cargo audit (dependency vulnerabilities)
         uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run cargo-deny (dependency policy/lint)
         uses: EmbarkStudios/cargo-deny-action@v1

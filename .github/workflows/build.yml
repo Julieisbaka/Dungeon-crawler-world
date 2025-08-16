@@ -1,10 +1,7 @@
 name: Build Rust Project
 
 on:
-  push:
-    branches: [ Main ]
-  pull_request:
-    branches: [ Main ]
+  workflow_dispatch: 
 
 permissions:
   contents: read

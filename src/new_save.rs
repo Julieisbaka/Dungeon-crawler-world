@@ -146,7 +146,7 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty) -> Result<(), Strin
         .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
     let player_data: Value = json!({
-        "name": "",
+        "name": "", // Unimplemented: Player name will be set later
         "level": 1,
         "spells": {},
         "inventory": {},
