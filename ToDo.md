@@ -34,7 +34,7 @@
 
 - [ ] Implement the in game console feature
 
-- [ ] Implement saving mechanism for settings
+- [x] Implement saving mechanism for settings
 
 - [ ] Fix bugs with UI not taking up the whole screen
 
