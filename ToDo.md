@@ -14,15 +14,17 @@
 
 - [ ] Floor one time should be saved to save.json
 
-- [ ] Add gamerule "Online mode", save to save.json
+- [x] Add gamerule "Online mode", save to save.json
 
 - [ ] Crawler current floor should be saved to player.json
+
+- [ ] Add UI for Online mode
 
 - [ ] Add gamerule "Real time" when enabled it should use the full times for the time generation range, save to save.json
 
 - [ ] Update UI and Json files for gamerule support
 
-- [ ] Create patches and fixed for non-windows operating systems
+- [ ] Create patches and fixes for non-windows operating systems
 
 - [ ] Research potential alternatives to bullet physics as it is no longer maintained
 
