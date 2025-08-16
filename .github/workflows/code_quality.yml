@@ -10,7 +10,8 @@ on:
       - '**/*.hpp'
   push:
     branches: [ main ]
-
+env:
+  CODEQL_ENABLE_EXPERIMENTAL_FEATURES: true
 jobs:
   rust:
     name: Rust Quality Checks
