@@ -47,3 +47,7 @@
 - [ ] Create logic for tree creation and distribution
 
 - [ ] Rewrite backend in Rust
+
+- [ ] Add skills for walking, swimming, and breathing
+
+- [ ] Add initial stat number generation
