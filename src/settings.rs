@@ -12,6 +12,7 @@ pub struct Settings {
 	pub verbose_logging: bool,
 	pub show_console: bool,
 	pub show_fps_graph: bool,
+	pub fullscreen: bool,
 }
 
 const SETTINGS_FILE: &str = "setting.json";
@@ -42,7 +43,8 @@ impl Settings {
             developer_mode: false,
             verbose_logging: false,
             show_console: false,
-            show_fps_graph: false,
+			show_fps_graph: false,
+			fullscreen: false,
         }
     }
 }
@@ -53,7 +55,15 @@ impl Default for Settings {
     }
 }
 
-pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: bool) {
+pub struct SettingsResult {
+	pub request_save: bool,
+	pub request_back: bool,
+}
+
+impl Default for SettingsResult { fn default() -> Self { Self { request_save: false, request_back: false } } }
+
+pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: bool) -> SettingsResult {
+	let mut result: SettingsResult = SettingsResult::default();
 	// Only show heading once in the settings menu (handled in main.rs)
 
 	ui.horizontal(|ui: &mut Ui| {
@@ -115,4 +125,21 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 			});
 		}
 	}
+
+	ui.separator();
+	if ui.checkbox(&mut (*settings).fullscreen, "Fullscreen").changed() { settings.save(); }
+	ui.add_space(8.0);
+
+	ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+		if ui.add_sized([100.0, 28.0], egui::Button::new("Save")).clicked() {
+			settings.save();
+			result.request_save = true;
+		}
+		ui.add_space(8.0);
+		if ui.add_sized([100.0, 28.0], egui::Button::new("Back")).clicked() {
+			result.request_back = true;
+		}
+	});
+
+	result
 }

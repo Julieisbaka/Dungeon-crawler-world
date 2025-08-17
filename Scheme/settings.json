@@ -21,6 +21,11 @@
       "type": "boolean",
       "description": "Enable physically based sound. If set to true then the game sound engine will apply reverb and other sound affects otherwise if set to false the sound engine will not use physically aware calculations and methods when playing sound like music and other ambience.",
       "default": true
+    },
+    "fullscreen": {
+      "type": "boolean",
+      "description": "Enable fullscreen mode.",
+      "default": false
     }
   },
   "additionalItems": false,

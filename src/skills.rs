@@ -12,6 +12,13 @@ pub struct SkillsState {
 	catalog: Vec<SkillMeta>,
 	selected: Option<usize>,
 	loaded: bool,
+	// When true, show all discovered skills as 'owned' for previewing
+	show_all: bool,
+}
+
+impl SkillsState {
+	// Enable preview mode to show all discovered skills regardless of ownership
+	pub fn enable_preview(&mut self) { self.show_all = true; }
 }
 
 #[derive(Clone)]
@@ -44,8 +51,14 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 			if !dir_path.is_dir() {
 				continue;
 			}
-			// Find a skill metadata json in the directory
-			let mut meta_path: Option<PathBuf> = None;
+			// Try to read optional metadata JSON; fallback to directory name and description.md
+			let mut name: String = dir_path
+				.file_name()
+				.and_then(|s| s.to_str())
+				.unwrap_or("")
+				.to_string();
+			let mut description: String = String::new();
+			// Try to find a metadata json in the directory
 			if let Ok(files) = fs::read_dir(&dir_path) {
 				for f in files.flatten() {
 					let p: PathBuf = f.path();
@@ -55,25 +68,27 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 							.map(|e| e.eq_ignore_ascii_case("json"))
 							.unwrap_or(false)
 					{
-						meta_path = Some(p);
+						if let Ok(content) = fs::read_to_string(&p) {
+							if let Ok(val) = serde_json::from_str::<Value>(&content) {
+								if let Some(n) = val.get("name").and_then(|v: &Value| v.as_str()) {
+									name = n.to_string();
+								}
+								if let Some(desc) = val.get("description").and_then(|v: &Value| v.as_str()) {
+									description = desc.to_string();
+								}
+							}
+						}
 						break;
 					}
 				}
 			}
-			let Some(meta_path) = meta_path else { continue };
-			let Ok(content) = fs::read_to_string(&meta_path) else { continue };
-			let Ok(val) = serde_json::from_str::<Value>(&content) else { continue };
-			let name: String = val.get("name").and_then(|v: &Value| -> Option<&str> { v.as_str() }).unwrap_or("").to_string();
-			let mut description: String = val
-				.get("description")
-				.and_then(|v: &Value| -> Option<&str> { v.as_str() })
-				.unwrap_or("")
-				.to_string();
+			// If description points to a markdown file, load it; otherwise try description.md as a default
 			if description.ends_with(".md") {
 				let md_path: PathBuf = dir_path.join(&description);
-				if let Ok(md) = fs::read_to_string(&md_path) {
-					description = md;
-				}
+				if let Ok(md) = fs::read_to_string(&md_path) { description = md; }
+			} else if description.is_empty() {
+				let md_path: PathBuf = dir_path.join("description.md");
+				if let Ok(md) = fs::read_to_string(&md_path) { description = md; }
 			}
 			// Attempt icon load (icon.png/jpg/jpeg)
 			let mut icon_handle: Option<TextureHandle> = None;
@@ -128,12 +143,14 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
 	let player_skills: HashMap<String, i32> = read_player_skills();
 
-	egui::ScrollArea::vertical().show(ui, |ui| {
+	egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+		// Use full available width for the gallery
+		ui.set_min_width(ui.available_width());
 		ui.horizontal_wrapped(|ui| {
 			let tile_size: Vec2 = Vec2::new(140.0, 140.0);
 			let spacing = (*ui.spacing()).item_spacing.x;
 			for (idx, meta) in (*state).catalog.iter().enumerate() {
-				let owned = player_skills.contains_key(&(*meta).name);
+				let owned: bool = (*state).show_all || player_skills.contains_key(&(*meta).name);
 				egui::Frame::group(ui.style())
 					.inner_margin(egui::Margin::symmetric(8, 8))
 					.show(ui, |ui| {
@@ -145,9 +162,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 									ui.add_space(6.0);
 								}
 								ui.label(&(*meta).name);
-								if ui.button("View").clicked() {
-									(*state).selected = Some(idx);
-								}
+								if ui.button("View").clicked() { (*state).selected = Some(idx); }
 							} else {
 								// Unknown: intentionally show no name/icon/description
 								ui.add_space(48.0);
@@ -162,7 +177,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 	// Detail view in a floating window for owned skills
 	if let Some(idx) = (*state).selected {
 		if let Some(meta) = (*state).catalog.get(idx) {
-			if player_skills.contains_key(&(*meta).name) {
+			if (*state).show_all || player_skills.contains_key(&(*meta).name) {
 				let level = player_skills.get(&(*meta).name).copied().unwrap_or(0);
 				let mut open = true;
 				egui::Window::new(format!("{}", meta.name))

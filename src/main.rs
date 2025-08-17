@@ -1,3 +1,5 @@
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+
 use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
@@ -18,12 +20,14 @@ mod saves;
 use saves::show_save_ui;
 mod new_save;
 mod settings;
-use settings::{settings_ui, Settings};
+use settings::{settings_ui, Settings, SettingsResult};
 mod console;
 use console::{console_ui, ConsoleState};
 mod skills;
 mod ui_preview;
 use ui_preview::UiPreviewManager;
+mod fps;
+use fps::FpsGraph;
 
 // Developer mode flag is controlled via Cargo feature `dev-mode`.
 // Enabled in debug builds by default via Cargo.toml [features].
@@ -38,6 +42,11 @@ struct DungeonCrawlerworld {
     save_menu_state: saves::SaveMenuState,
     console_state: ConsoleState,
     ui_preview: UiPreviewManager,
+    last_fullscreen: Option<bool>,
+    fps: FpsGraph,
+    // Console session control
+    console_open: bool,
+    last_show_console: bool,
 }
 
 
@@ -50,44 +59,89 @@ impl Default for DungeonCrawlerworld {
             save_menu_state: saves::SaveMenuState::default(),
             console_state: ConsoleState::default(),
             ui_preview: UiPreviewManager::new(),
+            last_fullscreen: None,
+            fps: FpsGraph::default(),
+            console_open: false,
+            last_show_console: Settings::default().show_console,
         }
     }
 }
 
 impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        CentralPanel::default().show(ctx, |ui| {
-            if (*self).show_settings {
-                ui.heading(RichText::new("Settings").size(28.0));
-                settings_ui(ui, &mut self.settings, DEV_MODE_ENABLED);
-                ui.add_space(16.0);
-                if ui.button("Back").clicked() {
-                    (*self).show_settings = false;
-                }
-            } else if (*self).show_saves {
-                ui.heading(RichText::new("Saves Menu").size(28.0));
-                show_save_ui(ui, &mut (*self).save_menu_state);
-                ui.add_space(16.0);
-                if ui.button("Back").clicked() {
-                    (*self).show_saves = false;
-                }
-            } else {
-                ui.heading(RichText::new("Game Menu").size(30.0));
-                ui.add_space(20.0);
-                if ui.button("Saves").clicked() {
-                    (*self).show_saves = true;
-                }
-                if ui.button("Settings").clicked() {
-                    (*self).show_settings = true;
-                }
-                if ui.button("Quit").clicked() {
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                }
-            }
-        });
+        // Apply fullscreen setting when it changes
+        if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
+            (*self).last_fullscreen = Some((*self).settings.fullscreen);
+            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen((*self).settings.fullscreen));
+        }
 
-        // Developer Console window: available only when dev feature is enabled.
-        if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).settings.show_console {
+    // Update FPS graph with delta time in ms
+    let dt_ms: f32 = ctx.input(|i| i.stable_dt) * 1000.0;
+    (*self).fps.push_frame_time(dt_ms);
+
+        CentralPanel::default()
+            .frame(
+                egui::Frame::central_panel(&ctx.style())
+                    .inner_margin(egui::Margin::same(0))
+                    .outer_margin(egui::Margin::same(0))
+            )
+            .show(ctx, |ui| {
+                // Allocate a full-screen area and center content within it
+                let avail = ui.available_size();
+                ui.allocate_ui_with_layout(avail, egui::Layout::top_down(egui::Align::Center), |ui| {
+                    if (*self).show_settings {
+                        ui.heading(RichText::new("Settings").size(28.0));
+                        ui.add_space(8.0);
+                        let mut back = false;
+                        egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+                            // Constrain a readable max width while still centered in the full area
+                            ui.set_max_width(700.0);
+                            let res: SettingsResult = settings_ui(ui, &mut self.settings, DEV_MODE_ENABLED);
+                            if res.request_save { self.settings.save(); }
+                            if res.request_back { back = true; }
+                        });
+                        if back { (*self).show_settings = false; }
+                    } else if (*self).show_saves {
+                        ui.heading(RichText::new("Saves Menu").size(28.0));
+                        ui.add_space(8.0);
+                        egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+                            ui.set_max_width(900.0);
+                            show_save_ui(ui, &mut (*self).save_menu_state);
+                        });
+                        // Respect back request from saves UI
+                        if (*self).save_menu_state.back_requested {
+                            (*self).save_menu_state.back_requested = false;
+                            (*self).show_saves = false;
+                        }
+                    } else {
+                        // Game Menu centered with larger controls
+                        ui.add_space(8.0);
+                        ui.heading(RichText::new("Game Menu").size(30.0));
+                        ui.add_space(24.0);
+                        // Slightly larger buttons for presence
+                        if ui.add_sized([220.0, 36.0], egui::Button::new("Saves")).clicked() {
+                            (*self).show_saves = true;
+                        }
+                        ui.add_space(8.0);
+                        if ui.add_sized([220.0, 36.0], egui::Button::new("Settings")).clicked() {
+                            (*self).show_settings = true;
+                        }
+                        ui.add_space(8.0);
+                        if ui.add_sized([220.0, 36.0], egui::Button::new("Quit")).clicked() {
+                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                        }
+                    }
+                });
+            });
+
+        // Developer Console window: only when enabled and explicitly opened this session
+        // Detect setting edge to open on user toggle (not on startup load)
+        if (*self).settings.show_console != (*self).last_show_console {
+            if (*self).settings.show_console { (*self).console_open = true; }
+            (*self).last_show_console = (*self).settings.show_console;
+        }
+
+        if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).console_open {
             let mut open = true;
             egui::Window::new("Console")
                 .open(&mut open)
@@ -105,6 +159,7 @@ impl App for DungeonCrawlerworld {
             if !open {
                 // Closing the window hides the console until re-enabled in settings
                 (*self).settings.show_console = false;
+                (*self).console_open = false;
                 (*self).settings.save();
             }
             // After UI event handling, process any queued commands
@@ -138,6 +193,19 @@ impl App for DungeonCrawlerworld {
         // Render any active preview windows (gated by dev mode so previews are a dev tool)
         if DEV_MODE_ENABLED && (*self).settings.developer_mode {
             (*self).ui_preview.render(ctx, DEV_MODE_ENABLED);
+
+            // FPS graph overlay in the bottom-right corner when enabled
+            if (*self).settings.show_fps_graph {
+                egui::TopBottomPanel::bottom("fps_graph_panel")
+                    .resizable(false)
+                    .min_height(90.0)
+                    .show_separator_line(false)
+                    .show(ctx, |ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                            (*self).fps.ui(ui);
+                        });
+                    });
+            }
         }
     }
 }

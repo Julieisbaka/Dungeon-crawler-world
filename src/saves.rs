@@ -9,6 +9,8 @@ pub struct SaveMenuState {
     pub edit_save_name: String,
     pub confirm_delete: bool,
     pub delete_target: Option<String>,
+    // Set to true when the top-level Back is clicked; caller can observe and react
+    pub back_requested: bool,
 }
 
 impl Default for SaveMenuState {
@@ -21,6 +23,7 @@ impl Default for SaveMenuState {
             edit_save_name: String::new(),
             confirm_delete: false,
             delete_target: None,
+            back_requested: false,
         }
     }
 }
@@ -59,12 +62,24 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     }
 
     if (*state).in_new_save_menu {
+        // Provide a back button to leave the New Save sub-menu
+        ui.horizontal(|ui| {
+            if ui.button("Back").clicked() {
+                (*state).in_new_save_menu = false;
+                (*state).new_save_state.reset();
+                return; // Early leave from this frame; main list will render next frame
+            }
+        });
+        ui.add_space(8.0);
+
         if show_new_save_ui(ui, &mut (*state).new_save_state) {
             (*state).in_new_save_menu = false;
             (*state).new_save_state.reset();
         }
         return;
     }
+
+    // No top Back button; we'll place it at the bottom of the list instead
 
     // Edit save UI
     if let Some(ref folder_name) = (*state).editing_save {
@@ -186,5 +201,15 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         }
     } else {
         ui.label("No saves found or saves directory doesn't exist yet.");
+    }
+
+    // Bottom Back button: below the list of saves
+    ui.add_space(16.0);
+    if ui.add_sized([120.0, 30.0], egui::Button::new("Back")).clicked() {
+        (*state).in_new_save_menu = false;
+        (*state).editing_save = None;
+        (*state).confirm_delete = false;
+        (*state).delete_target = None;
+        (*state).back_requested = true;
     }
 }

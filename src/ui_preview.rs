@@ -18,11 +18,11 @@ impl Default for UiPreviewManager {
 }
 
 enum PreviewWindow {
-    Skills { open: bool, state: SkillsState },
-    NewSave { open: bool, state: NewSaveState },
-    Saves { open: bool, state: SaveMenuState },
-    Settings { open: bool, settings: Settings },
-    Console { open: bool, state: ConsoleState },
+    Skills { open: bool, max: bool, state: SkillsState },
+    NewSave { open: bool, max: bool, state: NewSaveState },
+    Saves { open: bool, max: bool, state: SaveMenuState },
+    Settings { open: bool, max: bool, settings: Settings },
+    Console { open: bool, max: bool, state: ConsoleState },
 }
 
 impl UiPreviewManager {
@@ -38,23 +38,28 @@ impl UiPreviewManager {
             "skills" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Skills { open: true, state: SkillsState::default() } }),
+                    .or_insert_with(|| {
+                        let mut st = SkillsState::default();
+                        // In preview, show all discovered skills regardless of ownership
+                        st.enable_preview();
+                    PreviewWindow::Skills { open: true, max: false, state: st }
+                    }),
             "new_save" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| -> PreviewWindow { PreviewWindow::NewSave { open: true, state: NewSaveState::default() } }),
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::NewSave { open: true, max: false, state: NewSaveState::default() } }),
             "saves" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Saves { open: true, state: SaveMenuState::default() } }),
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Saves { open: true, max: false, state: SaveMenuState::default() } }),
             "settings" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Settings { open: true, settings: Settings::default() } }),
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Settings { open: true, max: false, settings: Settings::default() } }),
             "console" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Console { open: true, state: ConsoleState::default() } }),
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Console { open: true, max: false, state: ConsoleState::default() } }),
             other => {
                 return Err(format!(
                     "Unknown UI '{}'. Known: {}",
@@ -79,69 +84,107 @@ impl UiPreviewManager {
     pub fn render(&mut self, ctx: &Context, dev_enabled: bool) {
         // Render each open preview window
         let mut to_close: Vec<String> = Vec::new();
-        for (name, win) in (*self).windows.iter_mut() {
+        let screen = ctx.screen_rect();
+        let screen_size = screen.size();
+        for (name, win) in self.windows.iter_mut() {
             match win {
-                PreviewWindow::Skills { open, state } => {
+                PreviewWindow::Skills { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
+                    let id = egui::Id::new(("preview_skills", *max));
                     egui::Window::new("Preview: Skills")
+                        .id(id)
                         .open(&mut is_open)
                         .resizable(true)
                         .vscroll(true)
-                        .default_size(egui::vec2(500.0, 350.0))
-                        .show(ctx, |ui: &mut egui::Ui| {
+                        .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
+                        .max_size(screen_size)
+                        .show(ctx, |ui| {
+                            // Toolbar
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                                let label = if *max { "Restore" } else { "Maximize" };
+                                if ui.button(label).clicked() { *max = !*max; }
+                            });
                             skills::skills_ui(ui, state);
                         });
                     if !is_open { *open = false; }
                 }
-                PreviewWindow::NewSave { open, state } => {
+                PreviewWindow::NewSave { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
+                    let id = egui::Id::new(("preview_new_save", *max));
                     egui::Window::new("Preview: New Save")
+                        .id(id)
                         .open(&mut is_open)
                         .resizable(true)
                         .vscroll(true)
-                        .default_size(egui::vec2(480.0, 320.0))
-                        .show(ctx, |ui: &mut egui::Ui| {
+                        .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
+                        .max_size(screen_size)
+                        .show(ctx, |ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                                let label = if *max { "Restore" } else { "Maximize" };
+                                if ui.button(label).clicked() { *max = !*max; }
+                            });
                             let _ = new_save::show_new_save_ui(ui, state);
                         });
                     if !is_open { *open = false; }
                 }
-                PreviewWindow::Saves { open, state } => {
+                PreviewWindow::Saves { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
+                    let id = egui::Id::new(("preview_saves", *max));
                     egui::Window::new("Preview: Saves Menu")
+                        .id(id)
                         .open(&mut is_open)
                         .resizable(true)
                         .vscroll(true)
-                        .default_size(egui::vec2(560.0, 360.0))
-                        .show(ctx, |ui: &mut egui::Ui| {
+                        .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
+                        .max_size(screen_size)
+                        .show(ctx, |ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                                let label = if *max { "Restore" } else { "Maximize" };
+                                if ui.button(label).clicked() { *max = !*max; }
+                            });
                             saves::show_save_ui(ui, state);
                         });
                     if !is_open { *open = false; }
                 }
-                PreviewWindow::Settings { open, settings } => {
+                PreviewWindow::Settings { open, max, settings } => {
                     if !*open { continue; }
                     let mut is_open = true;
+                    let id = egui::Id::new(("preview_settings", *max));
                     egui::Window::new("Preview: Settings")
+                        .id(id)
                         .open(&mut is_open)
                         .resizable(true)
                         .vscroll(true)
-                        .default_size(egui::vec2(420.0, 320.0))
+                        .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
+                        .max_size(screen_size)
                         .show(ctx, |ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                                let label = if *max { "Restore" } else { "Maximize" };
+                                if ui.button(label).clicked() { *max = !*max; }
+                            });
                             settings::settings_ui(ui, settings, dev_enabled);
                         });
                     if !is_open { *open = false; }
                 }
-                PreviewWindow::Console { open, state } => {
+                PreviewWindow::Console { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
+                    let id = egui::Id::new(("preview_console", *max));
                     egui::Window::new("Preview: Console")
+                        .id(id)
                         .open(&mut is_open)
                         .resizable(true)
                         .vscroll(true)
-                        .default_size(egui::vec2(520.0, 300.0))
-                        .show(ctx, |ui: &mut egui::Ui| {
+                        .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.5 }))
+                        .max_size(screen_size)
+                        .show(ctx, |ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                                let label = if *max { "Restore" } else { "Maximize" };
+                                if ui.button(label).clicked() { *max = !*max; }
+                            });
                             console::console_ui(ui, state);
                         });
                     if !is_open { *open = false; }
@@ -158,6 +201,6 @@ impl UiPreviewManager {
                 }
             }
         }
-        for key in to_close { (*self).windows.remove(&key); }
+        for key in to_close { self.windows.remove(&key); }
     }
 }
