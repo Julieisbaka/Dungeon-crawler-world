@@ -7,8 +7,6 @@ fn main() {
 
     check_dependencies();
 
-    build_cpp_backend();
-
     setup_vulkan();
 
     handle_json_data();
@@ -38,58 +36,6 @@ fn check_dependencies() {
             }
         }
     }
-}
-
-fn build_cpp_backend() {
-    let mut build: cc::Build = cc::Build::new();
-
-    // Common configuration
-    build
-        .cpp(true)
-        .std("c++17")
-        .flag_if_supported("-Wall")
-        .flag_if_supported("-Wextra")
-        .include("Floor")
-        .include("cpp");
-        // Floor files
-        // .file("cpp/data/save.cpp");
-
-    // Find and add all other .cpp files
-    if let Ok(entries) = std::fs::read_dir("cpp") {
-        for entry in entries.filter_map(Result::ok) {
-            let path: PathBuf = entry.path();
-            if path.is_file()
-                && path
-                    .extension()
-                    .map_or(false, |ext: &std::ffi::OsStr| ext == "cpp")
-            {
-                build.file(path);
-            }
-        }
-    }
-
-    // Add debug/release specific flags
-    if env::var("PROFILE").unwrap() == "debug" {
-        build.flag_if_supported("-g").flag_if_supported("-O0");
-    } else {
-        build.flag_if_supported("-O3").flag_if_supported("-DNDEBUG");
-    }
-
-    // Platform-specific configurations
-    if cfg!(target_os = "windows") {
-        build.flag_if_supported("/std:c++17");
-        build.flag_if_supported("/EHsc"); // Exception handling
-    } else if cfg!(target_os = "macos") {
-        // Ensure compatibility with Apple Silicon
-        if env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default() == "aarch64" {
-            build.flag("-arch").flag("arm64");
-        }
-    }
-
-    build.compile("dungeon_crawler_backend");
-
-    println!("cargo:rerun-if-changed=Floor/");
-    println!("cargo:rerun-if-changed=cpp/");
 }
 
 fn setup_vulkan() {
