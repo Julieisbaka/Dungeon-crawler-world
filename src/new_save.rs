@@ -6,8 +6,8 @@ use rand::Rng;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum NewSaveTab {
-    Basics,
-    Gamerules,
+    Basics = 0,
+    Gamerules = 1,
 }
 
 #[derive(Clone, Debug, PartialEq)]

@@ -56,7 +56,7 @@ impl Default for Settings {
 pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: bool) {
 	// Only show heading once in the settings menu (handled in main.rs)
 
-	ui.horizontal(|ui| {
+	ui.horizontal(|ui: &mut Ui| {
 		ui.label("Fog:");
 		egui::ComboBox::from_id_salt("fog_combo")
 			.selected_text(match (*settings).fog {
@@ -66,7 +66,7 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 				3 => "Fancy fog",
 				_ => "Unknown",
 			})
-			.show_ui(ui, |ui| {
+			.show_ui(ui, |ui: &mut Ui| {
 				if ui.selectable_value(&mut (*settings).fog, 0, "No fog").changed() { settings.save(); }
 				if ui.selectable_value(&mut (*settings).fog, 1, "Fast fog").changed() { settings.save(); }
 				if ui.selectable_value(&mut (*settings).fog, 2, "Default fog").changed() { settings.save(); }
@@ -74,7 +74,7 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 			});
 	});
 
-	ui.horizontal(|ui| {
+	ui.horizontal(|ui: &mut Ui| {
 		ui.label("Lighting:");
 		egui::ComboBox::from_id_salt("lighting_combo")
 			.selected_text(match (*settings).lighting {
@@ -86,7 +86,7 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 				5 => "Highest quality",
 				_ => "Unknown",
 			})
-			.show_ui(ui, |ui| {
+			.show_ui(ui, |ui: &mut Ui| {
 				if ui.selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting").changed() { settings.save(); }
 				if ui.selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting").changed() { settings.save(); }
 				if ui.selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting").changed() { settings.save(); }
@@ -96,7 +96,7 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 			});
 	});
 
-	ui.horizontal(|ui| {
+	ui.horizontal(|ui: &mut Ui| {
 		ui.label("Physically based sound:");
 		if ui.checkbox(&mut (*settings).sound, "Enable").changed() { settings.save(); }
 	});
@@ -107,7 +107,7 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 		if ui.checkbox(&mut (*settings).developer_mode, "Developer Mode").changed() { settings.save(); }
 
 		if (*settings).developer_mode {
-			ui.group(|ui| {
+			ui.group(|ui: &mut Ui| {
 				ui.heading("Developer Options");
 				if ui.checkbox(&mut (*settings).verbose_logging, "Verbose Logging").changed() { settings.save(); }
 				if ui.checkbox(&mut (*settings).show_console, "In-game Console").changed() { settings.save(); }
