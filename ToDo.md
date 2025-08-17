@@ -26,7 +26,7 @@
 
 - [x] Create patches and fixes for non-windows operating systems
 
-- [ ] Research potential alternatives to bullet physics as it is no longer maintained
+- [x] Research potential alternatives to bullet physics as it is no longer maintained
 
 - [ ] Setup Vulkan Graphics with physics engine
 
