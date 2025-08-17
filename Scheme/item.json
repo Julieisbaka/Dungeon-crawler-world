@@ -9,7 +9,7 @@
             "description": "A dictionary of skills and values associated with the item.",
             "$comment": "Each skill should match an existing skill in the skills folder."
         },
-        "spelld": {
+        "spells": {
             "type": "object",
             "description": "A dictionary of spells and values associated with the item.",
             "$comment": "Each spell should match an existing spell in the spells folder."
