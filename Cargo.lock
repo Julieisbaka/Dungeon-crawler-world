@@ -15,6 +15,7 @@ dependencies = [
  "image",
  "log",
  "once_cell",
+ "parry3d",
  "pkg-config",
  "rand",
  "rapier3d",

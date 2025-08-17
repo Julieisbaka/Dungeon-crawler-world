@@ -87,7 +87,7 @@ impl App for DungeonCrawlerworld {
         });
 
         // Developer Console window: available only when dev feature is enabled.
-        if DEV_MODE_ENABLED && self.settings.developer_mode && self.settings.show_console {
+        if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).settings.show_console {
             let mut open = true;
             egui::Window::new("Console")
                 .open(&mut open)
@@ -98,46 +98,46 @@ impl App for DungeonCrawlerworld {
                 .show(ctx, |ui| {
                     // Intercept invoke commands to open previews
                     // Render console UI first
-                    console_ui(ui, &mut self.console_state);
+                    console_ui(ui, &mut (*self).console_state);
                     // Provide a minimal inline help mention for invoke
                     // (kept non-intrusive in UI; full help prints in console)
                 });
             if !open {
                 // Closing the window hides the console until re-enabled in settings
-                self.settings.show_console = false;
-                self.settings.save();
+                (*self).settings.show_console = false;
+                (*self).settings.save();
             }
             // After UI event handling, process any queued commands
-            for cmd in self.console_state.take_pending() {
+            for cmd in (*self).console_state.take_pending() {
                 let trimmed = cmd.trim();
                 if trimmed.is_empty() { continue; }
-                let mut parts = trimmed.split_whitespace();
+                let mut parts: std::str::SplitWhitespace<'_> = trimmed.split_whitespace();
                 let head = parts.next().unwrap_or("");
                 match head {
                     "invoke" => {
-                        let name = parts.collect::<Vec<_>>().join(" ");
+                        let name: String = parts.collect::<Vec<_>>().join(" ");
                         if name.is_empty() {
-                            self.console_state.log_line("Usage: invoke <ui>");
+                            (*self).console_state.log_line("Usage: invoke <ui>");
                         } else {
-                            if DEV_MODE_ENABLED && self.settings.developer_mode {
-                                match self.ui_preview.open_preview(&name) {
-                                    Ok(()) => self.console_state.log_line(format!("Invoked UI preview: {}", name)),
-                                    Err(e) => self.console_state.log_line(e),
+                            if DEV_MODE_ENABLED && (*self).settings.developer_mode {
+                                match (*self).ui_preview.open_preview(&name) {
+                                    Ok(()) => (*self).console_state.log_line(format!("Invoked UI preview: {}", name)),
+                                    Err(e) => (*self).console_state.log_line(e),
                                 }
                             } else {
-                                self.console_state.log_line("UI previews are only available in Developer Mode.");
+                                (*self).console_state.log_line("UI previews are only available in Developer Mode.");
                             }
                         }
                     }
                     // Fallback to built-in commands
-                    _ => self.console_state.run_command(trimmed),
+                    _ => (*self).console_state.run_command(trimmed),
                 }
             }
         }
 
         // Render any active preview windows (gated by dev mode so previews are a dev tool)
-        if DEV_MODE_ENABLED && self.settings.developer_mode {
-            self.ui_preview.render(ctx, DEV_MODE_ENABLED);
+        if DEV_MODE_ENABLED && (*self).settings.developer_mode {
+            (*self).ui_preview.render(ctx, DEV_MODE_ENABLED);
         }
     }
 }

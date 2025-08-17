@@ -1,4 +1,5 @@
 use egui::{Ui, TextEdit};
+use serde::de;
 use std::fs;
 use std::path::Path;
 use serde_json::{json, Value};
@@ -219,6 +220,11 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
     let walking: i8 = rng.gen_range(skill_min..=skill_max);
     let swimming: i8 = rng.gen_range(skill_min..=skill_max);
     let breathing: i8 = rng.gen_range(skill_min..=skill_max);
+    let strength: i16 = rng.gen_range(1..=8);
+    let intelligence: i16 = rng.gen_range(3..=5);
+    let dexterity: i16 = rng.gen_range(2..=6);
+    let charisma: i16 = rng.gen_range(2..4);
+    let constitution: i16 = rng.gen_range(2..6);
 
     let player_data: Value = json!({
         "name": "", // Unimplemented: Player name will be set later
@@ -234,7 +240,15 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
         "sub_classes": [],
         "class": "",
         "race": "",
-        "has_manager": false
+        "has_manager": false,
+        "stats": {
+            "strength": strength,
+            "intelligence": intelligence,
+            "dexterity": dexterity,
+            "charisma": charisma,
+            "constitution": constitution
+        }
+
     });
     let player_file_path: std::path::PathBuf = save_path.join("player.json");
     fs::write(&player_file_path, serde_json::to_string_pretty(&player_data).unwrap())

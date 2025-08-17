@@ -34,7 +34,7 @@
 
 - [ ] Implement the FPS graphing feature
 
-- [ ] Implement the in game console feature
+- [x] Implement the in game console feature
 
 - [x] Implement saving mechanism for settings
 
@@ -46,8 +46,8 @@
 
 - [ ] Create logic for tree creation and distribution
 
-- [ ] Rewrite backend in Rust
+- [x] Rewrite backend in Rust
 
 - [x] Add skills for walking, swimming, and breathing
 
-- [ ] Add initial stat number generation
+- [x] Add initial stat number generation

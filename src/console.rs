@@ -15,7 +15,7 @@ impl ConsoleState {
     }
 
     fn push_line<S: Into<String>>(&mut self, s: S) {
-        self.log.push(s.into());
+        (*self).log.push(s.into());
         (*self).scroll_to_end = true;
     }
 
@@ -44,8 +44,8 @@ impl ConsoleState {
 
     // Drain and return pending commands submitted by the user in the UI
     pub fn take_pending(&mut self) -> Vec<String> {
-        let mut out = Vec::new();
-        std::mem::swap(&mut out, &mut self.pending);
+        let mut out: Vec<String> = Vec::new();
+        std::mem::swap(&mut out, &mut (*self).pending);
         out
     }
 }
@@ -68,7 +68,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
         // Stable-size input field and action buttons
         // Use a visible fixed height to prevent hover-based reflow/resizing
         let input_resp: egui::Response = ui.add(
-            TextEdit::singleline(&mut state.input)
+            TextEdit::singleline(&mut (*state).input)
                 .hint_text("Enter command...")
                 .desired_width(f32::INFINITY),
         );
@@ -78,10 +78,10 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
             && ui.input(|i: &egui::InputState| i.key_pressed(egui::Key::Enter));
         ui.horizontal(|ui: &mut Ui| {
             if ui.add_sized([64.0, 24.0], egui::Button::new("Run")).clicked() || pressed_enter {
-                let cmd = state.input.clone();
+                let cmd: String = (*state).input.clone();
                 // Queue the command for external handling in the main loop
                 (*state).pending.push(cmd);
-                (&mut state.input).clear();
+                (&mut (*state).input).clear();
             }
             if ui.add_sized([64.0, 24.0], egui::Button::new("Clear")).clicked() {
                 state.clear();

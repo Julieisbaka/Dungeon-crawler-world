@@ -33,28 +33,28 @@ impl UiPreviewManager {
     }
 
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
-        let key = name.trim().to_lowercase();
-        let window = match key.as_str() {
-            "skills" => self
+        let key: String = name.trim().to_lowercase();
+        let window: &mut PreviewWindow = match key.as_str() {
+            "skills" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| PreviewWindow::Skills { open: true, state: SkillsState::default() }),
-            "new_save" => self
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Skills { open: true, state: SkillsState::default() } }),
+            "new_save" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| PreviewWindow::NewSave { open: true, state: NewSaveState::default() }),
-            "saves" => self
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::NewSave { open: true, state: NewSaveState::default() } }),
+            "saves" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| PreviewWindow::Saves { open: true, state: SaveMenuState::default() }),
-            "settings" => self
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Saves { open: true, state: SaveMenuState::default() } }),
+            "settings" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| PreviewWindow::Settings { open: true, settings: Settings::default() }),
-            "console" => self
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Settings { open: true, settings: Settings::default() } }),
+            "console" => (*self)
                 .windows
                 .entry(key)
-                .or_insert_with(|| PreviewWindow::Console { open: true, state: ConsoleState::default() }),
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Console { open: true, state: ConsoleState::default() } }),
             other => {
                 return Err(format!(
                     "Unknown UI '{}'. Known: {}",
@@ -79,7 +79,7 @@ impl UiPreviewManager {
     pub fn render(&mut self, ctx: &Context, dev_enabled: bool) {
         // Render each open preview window
         let mut to_close: Vec<String> = Vec::new();
-        for (name, win) in self.windows.iter_mut() {
+        for (name, win) in (*self).windows.iter_mut() {
             match win {
                 PreviewWindow::Skills { open, state } => {
                     if !*open { continue; }
@@ -89,7 +89,7 @@ impl UiPreviewManager {
                         .resizable(true)
                         .vscroll(true)
                         .default_size(egui::vec2(500.0, 350.0))
-                        .show(ctx, |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
                             skills::skills_ui(ui, state);
                         });
                     if !is_open { *open = false; }
@@ -102,7 +102,7 @@ impl UiPreviewManager {
                         .resizable(true)
                         .vscroll(true)
                         .default_size(egui::vec2(480.0, 320.0))
-                        .show(ctx, |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
                             let _ = new_save::show_new_save_ui(ui, state);
                         });
                     if !is_open { *open = false; }
@@ -115,7 +115,7 @@ impl UiPreviewManager {
                         .resizable(true)
                         .vscroll(true)
                         .default_size(egui::vec2(560.0, 360.0))
-                        .show(ctx, |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
                             saves::show_save_ui(ui, state);
                         });
                     if !is_open { *open = false; }
@@ -141,7 +141,7 @@ impl UiPreviewManager {
                         .resizable(true)
                         .vscroll(true)
                         .default_size(egui::vec2(520.0, 300.0))
-                        .show(ctx, |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
                             console::console_ui(ui, state);
                         });
                     if !is_open { *open = false; }
@@ -158,6 +158,6 @@ impl UiPreviewManager {
                 }
             }
         }
-        for key in to_close { self.windows.remove(&key); }
+        for key in to_close { (*self).windows.remove(&key); }
     }
 }

@@ -34,6 +34,36 @@
         "has_manager": {
             "type": "boolean",
             "default": false
+        },
+        "stats": {
+            "type": "object",
+            "properties": {
+                "strength": {
+                    "type": "integer",
+                    "maximum": 300,
+                    "minimum": 0
+                },
+                "dexterity": {
+                    "type": "integer",
+                    "maximum": 300,
+                    "minimum": 0
+                },
+                "intelligence": {
+                    "type": "integer",
+                    "maximum": 300,
+                    "minimum": 0
+                },
+                "charisma": {
+                    "type": "integer",
+                    "maximum": 300,
+                    "minimum": 0
+                },
+                "constitution": {
+                    "type": "integer",
+                    "maximum": 300,
+                    "minimum": 0
+                }
+            }
         }
     }
 }

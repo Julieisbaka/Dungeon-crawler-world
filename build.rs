@@ -11,8 +11,6 @@ fn main() {
 
     setup_vulkan();
 
-    // setup_bullet_physics();
-
     handle_json_data();
 
     setup_linking();
@@ -132,48 +130,6 @@ fn setup_vulkan() {
     }
 
     println!("cargo:rerun-if-env-changed=VULKAN_SDK");
-}
-
-// We don't use bullet for anything yet so for the sake of easy building we can just not use it in the build.rs file
-fn setup_bullet_physics() {
-    // Link Bullet Physics C++ libraries
-    // On Windows, set BULLET_DIR env variable to Bullet install path, or ensure Bullet libs are in your library path
-    if let Ok(bullet_dir) = env::var("BULLET_DIR") {
-        println!("cargo:rustc-link-search=native={}/lib", bullet_dir);
-        println!("cargo:include={}/include/bullet", bullet_dir);
-        println!("cargo:rustc-link-lib=BulletDynamics");
-        println!("cargo:rustc-link-lib=BulletCollision");
-        println!("cargo:rustc-link-lib=LinearMath");
-    } else {
-        // Try to find Bullet via pkg-config on Linux/macOS
-        if !cfg!(target_os = "windows")
-            && Command::new("pkg-config")
-                .arg("--exists")
-                .arg("bullet")
-                .status()
-                .is_ok()
-        {
-            let output: std::process::Output = Command::new("pkg-config")
-                .arg("--libs")
-                .arg("bullet")
-                .output()
-                .expect("Failed to execute pkg-config");
-
-            let libs: std::borrow::Cow<'_, str> = String::from_utf8_lossy(&output.stdout);
-            for lib in libs.split_whitespace() {
-                if lib.starts_with("-l") {
-                    println!("cargo:rustc-link-lib={}", &lib[2..]);
-                }
-            }
-        } else {
-            // Default Bullet libraries to link
-            println!("cargo:rustc-link-lib=BulletDynamics");
-            println!("cargo:rustc-link-lib=BulletCollision");
-            println!("cargo:rustc-link-lib=LinearMath");
-        }
-    }
-
-    println!("cargo:rerun-if-env-changed=BULLET_DIR");
 }
 
 fn handle_json_data() {

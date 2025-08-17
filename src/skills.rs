@@ -78,7 +78,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 			// Attempt icon load (icon.png/jpg/jpeg)
 			let mut icon_handle: Option<TextureHandle> = None;
 			for candidate in ["icon.png", "icon.jpg", "icon.jpeg"] {
-				let ip = dir_path.join(candidate);
+				let ip: PathBuf = dir_path.join(candidate);
 				if ip.exists() {
 					icon_handle = load_icon_texture(ctx, &format!("skill_icon_{}", name), &ip);
 					if icon_handle.is_some() {
@@ -94,19 +94,19 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 			});
 		}
 	}
-	skills.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+	skills.sort_by(|a: &SkillMeta, b: &SkillMeta| -> std::cmp::Ordering { (*a).name.to_lowercase().cmp(&(*b).name.to_lowercase()) });
 	skills
 }
 
 fn read_player_skills() -> HashMap<String, i32> {
-	let mut map = HashMap::new();
+	let mut map: HashMap<String, i32> = HashMap::new();
 	// Attempt to read current save context (if available)
-	let current = crate::CURRENT_SAVE.lock().ok().and_then(|g| g.clone());
+	let current: Option<String> = crate::CURRENT_SAVE.lock().ok().and_then(|g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { g.clone() });
 	let Some(save) = current else { return map };
-	let path = Path::new("saves").join(save).join("player.json");
+	let path: PathBuf = Path::new("saves").join(save).join("player.json");
 	let Ok(content) = fs::read_to_string(path) else { return map };
 	let Ok(json) = serde_json::from_str::<Value>(&content) else { return map };
-	if let Some(skills) = json.get("skills").and_then(|v| v.as_object()) {
+	if let Some(skills) = json.get("skills").and_then(|v: &Value| -> Option<&serde_json::Map<String, Value>> { v.as_object() }) {
 		for (name, val) in skills.iter() {
 			if let Some(lvl) = val.as_i64() {
 				map.insert(name.clone(), lvl as i32);
@@ -120,33 +120,33 @@ fn read_player_skills() -> HashMap<String, i32> {
 // Clicking an owned skill opens a details panel with its description and current level.
 pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 	// Lazy-load catalog when first shown
-	if !state.loaded {
-		let ctx = ui.ctx().clone();
-		state.catalog = discover_skills(&ctx);
-		state.loaded = true;
+	if !(*state).loaded {
+		let ctx: Context = ui.ctx().clone();
+		(*state).catalog = discover_skills(&ctx);
+		(*state).loaded = true;
 	}
 
-	let player_skills = read_player_skills();
+	let player_skills: HashMap<String, i32> = read_player_skills();
 
 	egui::ScrollArea::vertical().show(ui, |ui| {
 		ui.horizontal_wrapped(|ui| {
-			let tile_size = Vec2::new(140.0, 140.0);
-			let spacing = ui.spacing().item_spacing.x;
-			for (idx, meta) in state.catalog.iter().enumerate() {
-				let owned = player_skills.contains_key(&meta.name);
+			let tile_size: Vec2 = Vec2::new(140.0, 140.0);
+			let spacing = (*ui.spacing()).item_spacing.x;
+			for (idx, meta) in (*state).catalog.iter().enumerate() {
+				let owned = player_skills.contains_key(&(*meta).name);
 				egui::Frame::group(ui.style())
 					.inner_margin(egui::Margin::symmetric(8, 8))
 					.show(ui, |ui| {
 						ui.set_min_size(tile_size);
 						ui.vertical_centered(|ui| {
 							if owned {
-								if let Some(tex) = &meta.icon {
+								if let Some(tex) = &(*meta).icon {
 									ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
 									ui.add_space(6.0);
 								}
-								ui.label(&meta.name);
+								ui.label(&(*meta).name);
 								if ui.button("View").clicked() {
-									state.selected = Some(idx);
+									(*state).selected = Some(idx);
 								}
 							} else {
 								// Unknown: intentionally show no name/icon/description
@@ -160,10 +160,10 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 	});
 
 	// Detail view in a floating window for owned skills
-	if let Some(idx) = state.selected {
-		if let Some(meta) = state.catalog.get(idx) {
-			if player_skills.contains_key(&meta.name) {
-				let level = player_skills.get(&meta.name).copied().unwrap_or(0);
+	if let Some(idx) = (*state).selected {
+		if let Some(meta) = (*state).catalog.get(idx) {
+			if player_skills.contains_key(&(*meta).name) {
+				let level = player_skills.get(&(*meta).name).copied().unwrap_or(0);
 				let mut open = true;
 				egui::Window::new(format!("{}", meta.name))
 					.open(&mut open)
@@ -171,26 +171,26 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 					.resizable(true)
 					.show(ui.ctx(), |ui| {
 						ui.horizontal(|ui| {
-							if let Some(tex) = &meta.icon {
+							if let Some(tex) = &(*meta).icon {
 								ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(64.0)));
 							}
-							ui.vertical(|ui| {
+							ui.vertical(|ui: &mut Ui| {
 								ui.label(format!("Level: {}", level));
 							});
 						});
 						ui.add_space(8.0);
-						if !meta.description.trim().is_empty() {
-							ui.label(meta.description.as_str());
+						if !(*meta).description.trim().is_empty() {
+							ui.label((*meta).description.as_str());
 						} else {
 							ui.label("No description available.");
 						}
 					});
 				if !open {
-					state.selected = None;
+					(*state).selected = None;
 				}
 			} else {
 				// If selection points to an unknown skill, clear it
-				state.selected = None;
+				(*state).selected = None;
 			}
 		}
 	}
