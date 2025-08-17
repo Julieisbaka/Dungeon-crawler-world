@@ -27,6 +27,11 @@
             "type": "array",
             "description": "A list of items associated with the entity.",
             "$comment": "Each item should match an existing item in the items folder."
+        },
+        "benefits": {
+            "type": "object",
+            "description": "A dictionary of benefits associated with the entity.",
+            "$comment": "Each benefit should match an existing benefit in the benefits folder."
         }
     },
     "additionalProperties": {
