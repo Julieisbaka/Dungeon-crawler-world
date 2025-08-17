@@ -13,6 +13,15 @@
             "type": "object",
             "description": "A dictionary of spells and values associated with the item.",
             "$comment": "Each spell should match an existing spell in the spells folder."
+        },
+        "equippable": {
+            "type": "boolean",
+            "description": "Is this item able to be equipped."
+        },
+        "benefits": {
+            "type": "object",
+            "description": "A dictionary of benefits associated with the item.",
+            "$comment": "Each benefit should match an existing benefit in the benefits folder."
         }
     },
     "additionalProperties": {
