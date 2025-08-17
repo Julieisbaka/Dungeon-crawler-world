@@ -1,0 +1,104 @@
+name: Build and Release (Windows)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name for the release (e.g., v0.1.0)"
+        required: true
+        type: string
+      release_name:
+        description: "Release name (defaults to tag if empty)"
+        required: false
+        type: string
+      prerelease:
+        description: "Mark release as prerelease"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build dev and release executables
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache build target
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build (dev profile, DEV_MODE_ENABLED=true)
+        run: |
+          cargo build
+
+      - name: Prepare artifacts folder
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+
+      - name: Copy dev executable
+        run: |
+          $devExe = "target\debug\Dungeon-Crawler-World.exe"
+          if (-not (Test-Path $devExe)) {
+            Write-Error "Dev executable not found: $devExe"
+          }
+          Copy-Item -Path $devExe -Destination "artifacts\Dungeon-Crawler-World-dev.exe" -Force
+
+      - name: Toggle DEV_MODE_ENABLED to false for release build
+        run: |
+          $path = 'src\main.rs'
+          if (-not (Test-Path $path)) { Write-Error "main.rs not found at $path" }
+          $content = Get-Content $path -Raw
+          $pattern = 'const\s+DEV_MODE_ENABLED\s*:\s*bool\s*=\s*true\s*;'
+          if ($content -notmatch $pattern) {
+            Write-Host "Warning: DEV_MODE_ENABLED true pattern not found. Proceeding without change."
+          } else {
+            $new = [regex]::Replace($content, $pattern, 'const DEV_MODE_ENABLED: bool = false;')
+            Set-Content $path $new
+          }
+
+      - name: Build (release profile, DEV_MODE_ENABLED=false)
+        run: |
+          cargo build --release
+
+      - name: Copy release executable
+        run: |
+          $relExe = "target\release\Dungeon-Crawler-World.exe"
+          if (-not (Test-Path $relExe)) {
+            Write-Error "Release executable not found: $relExe"
+          }
+          Copy-Item -Path $relExe -Destination "artifacts\Dungeon-Crawler-World-release.exe" -Force
+
+      - name: Create or update GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.release_name != '' && inputs.release_name || inputs.tag }}
+          prerelease: ${{ inputs.prerelease }}
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/Dungeon-Crawler-World-dev.exe
+            artifacts/Dungeon-Crawler-World-release.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
