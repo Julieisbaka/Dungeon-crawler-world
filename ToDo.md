@@ -18,7 +18,7 @@
 
 - [ ] Crawler current floor should be saved to player.json
 
-- [ ] Add UI for Online mode
+- [ ] Add UI for Online mode gamerule
 
 - [ ] Add gamerule "Real time" when enabled it should use the full times for the time generation range, save to save.json
 
