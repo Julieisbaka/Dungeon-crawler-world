@@ -5,8 +5,8 @@ use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
-	pub fog: i32,
-	pub lighting: i32,
+	pub fog: i8,
+	pub lighting: i8,
 	pub sound: bool,
 	pub developer_mode: bool,
 	pub verbose_logging: bool,

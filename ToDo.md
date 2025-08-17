@@ -12,7 +12,7 @@
 
 - [ ] Create models for leaves
 
-- [ ] Floor one time should be saved to save.json
+- [x] Floor one time should be saved to save.json
 
 - [x] Add gamerule "Online mode", save to save.json
 
@@ -48,6 +48,6 @@
 
 - [ ] Rewrite backend in Rust
 
-- [ ] Add skills for walking, swimming, and breathing
+- [x] Add skills for walking, swimming, and breathing
 
 - [ ] Add initial stat number generation
