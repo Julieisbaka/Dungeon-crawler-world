@@ -18,10 +18,10 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - name: Install MinGW
-        run: choco install mingw -y
-      #- name: Build Bullet Physics
-        #shell: pwsh
-        #run: Scripts/bullet.ps1
+      # - name: Install MinGW
+        # run: choco install mingw -y
+      # - name: Build Bullet Physics
+        # shell: pwsh
+        # run: Scripts/bullet.ps1
       - name: Build with Cargo
         run: cargo build --verbose
