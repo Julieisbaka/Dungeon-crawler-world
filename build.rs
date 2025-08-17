@@ -231,4 +231,15 @@ fn print_build_info() {
 
     println!("cargo:warning=Building for target: {}", target);
     println!("cargo:warning=Build profile: {}", profile);
+
+    // Extra clarity in logs about OS-specific paths used during build
+    if cfg!(target_os = "windows") {
+        println!("cargo:warning=Detected OS: Windows");
+    } else if cfg!(target_os = "macos") {
+        println!("cargo:warning=Detected OS: macOS");
+    } else if cfg!(target_os = "linux") {
+        println!("cargo:warning=Detected OS: Linux");
+    } else {
+        println!("cargo:warning=Detected OS: Other");
+    }
 }

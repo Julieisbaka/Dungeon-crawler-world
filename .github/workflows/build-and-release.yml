@@ -1,4 +1,4 @@
-name: Build and Release (Windows)
+name: Build and Release
 
 on:
   workflow_dispatch:
@@ -16,13 +16,22 @@ on:
         required: false
         default: false
         type: boolean
+      os:
+        description: "Target OS to build for (windows or macos)"
+        required: true
+        default: windows
+        type: choice
+        options:
+          - windows
+          - macos
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build dev and release executables
+  build-windows:
+    if: ${{ inputs.os == 'windows' }}
+    name: Build Windows dev and release executables
     runs-on: windows-latest
     defaults:
       run:
@@ -49,9 +58,20 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build (dev profile, DEV_MODE_ENABLED=true)
+      - name: Ensure DEV_MODE_ENABLED=true for dev build
         run: |
-          cargo build
+          $path = 'src\main.rs'
+          if (-not (Test-Path $path)) { Write-Error "main.rs not found at $path" }
+          $content = Get-Content $path -Raw
+          $patternFalse = 'const\s+DEV_MODE_ENABLED\s*:\s*bool\s*=\s*false\s*;'
+          if ($content -match $patternFalse) {
+            $new = [regex]::Replace($content, $patternFalse, 'const DEV_MODE_ENABLED: bool = true;')
+            Set-Content $path $new
+          }
+
+      - name: Build (dev profile, dev-mode feature enabled)
+        run: |
+          cargo build --features dev-mode
 
       - name: Prepare artifacts folder
         run: |
@@ -65,22 +85,9 @@ jobs:
           }
           Copy-Item -Path $devExe -Destination "artifacts\Dungeon-Crawler-World-dev.exe" -Force
 
-      - name: Toggle DEV_MODE_ENABLED to false for release build
+      - name: Build (release profile, dev-mode disabled)
         run: |
-          $path = 'src\main.rs'
-          if (-not (Test-Path $path)) { Write-Error "main.rs not found at $path" }
-          $content = Get-Content $path -Raw
-          $pattern = 'const\s+DEV_MODE_ENABLED\s*:\s*bool\s*=\s*true\s*;'
-          if ($content -notmatch $pattern) {
-            Write-Host "Warning: DEV_MODE_ENABLED true pattern not found. Proceeding without change."
-          } else {
-            $new = [regex]::Replace($content, $pattern, 'const DEV_MODE_ENABLED: bool = false;')
-            Set-Content $path $new
-          }
-
-      - name: Build (release profile, DEV_MODE_ENABLED=false)
-        run: |
-          cargo build --release
+          cargo build --release --no-default-features
 
       - name: Copy release executable
         run: |
@@ -100,5 +107,71 @@ jobs:
           files: |
             artifacts/Dungeon-Crawler-World-dev.exe
             artifacts/Dungeon-Crawler-World-release.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    if: ${{ inputs.os == 'macos' }}
+    name: Build macOS dev and release executables
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache build target
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Ensure DEV_MODE_ENABLED=true for dev build
+        run: |
+          perl -0777 -pe "s/const\s+DEV_MODE_ENABLED\s*:\s*bool\s*=\s*false\s*;/const DEV_MODE_ENABLED: bool = true;/g" -i src/main.rs
+
+      - name: Build (dev profile, dev-mode feature enabled)
+        run: |
+          cargo build --features dev-mode
+
+      - name: Prepare artifacts folder
+        run: |
+          mkdir -p artifacts
+
+      - name: Copy dev executable
+        run: |
+          DEV_BIN="target/debug/Dungeon-Crawler-World"
+          test -f "$DEV_BIN" || { echo "Dev executable not found: $DEV_BIN"; exit 1; }
+          cp "$DEV_BIN" "artifacts/Dungeon-Crawler-World-dev-macos"
+
+      - name: Build (release profile, dev-mode disabled)
+        run: |
+          cargo build --release --no-default-features
+
+      - name: Copy release executable
+        run: |
+          REL_BIN="target/release/Dungeon-Crawler-World"
+          test -f "$REL_BIN" || { echo "Release executable not found: $REL_BIN"; exit 1; }
+          cp "$REL_BIN" "artifacts/Dungeon-Crawler-World-release-macos"
+
+      - name: Create or update GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.release_name != '' && inputs.release_name || inputs.tag }}
+          prerelease: ${{ inputs.prerelease }}
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/Dungeon-Crawler-World-dev-macos
+            artifacts/Dungeon-Crawler-World-release-macos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

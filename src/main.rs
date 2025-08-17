@@ -20,9 +20,10 @@ mod new_save;
 mod settings;
 use settings::{settings_ui, Settings};
 
-// Set this to true to enable developer mode options in the settings menu.
-// Set to false for release builds to hide developer options.
-const DEV_MODE_ENABLED: bool = true;
+// Developer mode flag is controlled via Cargo feature `dev-mode`.
+// Enabled in debug builds by default via Cargo.toml [features].
+// For release builds in CI, we pass --no-default-features to disable it.
+const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 
 // Main app struct with settings state
 struct DungeonCrawlerworld {
