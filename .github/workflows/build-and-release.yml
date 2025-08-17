@@ -58,16 +58,7 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Ensure DEV_MODE_ENABLED=true for dev build
-        run: |
-          $path = 'src\main.rs'
-          if (-not (Test-Path $path)) { Write-Error "main.rs not found at $path" }
-          $content = Get-Content $path -Raw
-          $patternFalse = 'const\s+DEV_MODE_ENABLED\s*:\s*bool\s*=\s*false\s*;'
-          if ($content -match $patternFalse) {
-            $new = [regex]::Replace($content, $patternFalse, 'const DEV_MODE_ENABLED: bool = true;')
-            Set-Content $path $new
-          }
+  # No source edits required; dev mode controlled via cargo feature
 
       - name: Build (dev profile, dev-mode feature enabled)
         run: |
@@ -135,9 +126,7 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Ensure DEV_MODE_ENABLED=true for dev build
-        run: |
-          perl -0777 -pe "s/const\s+DEV_MODE_ENABLED\s*:\s*bool\s*=\s*false\s*;/const DEV_MODE_ENABLED: bool = true;/g" -i src/main.rs
+  # No source edits required; dev mode controlled via cargo feature
 
       - name: Build (dev profile, dev-mode feature enabled)
         run: |
@@ -153,11 +142,39 @@ jobs:
           test -f "$DEV_BIN" || { echo "Dev executable not found: $DEV_BIN"; exit 1; }
           cp "$DEV_BIN" "artifacts/Dungeon-Crawler-World-dev-macos"
 
-      - name: Zip dev artifact (macOS)
+      - name: Create .app bundle (dev)
         run: |
-          cd artifacts
-          chmod +x Dungeon-Crawler-World-dev-macos
-          zip -9 -j Dungeon-Crawler-World-dev-macos.zip Dungeon-Crawler-World-dev-macos
+          APP_DIR="artifacts/Dungeon-Crawler-World-dev.app"
+          mkdir -p "$APP_DIR/Contents/MacOS"
+          cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>Dungeon-Crawler-World</string>
+            <key>CFBundleDisplayName</key>
+            <string>Dungeon-Crawler-World</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.julieisbaka.dungeoncrawlerworld</string>
+            <key>CFBundleVersion</key>
+            <string>${{ inputs.tag }}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${{ inputs.tag }}</string>
+            <key>CFBundleExecutable</key>
+            <string>Dungeon-Crawler-World</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+          install -m 755 "artifacts/Dungeon-Crawler-World-dev-macos" "$APP_DIR/Contents/MacOS/Dungeon-Crawler-World"
+
+      - name: Create DMG (dev)
+        run: |
+          hdiutil create -volname "Dungeon-Crawler-World-dev" -srcfolder "artifacts/Dungeon-Crawler-World-dev.app" -ov -format UDZO "artifacts/Dungeon-Crawler-World-dev-macos.dmg"
 
       - name: Build (release profile, dev-mode disabled)
         run: |
@@ -169,11 +186,39 @@ jobs:
           test -f "$REL_BIN" || { echo "Release executable not found: $REL_BIN"; exit 1; }
           cp "$REL_BIN" "artifacts/Dungeon-Crawler-World-release-macos"
 
-      - name: Zip release artifact (macOS)
+      - name: Create .app bundle (release)
         run: |
-          cd artifacts
-          chmod +x Dungeon-Crawler-World-release-macos
-          zip -9 -j Dungeon-Crawler-World-release-macos.zip Dungeon-Crawler-World-release-macos
+          APP_DIR="artifacts/Dungeon-Crawler-World-release.app"
+          mkdir -p "$APP_DIR/Contents/MacOS"
+          cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>Dungeon-Crawler-World</string>
+            <key>CFBundleDisplayName</key>
+            <string>Dungeon-Crawler-World</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.julieisbaka.dungeoncrawlerworld</string>
+            <key>CFBundleVersion</key>
+            <string>${{ inputs.tag }}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${{ inputs.tag }}</string>
+            <key>CFBundleExecutable</key>
+            <string>Dungeon-Crawler-World</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+          install -m 755 "artifacts/Dungeon-Crawler-World-release-macos" "$APP_DIR/Contents/MacOS/Dungeon-Crawler-World"
+
+      - name: Create DMG (release)
+        run: |
+          hdiutil create -volname "Dungeon-Crawler-World-release" -srcfolder "artifacts/Dungeon-Crawler-World-release.app" -ov -format UDZO "artifacts/Dungeon-Crawler-World-release-macos.dmg"
 
       - name: Create or update GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
@@ -183,7 +228,7 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           fail_on_unmatched_files: true
           files: |
-            artifacts/Dungeon-Crawler-World-dev-macos.zip
-            artifacts/Dungeon-Crawler-World-release-macos.zip
+            artifacts/Dungeon-Crawler-World-dev-macos.dmg
+            artifacts/Dungeon-Crawler-World-release-macos.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
