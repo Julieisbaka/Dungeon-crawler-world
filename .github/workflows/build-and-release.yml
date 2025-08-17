@@ -153,6 +153,12 @@ jobs:
           test -f "$DEV_BIN" || { echo "Dev executable not found: $DEV_BIN"; exit 1; }
           cp "$DEV_BIN" "artifacts/Dungeon-Crawler-World-dev-macos"
 
+      - name: Zip dev artifact (macOS)
+        run: |
+          cd artifacts
+          chmod +x Dungeon-Crawler-World-dev-macos
+          zip -9 -j Dungeon-Crawler-World-dev-macos.zip Dungeon-Crawler-World-dev-macos
+
       - name: Build (release profile, dev-mode disabled)
         run: |
           cargo build --release --no-default-features
@@ -163,6 +169,12 @@ jobs:
           test -f "$REL_BIN" || { echo "Release executable not found: $REL_BIN"; exit 1; }
           cp "$REL_BIN" "artifacts/Dungeon-Crawler-World-release-macos"
 
+      - name: Zip release artifact (macOS)
+        run: |
+          cd artifacts
+          chmod +x Dungeon-Crawler-World-release-macos
+          zip -9 -j Dungeon-Crawler-World-release-macos.zip Dungeon-Crawler-World-release-macos
+
       - name: Create or update GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
@@ -171,7 +183,7 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           fail_on_unmatched_files: true
           files: |
-            artifacts/Dungeon-Crawler-World-dev-macos
-            artifacts/Dungeon-Crawler-World-release-macos
+            artifacts/Dungeon-Crawler-World-dev-macos.zip
+            artifacts/Dungeon-Crawler-World-release-macos.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
