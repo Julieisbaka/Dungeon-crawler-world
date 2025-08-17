@@ -45,3 +45,5 @@
 - [ ] Add simple keybind support
 
 - [ ] Create logic for tree creation and distribution
+
+- [ ] Rewrite backend in Rust
