@@ -213,12 +213,23 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
     fs::write(&save_file_path, serde_json::to_string_pretty(&save_data).unwrap())
         .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
+    // Initialize core skill values randomly in [3,5]
+    let skill_min: i8 = 3;
+    let skill_max: i8 = 5;
+    let walking: i8 = rng.gen_range(skill_min..=skill_max);
+    let swimming: i8 = rng.gen_range(skill_min..=skill_max);
+    let breathing: i8 = rng.gen_range(skill_min..=skill_max);
+
     let player_data: Value = json!({
         "name": "", // Unimplemented: Player name will be set later
         "level": 1,
         "spells": {},
         "inventory": {},
-        "skills": {},
+        "skills": {
+            "Walking": walking,
+            "Swimming": swimming,
+            "Breathing": breathing
+        },
         "coins": 0,
         "sub_classes": [],
         "class": "",
