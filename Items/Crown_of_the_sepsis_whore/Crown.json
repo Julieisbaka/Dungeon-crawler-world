@@ -10,8 +10,6 @@
     }
   ],
   "equipment_slot": "head",
-  "item_properties": {
-    "equippable": true
-  },
+  "equippable": true
   "type": "Armor"
 }
