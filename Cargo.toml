@@ -23,6 +23,7 @@ log = "0.4"
 env_logger = "0.11"
 chrono = { version = "0.4", features = ["serde"] }
 rand = "0.8"
+rapier3d = { version = "0.28.0", features = [ "simd-stable" ] }
 
 [build-dependencies]
 cc = "1.0"
