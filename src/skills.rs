@@ -70,10 +70,10 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 					{
 						if let Ok(content) = fs::read_to_string(&p) {
 							if let Ok(val) = serde_json::from_str::<Value>(&content) {
-								if let Some(n) = val.get("name").and_then(|v: &Value| v.as_str()) {
+								if let Some(n) = val.get("name").and_then(|v: &Value| -> Option<&str> { v.as_str() }) {
 									name = n.to_string();
 								}
-								if let Some(desc) = val.get("description").and_then(|v: &Value| v.as_str()) {
+								if let Some(desc) = val.get("description").and_then(|v: &Value| -> Option<&str> { v.as_str() }) {
 									description = desc.to_string();
 								}
 							}

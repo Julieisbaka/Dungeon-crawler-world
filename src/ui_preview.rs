@@ -38,7 +38,7 @@ impl UiPreviewManager {
             "skills" => (*self)
                 .windows
                 .entry(key)
-                    .or_insert_with(|| {
+                    .or_insert_with(|| -> PreviewWindow {
                         let mut st = SkillsState::default();
                         // In preview, show all discovered skills regardless of ownership
                         st.enable_preview();
@@ -84,14 +84,14 @@ impl UiPreviewManager {
     pub fn render(&mut self, ctx: &Context, dev_enabled: bool) {
         // Render each open preview window
         let mut to_close: Vec<String> = Vec::new();
-        let screen = ctx.screen_rect();
-        let screen_size = screen.size();
+        let screen: egui::Rect = ctx.screen_rect();
+        let screen_size: egui::Vec2 = screen.size();
         for (name, win) in self.windows.iter_mut() {
             match win {
                 PreviewWindow::Skills { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
-                    let id = egui::Id::new(("preview_skills", *max));
+                    let id: egui::Id = egui::Id::new(("preview_skills", *max));
                     egui::Window::new("Preview: Skills")
                         .id(id)
                         .open(&mut is_open)
@@ -99,9 +99,9 @@ impl UiPreviewManager {
                         .vscroll(true)
                         .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
                         .max_size(screen_size)
-                        .show(ctx, |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
                             // Toolbar
-                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui: &mut egui::Ui| {
                                 let label = if *max { "Restore" } else { "Maximize" };
                                 if ui.button(label).clicked() { *max = !*max; }
                             });
@@ -112,7 +112,7 @@ impl UiPreviewManager {
                 PreviewWindow::NewSave { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
-                    let id = egui::Id::new(("preview_new_save", *max));
+                    let id: egui::Id = egui::Id::new(("preview_new_save", *max));
                     egui::Window::new("Preview: New Save")
                         .id(id)
                         .open(&mut is_open)
@@ -120,8 +120,8 @@ impl UiPreviewManager {
                         .vscroll(true)
                         .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
                         .max_size(screen_size)
-                        .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui: &mut egui::Ui| {
                                 let label = if *max { "Restore" } else { "Maximize" };
                                 if ui.button(label).clicked() { *max = !*max; }
                             });
@@ -132,7 +132,7 @@ impl UiPreviewManager {
                 PreviewWindow::Saves { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
-                    let id = egui::Id::new(("preview_saves", *max));
+                    let id: egui::Id = egui::Id::new(("preview_saves", *max));
                     egui::Window::new("Preview: Saves Menu")
                         .id(id)
                         .open(&mut is_open)
@@ -140,8 +140,8 @@ impl UiPreviewManager {
                         .vscroll(true)
                         .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
                         .max_size(screen_size)
-                        .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui: &mut egui::Ui| {
                                 let label = if *max { "Restore" } else { "Maximize" };
                                 if ui.button(label).clicked() { *max = !*max; }
                             });
@@ -152,7 +152,7 @@ impl UiPreviewManager {
                 PreviewWindow::Settings { open, max, settings } => {
                     if !*open { continue; }
                     let mut is_open = true;
-                    let id = egui::Id::new(("preview_settings", *max));
+                    let id: egui::Id = egui::Id::new(("preview_settings", *max));
                     egui::Window::new("Preview: Settings")
                         .id(id)
                         .open(&mut is_open)
@@ -161,7 +161,7 @@ impl UiPreviewManager {
                         .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
                         .max_size(screen_size)
                         .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui: &mut egui::Ui| {
                                 let label = if *max { "Restore" } else { "Maximize" };
                                 if ui.button(label).clicked() { *max = !*max; }
                             });
@@ -172,7 +172,7 @@ impl UiPreviewManager {
                 PreviewWindow::Console { open, max, state } => {
                     if !*open { continue; }
                     let mut is_open = true;
-                    let id = egui::Id::new(("preview_console", *max));
+                    let id: egui::Id = egui::Id::new(("preview_console", *max));
                     egui::Window::new("Preview: Console")
                         .id(id)
                         .open(&mut is_open)
@@ -180,8 +180,8 @@ impl UiPreviewManager {
                         .vscroll(true)
                         .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.5 }))
                         .max_size(screen_size)
-                        .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui: &mut egui::Ui| {
                                 let label = if *max { "Restore" } else { "Maximize" };
                                 if ui.button(label).clicked() { *max = !*max; }
                             });
@@ -201,6 +201,6 @@ impl UiPreviewManager {
                 }
             }
         }
-        for key in to_close { self.windows.remove(&key); }
+        for key in to_close { (*self).windows.remove(&key); }
     }
 }

@@ -76,7 +76,7 @@ impl App for DungeonCrawlerworld {
         }
 
     // Update FPS graph with delta time in ms
-    let dt_ms: f32 = ctx.input(|i| i.stable_dt) * 1000.0;
+    let dt_ms: f32 = ctx.input(|i: &egui::InputState| (*i).stable_dt) * 1000.0;
     (*self).fps.push_frame_time(dt_ms);
 
         CentralPanel::default()
@@ -87,7 +87,7 @@ impl App for DungeonCrawlerworld {
             )
             .show(ctx, |ui| {
                 // Allocate a full-screen area and center content within it
-                let avail = ui.available_size();
+                let avail: egui::Vec2 = ui.available_size();
                 ui.allocate_ui_with_layout(avail, egui::Layout::top_down(egui::Align::Center), |ui| {
                     if (*self).show_settings {
                         ui.heading(RichText::new("Settings").size(28.0));
@@ -96,7 +96,7 @@ impl App for DungeonCrawlerworld {
                         egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
                             // Constrain a readable max width while still centered in the full area
                             ui.set_max_width(700.0);
-                            let res: SettingsResult = settings_ui(ui, &mut self.settings, DEV_MODE_ENABLED);
+                            let res: SettingsResult = settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
                             if res.request_save { self.settings.save(); }
                             if res.request_back { back = true; }
                         });
@@ -200,7 +200,7 @@ impl App for DungeonCrawlerworld {
                     .resizable(false)
                     .min_height(90.0)
                     .show_separator_line(false)
-                    .show(ctx, |ui| {
+                    .show(ctx, |ui: &mut egui::Ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                             (*self).fps.ui(ui);
                         });
