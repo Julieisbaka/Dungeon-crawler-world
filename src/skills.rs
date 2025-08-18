@@ -223,11 +223,15 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 	}
 
 	egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
-		// Use full available width for the gallery
-		ui.set_min_width(ui.available_width());
+		// Use a grid-like layout for the gallery using available width
+		let available_width = ui.available_width();
+		let tile_size = Vec2::new(140.0, 140.0);
+		let spacing = ui.spacing().item_spacing.x;
+		// Calculate how many tiles fit per row
+		let _tiles_per_row = ((available_width + spacing) / (tile_size.x + spacing)).floor() as usize;
+		let _tiles_per_row = _tiles_per_row.max(1); // Ensure at least 1 tile per row
+		
 		ui.horizontal_wrapped(|ui| {
-			let tile_size: Vec2 = Vec2::new(140.0, 140.0);
-			let spacing = (*ui.spacing()).item_spacing.x;
 			for (idx, meta) in (*state).catalog.iter().enumerate() {
 				let owned_real: bool = player_skills.contains_key(&(*meta).name);
 				if (*state).only_owned && !owned_real { continue; }
@@ -255,7 +259,6 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 						}
 					});
 				});
-				ui.add_space(spacing);
 			}
 		});
 	});
