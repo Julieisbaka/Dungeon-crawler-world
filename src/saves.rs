@@ -92,12 +92,12 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                 ui.label(format!("Editing save: {}", display_name));
                 ui.horizontal(|ui| {
                     ui.label("New name:");
-                    ui.text_edit_singleline(&mut state.edit_save_name);
+                    ui.text_edit_singleline(&mut (*state).edit_save_name);
                 });
                 ui.add_space(10.0);
                 ui.horizontal(|ui| {
                     if ui.button("Rename").clicked() {
-                        let new_folder: String = state.edit_save_name.trim().replace(' ', "_");
+                        let new_folder: String = (*state).edit_save_name.trim().replace(' ', "_");
                         if !new_folder.is_empty() && new_folder != *folder_name {
                             let old_path: std::path::PathBuf = Path::new("saves").join(folder_name.clone());
                             let new_path: std::path::PathBuf = Path::new("saves").join(&new_folder);

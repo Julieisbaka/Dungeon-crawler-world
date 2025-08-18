@@ -97,7 +97,7 @@ impl App for DungeonCrawlerworld {
                             // Constrain a readable max width while still centered in the full area
                             ui.set_max_width(700.0);
                             let res: SettingsResult = settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
-                            if res.request_save { self.settings.save(); }
+                            if res.request_save { (*self).settings.save(); }
                             if res.request_back { back = true; }
                         });
                         if back { (*self).show_settings = false; }

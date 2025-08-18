@@ -32,13 +32,13 @@
 
 - [x] Create PR and issue templates
 
-- [ ] Implement the FPS graphing feature
+- [x] Implement the FPS graphing feature
 
 - [x] Implement the in game console feature
 
 - [x] Implement saving mechanism for settings
 
-- [ ] Fix bugs with UI not taking up the whole screen
+- [x] Fix bugs with UI not taking up the whole screen
 
 - [x] Create contributing guidelines
 

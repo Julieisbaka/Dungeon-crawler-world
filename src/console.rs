@@ -80,7 +80,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
             if ui.add_sized([64.0, 24.0], egui::Button::new("Run")).clicked() || pressed_enter {
                 let cmd: String = (*state).input.clone();
                 // Queue the command for external handling in the main loop
-                (*state).pending.push(cmd);
+                (&mut (*state).pending).push(cmd);
                 (&mut (*state).input).clear();
             }
             if ui.add_sized([64.0, 24.0], egui::Button::new("Clear")).clicked() {

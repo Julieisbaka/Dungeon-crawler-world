@@ -61,7 +61,7 @@ impl FpsGraph {
         );
 
         // Stats labels (Avg / Min / Max)
-        let n = self.times_ms.len().max(1) as f32;
+        let n = (*self).times_ms.len().max(1) as f32;
         let avg_fps = (sum_fps / n).clamp(0.0, 9999.0);
         let label: String = format!(
             "FPS  avg:{:.1}  min:{:.1}  max:{:.1}",

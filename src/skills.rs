@@ -55,17 +55,17 @@ fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<Textu
 fn find_skills_root() -> Option<PathBuf> {
 	// Try current working directory first
 	if let Ok(cwd) = std::env::current_dir() {
-		let p = cwd.join("Skills");
+		let p: PathBuf = cwd.join("Skills");
 		if p.is_dir() { return Some(p); }
 	}
 	// Try relative to the executable (walk up a few parents)
 	if let Ok(exe) = std::env::current_exe() {
-		let mut dir_opt = exe.parent().map(|p| p.to_path_buf());
+		let mut dir_opt: Option<PathBuf> = exe.parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
 		for _ in 0..4 {
 			if let Some(dir) = dir_opt.clone() {
-				let candidate = dir.join("Skills");
+				let candidate: PathBuf = dir.join("Skills");
 				if candidate.is_dir() { return Some(candidate); }
-				dir_opt = dir.parent().map(|p| p.to_path_buf());
+				dir_opt = dir.parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
 			}
 		}
 	}
@@ -84,7 +84,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 			// Try to read optional metadata JSON; fallback to directory name and description.md
 			let mut name: String = dir_path
 				.file_name()
-				.and_then(|s| s.to_str())
+				.and_then(|s| -> Option<&str> { s.to_str() })
 				.unwrap_or("")
 				.to_string();
 			let mut description: String = String::new();
@@ -268,11 +268,11 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 						if !(*meta).description.trim().is_empty() {
 							// Configure markdown rendering with local file base for images
 							// Set tooltip for links
-							ui.style_mut().url_in_tooltip = true;
+							(*ui.style_mut()).url_in_tooltip = true;
 							// Build a file:// base for relative images using the skill directory
 							let base_uri: String = {
 								let abs: PathBuf = (*meta).dir.canonicalize().unwrap_or((*meta).dir.clone());
-								let s = abs.to_string_lossy().replace('\\', "/");
+								let s: String = abs.to_string_lossy().replace('\\', "/");
 								format!("file:///{}/", s.trim_start_matches('/'))
 							};
 							let viewer: CommonMarkViewer = CommonMarkViewer::new()
@@ -281,7 +281,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 								.explicit_image_uri_scheme(false)
 								.default_implicit_uri_scheme(base_uri);
 
-							let _resp = viewer.show(ui, &mut (*state).md_cache, (*meta).description.as_str());
+							let _resp: egui::InnerResponse<()> = viewer.show(ui, &mut (*state).md_cache, (*meta).description.as_str());
 						} else {
 							ui.label("No description available.");
 						}
