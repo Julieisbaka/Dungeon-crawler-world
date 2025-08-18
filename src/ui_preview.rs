@@ -40,8 +40,12 @@ impl UiPreviewManager {
                 .entry(key)
                     .or_insert_with(|| -> PreviewWindow {
                         let mut st = SkillsState::default();
-                        // In preview, show all discovered skills regardless of ownership
-                        st.enable_preview();
+                        // In preview, show all discovered skills only when dev-mode is enabled
+                        // and enable developer controls conditionally.
+                        if cfg!(feature = "dev-mode") {
+                            st.enable_preview();
+                            st.enable_dev_controls();
+                        }
                     PreviewWindow::Skills { open: true, max: false, state: st }
                     }),
             "new_save" => (*self)
@@ -97,7 +101,10 @@ impl UiPreviewManager {
                         .open(&mut is_open)
                         .resizable(true)
                         .vscroll(true)
-                        .default_size(egui::vec2(if *max { screen_size.x } else { screen_size.x * 0.9 }, if *max { screen_size.y } else { screen_size.y * 0.9 }))
+                        .default_size(egui::vec2(
+                            if *max { screen_size.x } else { screen_size.x * 0.9 },
+                            if *max { screen_size.y } else { (screen_size.y * 0.9).max(500.0) }
+                        ))
                         .max_size(screen_size)
                         .show(ctx, |ui: &mut egui::Ui| {
                             // Toolbar

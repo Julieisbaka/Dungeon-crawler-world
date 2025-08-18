@@ -14,11 +14,18 @@ pub struct SkillsState {
 	loaded: bool,
 	// When true, show all discovered skills as 'owned' for previewing
 	show_all: bool,
+	// When true, show a dev-only Show All toggle
+	dev_controls: bool,
+	// When true, hide non-owned skills from the grid
+	only_owned: bool,
 }
 
 impl SkillsState {
 	// Enable preview mode to show all discovered skills regardless of ownership
-	pub fn enable_preview(&mut self) { self.show_all = true; }
+	pub fn enable_preview(&mut self) { (*self).show_all = true; }
+
+	// Enable developer controls (expose Show All toggle button)
+	pub fn enable_dev_controls(&mut self) { (*self).dev_controls = true; }
 }
 
 #[derive(Clone)]
@@ -42,9 +49,29 @@ fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<Textu
 	Some(ctx.load_texture(key.to_string(), color_image, egui::TextureOptions::default()))
 }
 
+fn find_skills_root() -> Option<PathBuf> {
+	// Try current working directory first
+	if let Ok(cwd) = std::env::current_dir() {
+		let p = cwd.join("Skills");
+		if p.is_dir() { return Some(p); }
+	}
+	// Try relative to the executable (walk up a few parents)
+	if let Ok(exe) = std::env::current_exe() {
+		let mut dir_opt = exe.parent().map(|p| p.to_path_buf());
+		for _ in 0..4 {
+			if let Some(dir) = dir_opt.clone() {
+				let candidate = dir.join("Skills");
+				if candidate.is_dir() { return Some(candidate); }
+				dir_opt = dir.parent().map(|p| p.to_path_buf());
+			}
+		}
+	}
+	None
+}
+
 fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 	let mut skills: Vec<SkillMeta> = Vec::new();
-	let skills_root: &Path = Path::new("Skills");
+	let Some(skills_root) = find_skills_root() else { return skills; };
 	if let Ok(entries) = fs::read_dir(skills_root) {
 		for entry in entries.flatten() {
 			let dir_path: PathBuf = entry.path();
@@ -143,6 +170,39 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
 	let player_skills: HashMap<String, i32> = read_player_skills();
 
+	// Toolbar: Reload, Only Owned filter, and optional dev Show All toggle
+	ui.horizontal(|ui| {
+		if ui.button("Reload").clicked() {
+			let ctx: Context = ui.ctx().clone();
+			(*state).catalog = discover_skills(&ctx);
+			(*state).loaded = true;
+			(*state).selected = None;
+		}
+		ui.separator();
+		ui.checkbox(&mut (*state).only_owned, "Only owned");
+		// Show the Show All toggle only when compiled with dev-mode AND when the caller enabled dev controls
+		if cfg!(feature = "dev-mode") && (*state).dev_controls {
+			ui.separator();
+			let label = if (*state).show_all { "Show All (Dev): On" } else { "Show All (Dev): Off" };
+			if ui.toggle_value(&mut (*state).show_all, label).clicked() {
+				// Clear any selection when toggling preview mode
+				(*state).selected = None;
+			}
+		}
+		let owned_count = (*state)
+			.catalog
+			.iter()
+			.filter(|m: &&SkillMeta| player_skills.contains_key(&m.name))
+			.count();
+		ui.label(format!("Owned: {}  Total: {}", owned_count, (*state).catalog.len()));
+	});
+	ui.add_space(6.0);
+
+	if (*state).catalog.is_empty() {
+		ui.label("No skills found. Ensure the 'Skills' folder is located next to the executable or project root.");
+		return;
+	}
+
 	egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
 		// Use full available width for the gallery
 		ui.set_min_width(ui.available_width());
@@ -150,34 +210,42 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 			let tile_size: Vec2 = Vec2::new(140.0, 140.0);
 			let spacing = (*ui.spacing()).item_spacing.x;
 			for (idx, meta) in (*state).catalog.iter().enumerate() {
-				let owned: bool = (*state).show_all || player_skills.contains_key(&(*meta).name);
-				egui::Frame::group(ui.style())
-					.inner_margin(egui::Margin::symmetric(8, 8))
-					.show(ui, |ui| {
-						ui.set_min_size(tile_size);
-						ui.vertical_centered(|ui| {
-							if owned {
-								if let Some(tex) = &(*meta).icon {
-									ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
-									ui.add_space(6.0);
-								}
-								ui.label(&(*meta).name);
-								if ui.button("View").clicked() { (*state).selected = Some(idx); }
-							} else {
-								// Unknown: intentionally show no name/icon/description
-								ui.add_space(48.0);
+				let owned_real: bool = player_skills.contains_key(&(*meta).name);
+				if (*state).only_owned && !owned_real { continue; }
+				// Only let Show All affect behavior when dev-mode is compiled in and dev controls are enabled
+				let dev_show_all_active: bool = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+				let treated_owned: bool = dev_show_all_active || owned_real;
+				let mut frame = egui::Frame::group(ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+				// Gray-out unknown (not owned and not in show_all)
+				if !treated_owned {
+					frame = frame.fill(egui::Color32::from_gray(30));
+				}
+				frame.show(ui, |ui| {
+					ui.set_min_size(tile_size);
+					ui.vertical_centered(|ui| {
+						if treated_owned {
+							if let Some(tex) = &(*meta).icon {
+								ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
+								ui.add_space(6.0);
 							}
-						});
+							ui.label(&(*meta).name);
+							if ui.button("View").clicked() { (*state).selected = Some(idx); }
+						} else {
+							// Unknown: show a filled gray tile without name/icon/description
+							ui.add_space(48.0);
+						}
 					});
+				});
 				ui.add_space(spacing);
 			}
 		});
 	});
 
-	// Detail view in a floating window for owned skills
+	// Detail view in a floating window for owned skills or all in preview
 	if let Some(idx) = (*state).selected {
 		if let Some(meta) = (*state).catalog.get(idx) {
-			if (*state).show_all || player_skills.contains_key(&(*meta).name) {
+			let dev_show_all_active: bool = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+			if dev_show_all_active || player_skills.contains_key(&(*meta).name) {
 				let level = player_skills.get(&(*meta).name).copied().unwrap_or(0);
 				let mut open = true;
 				egui::Window::new(format!("{}", meta.name))
