@@ -25,6 +25,7 @@ chrono = { version = "0.4", features = ["serde"] }
 rand = "0.8"
 rapier3d = { version = "0.28.0", features = [ "simd-stable" ] }
 parry3d = "0.23.0"
+egui_commonmark = "0.20"
 
 [build-dependencies]
 cc = "1.0"

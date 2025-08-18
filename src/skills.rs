@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use egui::{ColorImage, Context, TextureHandle, Ui, Vec2};
 use image::{GenericImageView, ImageReader};
 use serde_json::Value;
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
 // Public state to be held by the caller. Not integrated into the app here.
 #[derive(Default)]
@@ -18,6 +19,8 @@ pub struct SkillsState {
 	dev_controls: bool,
 	// When true, hide non-owned skills from the grid
 	only_owned: bool,
+	// Cache for rendering markdown
+	markdown_cache: CommonMarkCache,
 }
 
 impl SkillsState {
@@ -100,8 +103,24 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 								if let Some(n) = val.get("name").and_then(|v: &Value| -> Option<&str> { v.as_str() }) {
 									name = n.to_string();
 								}
-								if let Some(desc) = val.get("description").and_then(|v: &Value| -> Option<&str> { v.as_str() }) {
-									description = desc.to_string();
+								if let Some(desc) = val.get("description") {
+									if let Some(desc_str) = desc.as_str() {
+										description = desc_str.to_string();
+									} else if let Some(desc_obj) = desc.as_object() {
+										if let Some(md_file) = desc_obj.get("markdown_file").and_then(|v| v.as_str()) {
+											// Handle relative path to markdown file
+											let md_path = if md_file.starts_with("Skills/") {
+												// Absolute path from root
+												PathBuf::from(md_file)
+											} else {
+												// Relative to skill directory
+												dir_path.join(md_file)
+											};
+											if let Ok(md) = fs::read_to_string(&md_path) {
+												description = md;
+											}
+										}
+									}
 								}
 							}
 						}
@@ -263,7 +282,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 						});
 						ui.add_space(8.0);
 						if !(*meta).description.trim().is_empty() {
-							ui.label((*meta).description.as_str());
+							// Render markdown description using egui_commonmark
+							CommonMarkViewer::new().show(ui, &mut state.markdown_cache, &(*meta).description);
 						} else {
 							ui.label("No description available.");
 						}
