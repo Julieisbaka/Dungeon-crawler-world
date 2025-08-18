@@ -39,7 +39,7 @@ impl UiPreviewManager {
                 .windows
                 .entry(key)
                     .or_insert_with(|| -> PreviewWindow {
-                        let mut st = SkillsState::default();
+                        let mut st: SkillsState = SkillsState::default();
                         // In preview, show all discovered skills only when dev-mode is enabled
                         // and enable developer controls conditionally.
                         if cfg!(feature = "dev-mode") {
@@ -90,7 +90,7 @@ impl UiPreviewManager {
         let mut to_close: Vec<String> = Vec::new();
         let screen: egui::Rect = ctx.screen_rect();
         let screen_size: egui::Vec2 = screen.size();
-        for (name, win) in self.windows.iter_mut() {
+        for (name, win) in (*self).windows.iter_mut() {
             match win {
                 PreviewWindow::Skills { open, max, state } => {
                     if !*open { continue; }

@@ -3,6 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use egui::{ColorImage, Context, TextureHandle, Ui, Vec2};
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use image::{GenericImageView, ImageReader};
 use serde_json::Value;
 
@@ -18,6 +19,8 @@ pub struct SkillsState {
 	dev_controls: bool,
 	// When true, hide non-owned skills from the grid
 	only_owned: bool,
+	// Markdown render cache for images/assets
+	md_cache: CommonMarkCache,
 }
 
 impl SkillsState {
@@ -192,7 +195,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 		let owned_count = (*state)
 			.catalog
 			.iter()
-			.filter(|m: &&SkillMeta| player_skills.contains_key(&m.name))
+			.filter(|m: &&SkillMeta| player_skills.contains_key(&(**m).name))
 			.count();
 		ui.label(format!("Owned: {}  Total: {}", owned_count, (*state).catalog.len()));
 	});
@@ -215,7 +218,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 				// Only let Show All affect behavior when dev-mode is compiled in and dev controls are enabled
 				let dev_show_all_active: bool = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
 				let treated_owned: bool = dev_show_all_active || owned_real;
-				let mut frame = egui::Frame::group(ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+				let mut frame: egui::Frame = egui::Frame::group(ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
 				// Gray-out unknown (not owned and not in show_all)
 				if !treated_owned {
 					frame = frame.fill(egui::Color32::from_gray(30));
@@ -263,7 +266,22 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 						});
 						ui.add_space(8.0);
 						if !(*meta).description.trim().is_empty() {
-							ui.label((*meta).description.as_str());
+							// Configure markdown rendering with local file base for images
+							// Set tooltip for links
+							ui.style_mut().url_in_tooltip = true;
+							// Build a file:// base for relative images using the skill directory
+							let base_uri: String = {
+								let abs: PathBuf = (*meta).dir.canonicalize().unwrap_or((*meta).dir.clone());
+								let s = abs.to_string_lossy().replace('\\', "/");
+								format!("file:///{}/", s.trim_start_matches('/'))
+							};
+							let viewer: CommonMarkViewer = CommonMarkViewer::new()
+								.default_width(Some(700))
+								.max_image_width(Some(600))
+								.explicit_image_uri_scheme(false)
+								.default_implicit_uri_scheme(base_uri);
+
+							let _resp = viewer.show(ui, &mut (*state).md_cache, (*meta).description.as_str());
 						} else {
 							ui.label("No description available.");
 						}
