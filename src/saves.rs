@@ -1,5 +1,5 @@
-use egui::Ui;
 use crate::new_save::{show_new_save_ui, NewSaveState};
+use egui::Ui;
 
 pub struct SaveMenuState {
     pub show_menu: bool,
@@ -15,7 +15,7 @@ pub struct SaveMenuState {
 
 impl Default for SaveMenuState {
     fn default() -> Self {
-        Self { 
+        Self {
             show_menu: false,
             new_save_state: NewSaveState::default(),
             in_new_save_menu: false,
@@ -29,13 +29,13 @@ impl Default for SaveMenuState {
 }
 
 pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
+    use egui::ColorImage;
+    use egui::TextureHandle;
+    use egui::Vec2;
+    use image::GenericImageView;
+    use image::ImageReader;
     use std::fs;
     use std::path::Path;
-    use egui::TextureHandle;
-    use egui::ColorImage;
-    use egui::Vec2;
-    use image::ImageReader as ImageReader;
-    use image::GenericImageView;
 
     // Handle delete confirmation dialog
     if (*state).confirm_delete {
@@ -99,7 +99,8 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                     if ui.button("Rename").clicked() {
                         let new_folder: String = (*state).edit_save_name.trim().replace(' ', "_");
                         if !new_folder.is_empty() && new_folder != *folder_name {
-                            let old_path: std::path::PathBuf = Path::new("saves").join(folder_name.clone());
+                            let old_path: std::path::PathBuf =
+                                Path::new("saves").join(folder_name.clone());
                             let new_path: std::path::PathBuf = Path::new("saves").join(&new_folder);
                             if !new_path.exists() {
                                 let _ = fs::rename(&old_path, &new_path);
@@ -132,27 +133,36 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         for entry in entries.flatten() {
             let path: std::path::PathBuf = entry.path();
             if path.is_dir() {
-                let folder_name: std::borrow::Cow<'_, str> = path.file_name().unwrap().to_string_lossy();
+                let folder_name: std::borrow::Cow<'_, str> =
+                    path.file_name().unwrap().to_string_lossy();
                 let save_name: String = folder_name.replace('_', " ");
-                
+
                 // Try to read save.json to get additional info
                 let save_json_path: std::path::PathBuf = path.join("save.json");
                 let mut difficulty_text: String = String::new();
                 let mut created_at_text: String = String::new();
-                
+
                 if let Ok(save_content) = fs::read_to_string(&save_json_path) {
-                    if let Ok(save_data) = serde_json::from_str::<serde_json::Value>(&save_content) {
-                        if let Some(difficulty) = save_data.get("difficulty").and_then(|d: &serde_json::Value| -> Option<&str> { d.as_str() }) {
+                    if let Ok(save_data) = serde_json::from_str::<serde_json::Value>(&save_content)
+                    {
+                        if let Some(difficulty) = save_data
+                            .get("difficulty")
+                            .and_then(|d: &serde_json::Value| -> Option<&str> { d.as_str() })
+                        {
                             difficulty_text = format!("Difficulty: {}", difficulty);
                         }
-                        if let Some(created_at) = save_data.get("created_at").and_then(|d: &serde_json::Value| -> Option<&str> { d.as_str() }) {
+                        if let Some(created_at) = save_data
+                            .get("created_at")
+                            .and_then(|d: &serde_json::Value| -> Option<&str> { d.as_str() })
+                        {
                             if let Ok(datetime) = chrono::DateTime::parse_from_rfc3339(created_at) {
-                                created_at_text = format!("Created: {}", datetime.format("%Y-%m-%d %H:%M"));
+                                created_at_text =
+                                    format!("Created: {}", datetime.format("%Y-%m-%d %H:%M"));
                             }
                         }
                     }
                 }
-                
+
                 let icon_path: std::path::PathBuf = path.join("icon.png");
                 let mut icon_texture: Option<TextureHandle> = None;
                 if icon_path.exists() {
@@ -205,7 +215,10 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
 
     // Bottom Back button: below the list of saves
     ui.add_space(16.0);
-    if ui.add_sized([120.0, 30.0], egui::Button::new("Back")).clicked() {
+    if ui
+        .add_sized([120.0, 30.0], egui::Button::new("Back"))
+        .clicked()
+    {
         (*state).in_new_save_menu = false;
         (*state).editing_save = None;
         (*state).confirm_delete = false;

@@ -20,7 +20,9 @@ impl ConsoleState {
     }
 
     // Allow external systems to log messages to the console
-    pub fn log_line<S: Into<String>>(&mut self, s: S) { self.push_line(s); }
+    pub fn log_line<S: Into<String>>(&mut self, s: S) {
+        self.push_line(s);
+    }
 
     pub fn run_command(&mut self, cmd: &str) {
         let trimmed = cmd.trim();
@@ -77,13 +79,20 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
         let pressed_enter: bool = input_resp.lost_focus()
             && ui.input(|i: &egui::InputState| i.key_pressed(egui::Key::Enter));
         ui.horizontal(|ui: &mut Ui| {
-            if ui.add_sized([64.0, 24.0], egui::Button::new("Run")).clicked() || pressed_enter {
+            if ui
+                .add_sized([64.0, 24.0], egui::Button::new("Run"))
+                .clicked()
+                || pressed_enter
+            {
                 let cmd: String = (*state).input.clone();
                 // Queue the command for external handling in the main loop
                 (&mut (*state).pending).push(cmd);
                 (&mut (*state).input).clear();
             }
-            if ui.add_sized([64.0, 24.0], egui::Button::new("Clear")).clicked() {
+            if ui
+                .add_sized([64.0, 24.0], egui::Button::new("Clear"))
+                .clicked()
+            {
                 state.clear();
             }
         });

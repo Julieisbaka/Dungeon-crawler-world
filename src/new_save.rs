@@ -1,8 +1,8 @@
-use egui::{Ui, TextEdit};
+use egui::{TextEdit, Ui};
+use rand::Rng;
+use serde_json::{json, Value};
 use std::fs;
 use std::path::Path;
-use serde_json::{json, Value};
-use rand::Rng;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum NewSaveTab {
@@ -58,9 +58,9 @@ impl NewSaveState {
     pub fn reset(&mut self) {
         (*self).save_name.clear();
         (*self).selected_difficulty = Difficulty::Medium;
-    (*self).selected_tab = NewSaveTab::Basics;
-    (*self).online_mode = false;
-    (*self).real_time = false;
+        (*self).selected_tab = NewSaveTab::Basics;
+        (*self).online_mode = false;
+        (*self).real_time = false;
         (*self).error_message.clear();
         (*self).success_message.clear();
     }
@@ -68,7 +68,7 @@ impl NewSaveState {
 
 pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     let mut should_close = false;
-    
+
     ui.vertical_centered(|ui: &mut Ui| {
         ui.heading("Create New Save");
         ui.add_space(20.0);
@@ -79,7 +79,10 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 (*state).selected_tab = NewSaveTab::Basics;
             }
             let gamerules_selected: bool = matches!((*state).selected_tab, NewSaveTab::Gamerules);
-            if ui.selectable_label(gamerules_selected, "Gamerules").clicked() {
+            if ui
+                .selectable_label(gamerules_selected, "Gamerules")
+                .clicked()
+            {
                 (*state).selected_tab = NewSaveTab::Gamerules;
             }
         });
@@ -91,8 +94,10 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 // Save name input
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Save Name:");
-                    ui.add(TextEdit::singleline(&mut (*state).save_name)
-                        .hint_text("Enter a unique save name..."));
+                    ui.add(
+                        TextEdit::singleline(&mut (*state).save_name)
+                            .hint_text("Enter a unique save name..."),
+                    );
                 });
 
                 ui.add_space(10.0);
@@ -101,7 +106,11 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Difficulty:");
                     ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Easy, "Easy");
-                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Medium, "Medium");
+                    ui.radio_value(
+                        &mut (*state).selected_difficulty,
+                        Difficulty::Medium,
+                        "Medium",
+                    );
                     ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Hard, "Hard");
                 });
             }
@@ -112,19 +121,19 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         }
 
         ui.add_space(20.0);
-        
+
         // Error message
         if !(*state).error_message.is_empty() {
             ui.colored_label(egui::Color32::RED, &(*state).error_message);
             ui.add_space(10.0);
         }
-        
+
         // Success message
         if !(*state).success_message.is_empty() {
             ui.colored_label(egui::Color32::GREEN, &(*state).success_message);
             ui.add_space(10.0);
         }
-        
+
         // Buttons
         ui.horizontal(|ui: &mut Ui| {
             if ui.button("Create Save").clicked() {
@@ -137,23 +146,29 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                     (*state).error_message = error;
                     (*state).success_message.clear();
                 } else {
-                    (*state).success_message = format!("Save '{}' created successfully!", state.save_name);
+                    (*state).success_message =
+                        format!("Save '{}' created successfully!", state.save_name);
                     (*state).error_message.clear();
                     // Clear the save name after successful creation
                     (*state).save_name.clear();
                 }
             }
-            
+
             if ui.button("Cancel").clicked() {
                 should_close = true;
             }
         });
     });
-    
+
     should_close
 }
 
-fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, real_time: bool) -> Result<(), String> {
+fn create_new_save(
+    save_name: &str,
+    difficulty: &Difficulty,
+    online_mode: bool,
+    real_time: bool,
+) -> Result<(), String> {
     // Validate save name
     if save_name.trim().is_empty() {
         return Err("Save name cannot be empty".to_string());
@@ -172,12 +187,14 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
     }
     // Create saves directory if it doesn't exist
     if !saves_dir.exists() {
-        fs::create_dir_all(saves_dir)
-            .map_err(|e: std::io::Error| -> String { format!("Failed to create saves directory: {}", e) })?;
+        fs::create_dir_all(saves_dir).map_err(|e: std::io::Error| -> String {
+            format!("Failed to create saves directory: {}", e)
+        })?;
     }
     // Create save directory
-    fs::create_dir_all(&save_path)
-        .map_err(|e: std::io::Error| -> String { format!("Failed to create save directory: {}", e) })?;
+    fs::create_dir_all(&save_path).map_err(|e: std::io::Error| -> String {
+        format!("Failed to create save directory: {}", e)
+    })?;
     // Generate a time between 12h and 20h with a mean of 15h, then convert to seconds.
     // Use a triangular distribution with (min=12, mode=13, max=20) hours so that
     // the mean (a + b + c) / 3 = (12 + 20 + 13) / 3 = 15.
@@ -195,8 +212,12 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
 
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();
-    if online_mode { gamerules.push("Online"); }
-    if real_time { gamerules.push("Real-time"); }
+    if online_mode {
+        gamerules.push("Online");
+    }
+    if real_time {
+        gamerules.push("Real-time");
+    }
 
     let save_data: Value = json!({
         "save_name": save_name.trim(),
@@ -210,8 +231,11 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
         "gamerules": gamerules
     });
     let save_file_path: std::path::PathBuf = save_path.join("save.json");
-    fs::write(&save_file_path, serde_json::to_string_pretty(&save_data).unwrap())
-        .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
+    fs::write(
+        &save_file_path,
+        serde_json::to_string_pretty(&save_data).unwrap(),
+    )
+    .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
     // Initialize core skill values randomly in [3,5]
     let skill_min: i8 = 3;
@@ -250,7 +274,10 @@ fn create_new_save(save_name: &str, difficulty: &Difficulty, online_mode: bool, 
 
     });
     let player_file_path: std::path::PathBuf = save_path.join("player.json");
-    fs::write(&player_file_path, serde_json::to_string_pretty(&player_data).unwrap())
-        .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
+    fs::write(
+        &player_file_path,
+        serde_json::to_string_pretty(&player_data).unwrap(),
+    )
+    .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
     Ok(())
 }

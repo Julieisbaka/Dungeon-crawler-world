@@ -1,8 +1,6 @@
 - This is a game that uses Vulkan for the graphics API
 
-- AI components and UI components of this game are made with rust
-
-- CPP is used for the backend
+- This game is made with rust
 
 - Cargo is used to build the application
 
@@ -18,7 +16,7 @@
 
 - A TOML file is used for the Cargo configuration
 
-- YAML and YML files are used for Github action workflows
+- YML files are used for Github action workflows
 
 - Txt files are used for developer notes
 
