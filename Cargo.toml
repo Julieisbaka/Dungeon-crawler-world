@@ -2,7 +2,7 @@
 edition = "2021"
 
 name = "Dungeon-Crawler-World"
-version = "0.0.5"
+version = "0.0.6"
 build = "build.rs"
 license = "MIT"
 repository = "https://github.com/Julieisbaka/Dungeon-crawler-world"

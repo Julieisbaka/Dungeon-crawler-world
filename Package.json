@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "devDependencies": {
     "markdownlint-cli2": "0.17.2",
     "path": "^0.12.7",
