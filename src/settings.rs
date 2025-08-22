@@ -130,7 +130,7 @@ pub fn settings_ui(ui: &mut Ui, settings: &mut Settings, dev_mode_available: boo
 	if ui.checkbox(&mut (*settings).fullscreen, "Fullscreen").changed() { settings.save(); }
 	ui.add_space(8.0);
 
-	ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+	ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui: &mut Ui| {
 		if ui.add_sized([100.0, 28.0], egui::Button::new("Save")).clicked() {
 			settings.save();
 			result.request_save = true;

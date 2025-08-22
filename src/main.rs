@@ -85,15 +85,15 @@ impl App for DungeonCrawlerworld {
                     .inner_margin(egui::Margin::same(0))
                     .outer_margin(egui::Margin::same(0))
             )
-            .show(ctx, |ui| {
+            .show(ctx, |ui: &mut egui::Ui| {
                 // Allocate a full-screen area and center content within it
                 let avail: egui::Vec2 = ui.available_size();
-                ui.allocate_ui_with_layout(avail, egui::Layout::top_down(egui::Align::Center), |ui| {
+                ui.allocate_ui_with_layout(avail, egui::Layout::top_down(egui::Align::Center), |ui: &mut egui::Ui| {
                     if (*self).show_settings {
                         ui.heading(RichText::new("Settings").size(28.0));
                         ui.add_space(8.0);
                         let mut back = false;
-                        egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+                        egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui: &mut egui::Ui| {
                             // Constrain a readable max width while still centered in the full area
                             ui.set_max_width(700.0);
                             let res: SettingsResult = settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
@@ -104,7 +104,7 @@ impl App for DungeonCrawlerworld {
                     } else if (*self).show_saves {
                         ui.heading(RichText::new("Saves Menu").size(28.0));
                         ui.add_space(8.0);
-                        egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+                        egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui: &mut egui::Ui| {
                             ui.set_max_width(900.0);
                             show_save_ui(ui, &mut (*self).save_menu_state);
                         });
@@ -201,7 +201,7 @@ impl App for DungeonCrawlerworld {
                     .min_height(90.0)
                     .show_separator_line(false)
                     .show(ctx, |ui: &mut egui::Ui| {
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui: &mut egui::Ui| {
                             (*self).fps.ui(ui);
                         });
                     });

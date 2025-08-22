@@ -55,7 +55,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
         egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
             .stick_to_bottom(true)
-            .show(ui, |ui| {
+            .show(ui, |ui: &mut Ui| {
                 for line in &(*state).log {
                     ui.label(line);
                 }

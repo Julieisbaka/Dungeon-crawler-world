@@ -69,11 +69,11 @@ impl NewSaveState {
 pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     let mut should_close = false;
     
-    ui.vertical_centered(|ui| {
+    ui.vertical_centered(|ui: &mut Ui| {
         ui.heading("Create New Save");
         ui.add_space(20.0);
         // Tabs
-        ui.horizontal(|ui| {
+        ui.horizontal(|ui: &mut Ui| {
             let basics_selected: bool = matches!((*state).selected_tab, NewSaveTab::Basics);
             if ui.selectable_label(basics_selected, "Basics").clicked() {
                 (*state).selected_tab = NewSaveTab::Basics;
@@ -89,7 +89,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         match (*state).selected_tab {
             NewSaveTab::Basics => {
                 // Save name input
-                ui.horizontal(|ui| {
+                ui.horizontal(|ui: &mut Ui| {
                     ui.label("Save Name:");
                     ui.add(TextEdit::singleline(&mut (*state).save_name)
                         .hint_text("Enter a unique save name..."));
@@ -98,7 +98,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 ui.add_space(10.0);
 
                 // Difficulty selection
-                ui.horizontal(|ui| {
+                ui.horizontal(|ui: &mut Ui| {
                     ui.label("Difficulty:");
                     ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Easy, "Easy");
                     ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Medium, "Medium");
@@ -126,7 +126,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         }
         
         // Buttons
-        ui.horizontal(|ui| {
+        ui.horizontal(|ui: &mut Ui| {
             if ui.button("Create Save").clicked() {
                 if let Err(error) = create_new_save(
                     &(*state).save_name,

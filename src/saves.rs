@@ -42,9 +42,9 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         egui::Window::new("Confirm Delete")
             .collapsible(false)
             .resizable(false)
-            .show(ui.ctx(), |ui| {
+            .show(ui.ctx(), |ui: &mut Ui| {
                 ui.label("Are you sure you want to delete this save? This cannot be undone.");
-                ui.horizontal(|ui| {
+                ui.horizontal(|ui: &mut Ui| {
                     if ui.button("Delete").clicked() {
                         if let Some(ref folder) = (*state).delete_target {
                             let _ = fs::remove_dir_all(Path::new("saves").join(folder));
@@ -63,7 +63,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
 
     if (*state).in_new_save_menu {
         // Provide a back button to leave the New Save sub-menu
-        ui.horizontal(|ui| {
+        ui.horizontal(|ui: &mut Ui| {
             if ui.button("Back").clicked() {
                 (*state).in_new_save_menu = false;
                 (*state).new_save_state.reset();
@@ -88,14 +88,14 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         egui::Window::new("Edit Save")
             .collapsible(false)
             .resizable(false)
-            .show(ui.ctx(), |ui| {
+            .show(ui.ctx(), |ui: &mut Ui| {
                 ui.label(format!("Editing save: {}", display_name));
-                ui.horizontal(|ui| {
+                ui.horizontal(|ui: &mut Ui| {
                     ui.label("New name:");
                     ui.text_edit_singleline(&mut (*state).edit_save_name);
                 });
                 ui.add_space(10.0);
-                ui.horizontal(|ui| {
+                ui.horizontal(|ui: &mut Ui| {
                     if ui.button("Rename").clicked() {
                         let new_folder: String = (*state).edit_save_name.trim().replace(' ', "_");
                         if !new_folder.is_empty() && new_folder != *folder_name {
@@ -185,7 +185,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                         if !created_at_text.is_empty() {
                             ui.label(created_at_text);
                         }
-                        ui.horizontal(|ui| {
+                        ui.horizontal(|ui: &mut Ui| {
                             if ui.button("Load Save").clicked() {
                                 crate::set_current_save(&folder_name);
                             }

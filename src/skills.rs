@@ -84,7 +84,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 			// Try to read optional metadata JSON; fallback to directory name and description.md
 			let mut name: String = dir_path
 				.file_name()
-				.and_then(|s| -> Option<&str> { s.to_str() })
+				.and_then(|s: &std::ffi::OsStr| -> Option<&str> { s.to_str() })
 				.unwrap_or("")
 				.to_string();
 			let mut description: String = String::new();
@@ -174,7 +174,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 	let player_skills: HashMap<String, i32> = read_player_skills();
 
 	// Toolbar: Reload, Only Owned filter, and optional dev Show All toggle
-	ui.horizontal(|ui| {
+	ui.horizontal(|ui: &mut Ui| {
 		if ui.button("Reload").clicked() {
 			let ctx: Context = ui.ctx().clone();
 			(*state).catalog = discover_skills(&ctx);
@@ -206,10 +206,10 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 		return;
 	}
 
-	egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+	egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui: &mut Ui| {
 		// Use full available width for the gallery
 		ui.set_min_width(ui.available_width());
-		ui.horizontal_wrapped(|ui| {
+		ui.horizontal_wrapped(|ui: &mut Ui| {
 			let tile_size: Vec2 = Vec2::new(140.0, 140.0);
 			let spacing = (*ui.spacing()).item_spacing.x;
 			for (idx, meta) in (*state).catalog.iter().enumerate() {
@@ -223,9 +223,9 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 				if !treated_owned {
 					frame = frame.fill(egui::Color32::from_gray(30));
 				}
-				frame.show(ui, |ui| {
+				frame.show(ui, |ui: &mut Ui| {
 					ui.set_min_size(tile_size);
-					ui.vertical_centered(|ui| {
+					ui.vertical_centered(|ui: &mut Ui| {
 						if treated_owned {
 							if let Some(tex) = &(*meta).icon {
 								ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
@@ -255,8 +255,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 					.open(&mut open)
 					.collapsible(false)
 					.resizable(true)
-					.show(ui.ctx(), |ui| {
-						ui.horizontal(|ui| {
+					.show(ui.ctx(), |ui: &mut Ui| {
+						ui.horizontal(|ui: &mut Ui| {
 							if let Some(tex) = &(*meta).icon {
 								ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(64.0)));
 							}
