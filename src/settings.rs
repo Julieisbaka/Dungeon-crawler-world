@@ -1,4 +1,4 @@
-use egui::{Ui};
+use egui::Ui;
 use serde::{Serialize, Deserialize};
 use std::fs;
 use std::path::Path;

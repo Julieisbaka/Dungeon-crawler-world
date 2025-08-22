@@ -1,4 +1,4 @@
-use egui::{Ui};
+use egui::Ui;
 use crate::new_save::{show_new_save_ui, NewSaveState};
 
 pub struct SaveMenuState {
