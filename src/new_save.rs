@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-enum NewSaveTab {
+pub enum NewSaveTab {
     Basics = 0,
     Gamerules = 1,
 }

@@ -8,6 +8,7 @@ use crate::new_save::{self, NewSaveState};
 use crate::saves::{self, SaveMenuState};
 use crate::settings::{self, Settings};
 use crate::skills::{self, SkillsState};
+use crate::fps::FpsGraph;
 
 pub struct UiPreviewManager {
     windows: HashMap<String, PreviewWindow>,
@@ -51,6 +52,11 @@ enum PreviewWindow {
         max: bool,
         state: ConsoleState,
     },
+    FpsGraph {
+        open: bool,
+        max: bool,
+        graph: FpsGraph,
+    },
 }
 
 impl UiPreviewManager {
@@ -67,7 +73,7 @@ impl UiPreviewManager {
     /// # Returns
     /// A static slice of string names for all supported preview windows.
     pub fn known_names() -> &'static [&'static str] {
-        &["skills", "new_save", "saves", "settings", "console"]
+    &["skills", "new_save", "saves", "settings", "console", "fps_graph"]
     }
 
     /// Opens a preview window by name, creating it if it does not already exist.
@@ -81,6 +87,16 @@ impl UiPreviewManager {
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
         let window: &mut PreviewWindow = match key.as_str() {
+            "fps_graph" => (*self)
+                .windows
+                .entry(key)
+                .or_insert_with(|| -> PreviewWindow {
+                    PreviewWindow::FpsGraph {
+                        open: true,
+                        max: false,
+                        graph: FpsGraph::default(),
+                    }
+                }),
             "skills" => (*self)
                 .windows
                 .entry(key)
@@ -152,7 +168,8 @@ impl UiPreviewManager {
             | PreviewWindow::NewSave { open, .. }
             | PreviewWindow::Saves { open, .. }
             | PreviewWindow::Settings { open, .. }
-            | PreviewWindow::Console { open, .. } => {
+            | PreviewWindow::Console { open, .. }
+            | PreviewWindow::FpsGraph { open, .. } => {
                 *open = true;
             }
         }
@@ -171,11 +188,51 @@ impl UiPreviewManager {
         let screen_size: egui::Vec2 = screen.size();
         for (name, win) in (*self).windows.iter_mut() {
             match win {
+                PreviewWindow::FpsGraph { open, max, graph } => {
+                    if !*open {
+                        continue;
+                    }
+                    let mut is_open: bool = true;
+                    let id: egui::Id = egui::Id::new(("preview_fps_graph", *max));
+                    egui::Window::new("Preview: FPS Graph")
+                        .id(id)
+                        .open(&mut is_open)
+                        .resizable(true)
+                        .vscroll(true)
+                        .default_size(egui::vec2(
+                            if *max {
+                                screen_size.x
+                            } else {
+                                300.0
+                            },
+                            if *max {
+                                screen_size.y
+                            } else {
+                                120.0
+                            },
+                        ))
+                        .max_size(screen_size)
+                        .show(ctx, |ui: &mut egui::Ui| {
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::TOP),
+                                |ui: &mut egui::Ui| {
+                                    let label = if *max { "Restore" } else { "Maximize" };
+                                    if ui.button(label).clicked() {
+                                        *max = !*max;
+                                    }
+                                },
+                            );
+                            graph.ui(ui);
+                        });
+                    if !is_open {
+                        *open = false;
+                    }
+                }
                 PreviewWindow::Skills { open, max, state } => {
                     if !*open {
                         continue;
                     }
-                    let mut is_open = true;
+                    let mut is_open: bool = true;
                     let id: egui::Id = egui::Id::new(("preview_skills", *max));
                     egui::Window::new("Preview: Skills")
                         .id(id)
@@ -300,7 +357,7 @@ impl UiPreviewManager {
                     if !*open {
                         continue;
                     }
-                    let mut is_open = true;
+                    let mut is_open: bool = true;
                     let id: egui::Id = egui::Id::new(("preview_settings", *max));
                     egui::Window::new("Preview: Settings")
                         .id(id)
@@ -340,7 +397,7 @@ impl UiPreviewManager {
                     if !*open {
                         continue;
                     }
-                    let mut is_open = true;
+                    let mut is_open: bool = true;
                     let id: egui::Id = egui::Id::new(("preview_console", *max));
                     egui::Window::new("Preview: Console")
                         .id(id)
@@ -383,7 +440,8 @@ impl UiPreviewManager {
                 | PreviewWindow::NewSave { open, .. }
                 | PreviewWindow::Saves { open, .. }
                 | PreviewWindow::Settings { open, .. }
-                | PreviewWindow::Console { open, .. } => {
+                | PreviewWindow::Console { open, .. }
+                | PreviewWindow::FpsGraph { open, .. } => {
                     if !*open {
                         to_close.push(name.clone());
                     }

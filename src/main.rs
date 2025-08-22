@@ -30,12 +30,12 @@ use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
 
-// Developer mode flag is controlled via Cargo feature `dev-mode`.
-// Enabled in debug builds by default via Cargo.toml [features].
-// For release builds in CI, we pass --no-default-features to disable it.
+/// Developer mode flag is controlled via Cargo feature `dev-mode`.
+/// Enabled in debug builds by default via Cargo.toml [features].
+/// For release builds in CI, we pass --no-default-features to disable it.
 const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 
-// Main app struct with settings state
+/// Main app struct with settings state
 struct DungeonCrawlerworld {
     show_settings: bool,
     show_saves: bool,
@@ -69,6 +69,8 @@ impl Default for DungeonCrawlerworld {
 
 impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+        // Always repaint so the FPS graph and other time-based UI update in real time
+        ctx.request_repaint();
         // Apply fullscreen setting when it changes
         if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
             (*self).last_fullscreen = Some((*self).settings.fullscreen);
