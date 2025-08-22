@@ -18,6 +18,7 @@ pub enum Difficulty {
 }
 
 impl std::fmt::Display for Difficulty {
+    /// Formats the `Difficulty` enum as a user-friendly string.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Difficulty::Easy => write!(f, "Easy"),
@@ -40,6 +41,7 @@ pub struct NewSaveState {
 }
 
 impl Default for NewSaveState {
+    /// Returns a new `NewSaveState` with default values for all fields.
     fn default() -> Self {
         Self {
             show_new_save: false,
@@ -55,6 +57,7 @@ impl Default for NewSaveState {
 }
 
 impl NewSaveState {
+    /// Resets the state to its default values, clearing all fields.
     pub fn reset(&mut self) {
         (*self).save_name.clear();
         (*self).selected_difficulty = Difficulty::Medium;
@@ -66,6 +69,14 @@ impl NewSaveState {
     }
 }
 
+/// Renders the UI for creating a new save, including tabs and input fields.
+///
+/// # Arguments
+/// * `ui` - The egui UI to render into.
+/// * `state` - The mutable state for the new save dialog.
+///
+/// # Returns
+/// * `bool` - Returns true if the dialog should be closed, false otherwise.
 pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     let mut should_close = false;
 

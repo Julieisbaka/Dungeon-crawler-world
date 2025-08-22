@@ -18,12 +18,19 @@ pub struct Settings {
 const SETTINGS_FILE: &str = "setting.json";
 
 impl Settings {
+    /// Saves the current settings to a JSON file on disk.
+    ///
+    /// The file path is determined by the constant `SETTINGS_FILE`.
     pub fn save(&self) {
         if let Ok(json) = serde_json::to_string_pretty(self) {
             let _ = fs::write(SETTINGS_FILE, json);
         }
     }
 
+    /// Loads settings from the JSON file on disk, or returns defaults if loading fails.
+    ///
+    /// # Returns
+    /// * `Settings` - The loaded or default settings.
     pub fn load() -> Self {
         if Path::new(SETTINGS_FILE).exists() {
             if let Ok(data) = fs::read_to_string(SETTINGS_FILE) {
@@ -35,6 +42,7 @@ impl Settings {
         Settings::default_inner()
     }
 
+    /// Returns the default settings values (used if loading fails).
     fn default_inner() -> Self {
         Self {
             fog: 2,
@@ -50,6 +58,7 @@ impl Settings {
 }
 
 impl Default for Settings {
+    /// Returns the default settings by loading from disk or using defaults.
     fn default() -> Self {
         Settings::load()
     }
@@ -61,6 +70,7 @@ pub struct SettingsResult {
 }
 
 impl Default for SettingsResult {
+    /// Returns a new `SettingsResult` with all fields set to false.
     fn default() -> Self {
         Self {
             request_save: false,
@@ -69,6 +79,15 @@ impl Default for SettingsResult {
     }
 }
 
+/// Renders the settings UI, allowing the user to modify and save settings.
+///
+/// # Arguments
+/// * `ui` - The egui UI to render into.
+/// * `settings` - The mutable settings object to edit.
+/// * `dev_mode_available` - Whether developer mode options should be shown.
+///
+/// # Returns
+/// * `SettingsResult` - Indicates if the user requested to save or go back.
 pub fn settings_ui(
     ui: &mut Ui,
     settings: &mut Settings,

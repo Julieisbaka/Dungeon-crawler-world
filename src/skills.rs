@@ -25,11 +25,13 @@ pub struct SkillsState {
 
 impl SkillsState {
     // Enable preview mode to show all discovered skills regardless of ownership
+    /// Enables preview mode, showing all discovered skills regardless of ownership.
     pub fn enable_preview(&mut self) {
         (*self).show_all = true;
     }
 
     // Enable developer controls (expose Show All toggle button)
+    /// Enables developer controls, exposing the Show All toggle button in the UI.
     pub fn enable_dev_controls(&mut self) {
         (*self).dev_controls = true;
     }
@@ -43,6 +45,15 @@ struct SkillMeta {
     icon: Option<TextureHandle>,
 }
 
+/// Loads an icon texture from disk and registers it with egui.
+///
+/// # Arguments
+/// * `ctx` - The egui context for loading the texture.
+/// * `key` - A unique key for the texture.
+/// * `icon_path` - The file path to the icon image.
+///
+/// # Returns
+/// * `Option<TextureHandle>` - The loaded texture handle, or None if loading fails.
 fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<TextureHandle> {
     let reader: ImageReader<std::io::BufReader<fs::File>> = ImageReader::open(icon_path).ok()?;
     let img: image::DynamicImage = reader.decode().ok()?;
@@ -58,6 +69,10 @@ fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<Textu
     ))
 }
 
+/// Attempts to find the root directory containing the Skills folder.
+///
+/// # Returns
+/// * `Option<PathBuf>` - The path to the Skills root, or None if not found.
 fn find_skills_root() -> Option<PathBuf> {
     // Try current working directory first
     if let Ok(cwd) = std::env::current_dir() {
@@ -83,6 +98,13 @@ fn find_skills_root() -> Option<PathBuf> {
     None
 }
 
+/// Discovers all available skills by scanning the Skills directory.
+///
+/// # Arguments
+/// * `ctx` - The egui context for loading textures.
+///
+/// # Returns
+/// * `Vec<SkillMeta>` - A vector of discovered skill metadata.
 fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
     let mut skills: Vec<SkillMeta> = Vec::new();
     let Some(skills_root) = find_skills_root() else {
@@ -168,6 +190,10 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
     skills
 }
 
+/// Reads the player's owned skills from disk.
+///
+/// # Returns
+/// * `HashMap<String, i32>` - A map of skill names to their levels.
 fn read_player_skills() -> HashMap<String, i32> {
     let mut map: HashMap<String, i32> = HashMap::new();
     // Attempt to read current save context (if available)
@@ -198,6 +224,11 @@ fn read_player_skills() -> HashMap<String, i32> {
 
 // Public UI entry: renders a gallery of all skills; unknown skills show no name/icon/description.
 // Clicking an owned skill opens a details panel with its description and current level.
+/// Renders the skills UI, showing the skill grid and details.
+///
+/// # Arguments
+/// * `ui` - The egui UI to render into.
+/// * `state` - The mutable state for the skills UI.
 pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     // Lazy-load catalog when first shown
     if !(*state).loaded {

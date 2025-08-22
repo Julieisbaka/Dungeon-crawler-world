@@ -14,6 +14,10 @@ pub struct UiPreviewManager {
 }
 
 impl Default for UiPreviewManager {
+    /// Returns a new `UiPreviewManager` with no preview windows initialized.
+    ///
+    /// # Returns
+    /// A new `UiPreviewManager` instance with an empty window registry.
     fn default() -> Self {
         Self {
             windows: HashMap::new(),
@@ -50,14 +54,30 @@ enum PreviewWindow {
 }
 
 impl UiPreviewManager {
+    /// Constructs a new `UiPreviewManager` using the default implementation.
+    ///
+    /// # Returns
+    /// A new `UiPreviewManager` instance.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Returns a static list of all known preview window names that can be opened.
+    ///
+    /// # Returns
+    /// A static slice of string names for all supported preview windows.
     pub fn known_names() -> &'static [&'static str] {
         &["skills", "new_save", "saves", "settings", "console"]
     }
 
+    /// Opens a preview window by name, creating it if it does not already exist.
+    ///
+    /// # Arguments
+    /// * `name` - The name of the preview window to open (case-insensitive).
+    ///
+    /// # Returns
+    /// * `Ok(())` if the window was opened or already exists.
+    /// * `Err(String)` if the name is not recognized.
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
         let window: &mut PreviewWindow = match key.as_str() {
@@ -139,6 +159,11 @@ impl UiPreviewManager {
         Ok(())
     }
 
+    /// Renders all open preview windows and removes any that are closed.
+    ///
+    /// # Arguments
+    /// * `ctx` - The egui context to use for rendering.
+    /// * `dev_enabled` - If true, developer options are enabled in some windows.
     pub fn render(&mut self, ctx: &Context, dev_enabled: bool) {
         // Render each open preview window
         let mut to_close: Vec<String> = Vec::new();

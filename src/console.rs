@@ -9,21 +9,30 @@ pub struct ConsoleState {
 }
 
 impl ConsoleState {
+    /// Clears the console log and scrolls to the end.
     pub fn clear(&mut self) {
         (*self).log.clear();
         (*self).scroll_to_end = true;
     }
 
+    /// Appends a line to the console log and scrolls to the end.
     fn push_line<S: Into<String>>(&mut self, s: S) {
         (*self).log.push(s.into());
         (*self).scroll_to_end = true;
     }
 
-    // Allow external systems to log messages to the console
+    /// Allows external systems to log messages to the console.
+    ///
+    /// # Arguments
+    /// * `s` - The message to log.
     pub fn log_line<S: Into<String>>(&mut self, s: S) {
         self.push_line(s);
     }
 
+    /// Runs a console command, handling built-in commands like 'help' and 'clear'.
+    ///
+    /// # Arguments
+    /// * `cmd` - The command string to execute.
     pub fn run_command(&mut self, cmd: &str) {
         let trimmed = cmd.trim();
         match trimmed {
@@ -44,7 +53,10 @@ impl ConsoleState {
         }
     }
 
-    // Drain and return pending commands submitted by the user in the UI
+    /// Drains and returns pending commands submitted by the user in the UI.
+    ///
+    /// # Returns
+    /// A vector of pending command strings.
     pub fn take_pending(&mut self) -> Vec<String> {
         let mut out: Vec<String> = Vec::new();
         std::mem::swap(&mut out, &mut (*self).pending);
@@ -52,6 +64,11 @@ impl ConsoleState {
     }
 }
 
+/// Renders the console UI, including the log output and input field.
+///
+/// # Arguments
+/// * `ui` - The egui UI to render into.
+/// * `state` - The mutable state of the console.
 pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
     ui.vertical(|ui: &mut Ui| {
         egui::ScrollArea::vertical()

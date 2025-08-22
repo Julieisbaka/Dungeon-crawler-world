@@ -14,6 +14,7 @@ pub struct SaveMenuState {
 }
 
 impl Default for SaveMenuState {
+    /// Returns a new `SaveMenuState` with default values for all fields.
     fn default() -> Self {
         Self {
             show_menu: false,
@@ -28,6 +29,11 @@ impl Default for SaveMenuState {
     }
 }
 
+/// Renders the save menu UI, including save slots and actions.
+///
+/// # Arguments
+/// * `ui` - The egui UI to render into.
+/// * `state` - The mutable state for the save menu.
 pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     use egui::ColorImage;
     use egui::TextureHandle;
