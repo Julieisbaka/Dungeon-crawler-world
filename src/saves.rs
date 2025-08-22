@@ -173,7 +173,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                 let mut icon_texture: Option<TextureHandle> = None;
                 if icon_path.exists() {
                     if let Ok(img) = ImageReader::open(&icon_path).and_then(|r: image::ImageReader<std::io::BufReader<fs::File>>| -> Result<image::DynamicImage, std::io::Error> { r.decode().map_err(|e: image::ImageError| -> std::io::Error { std::io::Error::new(std::io::ErrorKind::Other, e) }) }) {
-                        let size = img.dimensions();
+                        let size: (u32, u32) = img.dimensions();
                         let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = img.to_rgba8();
                         let pixels: image::FlatSamples<&[u8]> = rgba.as_flat_samples();
                         let color_image: ColorImage = ColorImage::from_rgba_unmultiplied(

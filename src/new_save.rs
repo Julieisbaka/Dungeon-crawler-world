@@ -21,9 +21,9 @@ impl std::fmt::Display for Difficulty {
     /// Formats the `Difficulty` enum as a user-friendly string.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Difficulty::Easy => write!(f, "Easy"),
-            Difficulty::Medium => write!(f, "Medium"),
-            Difficulty::Hard => write!(f, "Hard"),
+            &Difficulty::Easy => write!(f, "Easy"),
+            &Difficulty::Medium => write!(f, "Medium"),
+            &Difficulty::Hard => write!(f, "Hard"),
         }
     }
 }
@@ -78,7 +78,7 @@ impl NewSaveState {
 /// # Returns
 /// * `bool` - Returns true if the dialog should be closed, false otherwise.
 pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
-    let mut should_close = false;
+    let mut should_close: bool = false;
 
     ui.vertical_centered(|ui: &mut Ui| {
         ui.heading("Create New Save");

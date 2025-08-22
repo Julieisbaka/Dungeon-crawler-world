@@ -40,16 +40,16 @@ impl FpsGraph {
             return;
         }
 
-        let max_ms = 50.0; // clamp to 20 FPS floor for scale
-        let w = rect.width().max(1.0);
-        let h = rect.height().max(1.0);
+        let max_ms: f32 = 50.0; // clamp to 20 FPS floor for scale
+        let w: f32 = rect.width().max(1.0);
+        let h: f32 = rect.height().max(1.0);
         // Compute FPS stats
         let mut sum_fps: f32 = 0.0;
         let mut min_fps: f32 = f32::INFINITY;
         let mut max_fps: f32 = 0.0;
         for (i, ms) in (*self).times_ms.iter().enumerate() {
-            let x = rect.left() + (i as f32 / ((*self).capacity.max(1) as f32)) * w;
-            let y = rect.bottom() - ((*ms).min(max_ms) / max_ms) * h;
+            let x: f32 = rect.left() + (i as f32 / ((*self).capacity.max(1) as f32)) * w;
+            let y: f32 = rect.bottom() - ((*ms).min(max_ms) / max_ms) * h;
             let p1: Pos2 = Pos2::new(x, rect.bottom());
             let p2: Pos2 = Pos2::new(x, y);
             painter.line_segment(
@@ -59,7 +59,7 @@ impl FpsGraph {
                     color: Color32::from_rgb(50, 200, 50),
                 },
             );
-            let fps = if *ms > 0.0 { 1000.0 / *ms } else { 0.0 };
+            let fps: f32 = if *ms > 0.0 { 1000.0 / *ms } else { 0.0 };
             sum_fps += fps;
             if fps < min_fps {
                 min_fps = fps;
@@ -69,7 +69,7 @@ impl FpsGraph {
             }
         }
         // Draw a 16.7ms (60 FPS) line
-        let sixty_y = rect.bottom() - (16.7 / max_ms) * h;
+        let sixty_y: f32 = rect.bottom() - (16.7 / max_ms) * h;
         painter.hline(
             rect.x_range(),
             sixty_y,
@@ -88,8 +88,8 @@ impl FpsGraph {
         );
 
         // Stats labels (Avg / Min / Max)
-        let n = (*self).times_ms.len().max(1) as f32;
-        let avg_fps = (sum_fps / n).clamp(0.0, 9999.0);
+        let n: f32 = (*self).times_ms.len().max(1) as f32;
+        let avg_fps: f32 = (sum_fps / n).clamp(0.0, 9999.0);
         let label: String = format!(
             "FPS  avg:{:.1}  min:{:.1}  max:{:.1}",
             avg_fps, min_fps, max_fps

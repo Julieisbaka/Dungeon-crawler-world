@@ -57,7 +57,7 @@ struct SkillMeta {
 fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<TextureHandle> {
     let reader: ImageReader<std::io::BufReader<fs::File>> = ImageReader::open(icon_path).ok()?;
     let img: image::DynamicImage = reader.decode().ok()?;
-    let size = img.dimensions();
+    let size: (u32, u32) = img.dimensions();
     let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = img.to_rgba8();
     let pixels: image::FlatSamples<&[u8]> = rgba.as_flat_samples();
     let color_image: ColorImage =
@@ -287,7 +287,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             ui.set_min_width(ui.available_width());
             ui.horizontal_wrapped(|ui: &mut Ui| {
                 let tile_size: Vec2 = Vec2::new(140.0, 140.0);
-                let spacing = (*ui.spacing()).item_spacing.x;
+                let spacing: f32 = (*ui.spacing()).item_spacing.x;
                 for (idx, meta) in (*state).catalog.iter().enumerate() {
                     let owned_real: bool = player_skills.contains_key(&(*meta).name);
                     if (*state).only_owned && !owned_real {
@@ -334,8 +334,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             let dev_show_all_active: bool =
                 cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
             if dev_show_all_active || player_skills.contains_key(&(*meta).name) {
-                let level = player_skills.get(&(*meta).name).copied().unwrap_or(0);
-                let mut open = true;
+                let level: i32 = player_skills.get(&(*meta).name).copied().unwrap_or(0);
+                let mut open: bool = true;
                 egui::Window::new(format!("{}", meta.name))
                     .open(&mut open)
                     .collapsible(false)

@@ -216,7 +216,7 @@ impl UiPreviewManager {
                     if !*open {
                         continue;
                     }
-                    let mut is_open = true;
+                    let mut is_open: bool = true;
                     let id: egui::Id = egui::Id::new(("preview_new_save", *max));
                     egui::Window::new("Preview: New Save")
                         .id(id)
@@ -256,7 +256,7 @@ impl UiPreviewManager {
                     if !*open {
                         continue;
                     }
-                    let mut is_open = true;
+                    let mut is_open: bool = true;
                     let id: egui::Id = egui::Id::new(("preview_saves", *max));
                     egui::Window::new("Preview: Saves Menu")
                         .id(id)

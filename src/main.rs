@@ -97,7 +97,7 @@ impl App for DungeonCrawlerworld {
                         if (*self).show_settings {
                             ui.heading(RichText::new("Settings").size(28.0));
                             ui.add_space(8.0);
-                            let mut back = false;
+                            let mut back: bool = false;
                             egui::ScrollArea::vertical().auto_shrink([false; 2]).show(
                                 ui,
                                 |ui: &mut egui::Ui| {
@@ -172,7 +172,7 @@ impl App for DungeonCrawlerworld {
         }
 
         if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).console_open {
-            let mut open = true;
+            let mut open: bool = true;
             egui::Window::new("Console")
                 .open(&mut open)
                 .resizable(true)
