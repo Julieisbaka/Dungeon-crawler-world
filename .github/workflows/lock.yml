@@ -1,0 +1,41 @@
+name: Update Cargo.lock on Cargo.toml Change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Cargo.toml'
+
+jobs:
+  update-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: actions/setup-rust@v1
+        with:
+          rust-version: stable
+
+      - name: Generate Cargo.lock
+        run: cargo generate-lockfile
+
+      - name: Check for changes to Cargo.lock
+        id: git-diff
+        run: |
+          if [[ -n $(git diff --shortstat) ]]; then
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push updated Cargo.lock
+        if: steps.git-diff.outputs.changes_detected == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add Cargo.lock
+          git commit -m "ci: update Cargo.lock after Cargo.toml change"
+          git push
