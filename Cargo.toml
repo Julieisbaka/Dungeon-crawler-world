@@ -28,5 +28,4 @@ parry3d = "0.23.0"
 egui_commonmark = "0.21"
 
 [build-dependencies]
-cc = "1.0"
 pkg-config = "0.3"
