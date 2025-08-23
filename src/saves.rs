@@ -2,6 +2,7 @@ use crate::new_save::{show_new_save_ui, NewSaveState};
 use egui::Ui;
 
 pub struct SaveMenuState {
+    #[allow(dead_code)]
     pub show_menu: bool,
     pub new_save_state: NewSaveState,
     pub in_new_save_menu: bool,

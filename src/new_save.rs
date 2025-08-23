@@ -1,4 +1,4 @@
-use egui::{TextEdit, Ui};
+use egui::{TextEdit, Ui, TextBuffer};
 use rand::Rng;
 use serde_json::{json, Value};
 use std::fs;
@@ -29,6 +29,7 @@ impl std::fmt::Display for Difficulty {
 }
 
 pub struct NewSaveState {
+    #[allow(dead_code)]
     pub show_new_save: bool,
     pub save_name: String,
     pub selected_difficulty: Difficulty,
@@ -106,7 +107,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Save Name:");
                     ui.add(
-                        TextEdit::singleline(&mut (*state).save_name)
+                        TextEdit::singleline(&mut (*state).save_name as &mut dyn TextBuffer)
                             .hint_text("Enter a unique save name..."),
                     );
                 });

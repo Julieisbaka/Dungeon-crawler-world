@@ -277,7 +277,7 @@ fn main() -> eframe::Result<()> {
                 ..Default::default()
             });
             // Return a boxed instance of your DungeonCrawlerworld.
-            Ok(Box::new(DungeonCrawlerworld::default()))
+            Ok(Box::new(DungeonCrawlerworld::default()) as Box<dyn App>)
         }),
     )
 }

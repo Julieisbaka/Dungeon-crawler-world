@@ -1,4 +1,4 @@
-use egui::{TextEdit, Ui};
+use egui::{TextEdit, Ui, TextBuffer};
 
 #[derive(Default)]
 pub struct ConsoleState {
@@ -87,7 +87,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
         // Stable-size input field and action buttons
         // Use a visible fixed height to prevent hover-based reflow/resizing
         let input_resp: egui::Response = ui.add(
-            TextEdit::singleline(&mut (*state).input)
+            TextEdit::singleline(&mut (*state).input as &mut dyn TextBuffer)
                 .hint_text("Enter command...")
                 .desired_width(f32::INFINITY),
         );

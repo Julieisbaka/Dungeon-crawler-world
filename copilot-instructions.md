@@ -1,6 +1,6 @@
 - This is a game that uses Vulkan for the graphics API
 
-- This game is made with rust
+- This game is made with Rust
 
 - Cargo is used to build the application
 
