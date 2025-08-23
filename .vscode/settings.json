@@ -1,15 +1,5 @@
-{
-  "prettier.useEditorConfig": true,
-  "prettier.insertPragma": false,
-  "prettier.experimentalTernaries": true,
-  "prettier.tabWidth": 2,
-  "prettier.useTabs": false,
-  "prettier.endOfLine": "crlf",
-  "prettier.trailingComma": "none",
-  "prettier.bracketSpacing": true,
-  "prettier.embeddedLanguageFormatting": "auto",
-  "json.validate.enable": true,
-  "cSpell.words": [
+"json.validate.enable": true,
+"cSpell.words": [
     "Dewatta",
     "Grawl",
     "Skolopendra"
