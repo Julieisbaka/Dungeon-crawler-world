@@ -1,0 +1,3 @@
+These files are not used in the game as of currently.
+As of now they simply act as a way to make sure json data is written correctly.
+In a future version the schemes may be implemented for error validation or somthing else.
