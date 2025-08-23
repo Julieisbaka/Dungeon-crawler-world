@@ -10,7 +10,7 @@
 
 - Markdown is used to present textual elements to the user in some scenarios
 
-- Javascript and Powershell are used for development scripts
+- Javascript is used for development scripts
 
 - A package.json file is used to store project info and access certain developer tools
 
