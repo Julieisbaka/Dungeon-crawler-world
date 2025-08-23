@@ -3,8 +3,7 @@
   "version": "0.0.6",
   "devDependencies": {
     "markdownlint-cli2": "0.17.2",
-    "path": "^0.12.7",
-    "prettier": "^3.5.3"
+    "path": "^0.12.7"
   },
   "scripts": {
     "markdownlint-linelength": "markdownlint-cli2 ."
