@@ -1,4 +1,0 @@
-Connections represent hallways.
-Node represent rooms.
-Overlapping nodes result in a larger room.
-If a non-straight connection is not the only path between nodes then it will be removed.

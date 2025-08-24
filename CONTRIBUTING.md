@@ -17,17 +17,17 @@ document provides guidelines and instructions for contributing to the project.
 
 By participating in this project, you agree to maintain a respectful and
 inclusive environment for everyone. Please be considerate of others and
-communicate professionally.
+communicate professionally. To view the full Code of Conduct please read the [Code of Conduct](CODE_OF_CONDUCT.md) which is adapted from the Mozilla code of conduct and contributor covenant.
 
 ## Getting Started
 
-1. **Fork the repository** - Create your own fork of the project
-2. **Clone your fork** - `git clone https://github.com/Username/Dungeon-crawler-world.git`
-3. **Create a branch** - `git checkout -b feature/your-feature-name`
-4. **Make your changes** - Follow the project's coding standards
-5. **Test your changes** - Ensure all features work as expected
-6. **Push to your fork** - `git push origin feature/your-feature-name`
-7. **Create a Pull Request** - Submit your changes for review
+1. Setup [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+2. Install and setup [Rust](https://www.rust-lang.org/tools/install)
+3. Clone or fork the repository
+4. `cd` into the project directory or open the terminal in the project directory; ensure to go into the root of the project
+5. Run `cargo build` to install dependencies and build the project
+6. Make any changes and run `cargo build` to ensure everything works. After running the `cargo build` command a new directory called `target` will be created in this directory you can find a executable file. You can also use `cargo run` to run the project.
+7. Stage the changes and create a pull request
 
 ## How to Contribute
 
@@ -63,7 +63,7 @@ There are many ways to contribute to Dungeon Crawler World:
 
 ## Schema Guidelines
 
-- Follow the JSON Schema draft-07 standard
+- Follow the JSON Schema [draft-07 standard](https://json-schema.org/specification-links.html#draft-07)
 - Add clear descriptions for each property
 - Include appropriate validation rules (type, min/max values, etc.)
 - Document all changes especially breaking changes
