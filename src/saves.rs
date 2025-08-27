@@ -69,16 +69,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     }
 
     if (*state).in_new_save_menu {
-        // Provide a back button to leave the New Save sub-menu
-        ui.horizontal(|ui: &mut Ui| {
-            if ui.button("Back").clicked() {
-                (*state).in_new_save_menu = false;
-                (*state).new_save_state.reset();
-                return; // Early leave from this frame; main list will render next frame
-            }
-        });
-        ui.add_space(8.0);
-
+        // No back button in new save menu; only allow closing via Cancel or successful creation
         if show_new_save_ui(ui, &mut (*state).new_save_state) {
             (*state).in_new_save_menu = false;
             (*state).new_save_state.reset();

@@ -1,3 +1,4 @@
+// Max lines is now a runtime setting, not a constant.
 use egui::{TextEdit, Ui, TextBuffer};
 
 #[derive(Default)]
@@ -6,6 +7,7 @@ pub struct ConsoleState {
     log: Vec<String>,
     scroll_to_end: bool,
     pending: Vec<String>,
+    last_command: Option<String>,
 }
 
 impl ConsoleState {
@@ -40,7 +42,7 @@ impl ConsoleState {
                 self.push_line("Available commands:");
                 self.push_line("  help  - show this message");
                 self.push_line("  clear - clear the console output");
-                self.push_line("  invoke <ui> - open a preview window for a UI (e.g., skills, new_save, saves, settings, console)");
+                self.push_line("  invoke <ui> - open a preview window for a UI (e.g., skills, new_save, saves, settings, console, quit)");
             }
             "clear" => {
                 self.clear();
@@ -69,13 +71,15 @@ impl ConsoleState {
 /// # Arguments
 /// * `ui` - The egui UI to render into.
 /// * `state` - The mutable state of the console.
-pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
+pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
     ui.vertical(|ui: &mut Ui| {
         egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
             .stick_to_bottom(true)
             .show(ui, |ui: &mut Ui| {
-                for line in &(*state).log {
+                let log_len = (*state).log.len();
+                let start = log_len.saturating_sub(max_lines);
+                for line in (*state).log[start..].iter() {
                     ui.label(line);
                 }
                 if (*state).scroll_to_end {
@@ -102,6 +106,9 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
                 || pressed_enter
             {
                 let cmd: String = (*state).input.clone();
+                if !cmd.trim().is_empty() {
+                    state.last_command = Some(cmd.clone());
+                }
                 // Queue the command for external handling in the main loop
                 (&mut (*state).pending).push(cmd);
                 (&mut (*state).input).clear();
@@ -113,5 +120,14 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState) {
                 state.clear();
             }
         });
+
+        // Up arrow recall: if input is focused and up is pressed, recall last command
+        let input_focused: bool = input_resp.has_focus();
+        let up_pressed: bool = ui.input(|i: &egui::InputState| i.key_pressed(egui::Key::ArrowUp));
+        if input_focused && up_pressed {
+            if let Some(cmd) = &(*state).last_command {
+                (*state).input = cmd.clone();
+            }
+        }
     });
 }

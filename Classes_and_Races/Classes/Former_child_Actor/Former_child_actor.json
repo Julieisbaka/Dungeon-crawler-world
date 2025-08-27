@@ -5,9 +5,7 @@
     }
   ],
   "name": "Former child Actor",
-  "description": {
-    "markdown_file": "Classes_and_Races/Classes/Former_child_Actor/Description.md"
-  },
+  "description": "Classes_and_Races/Classes/Former_child_Actor/Description.md",
   "skills": [
     {
       "name": "Cockroach",

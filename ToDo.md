@@ -1,8 +1,8 @@
 # TODO
 
-- [x] Update workflows to include permissions
-
 - [ ] Replace Dungeon anarchist cookbook title image
+
+- [ ] Create logic for tree creation and distribution
 
 - [ ] Create height maps for wood
 
@@ -11,6 +11,8 @@
 - [ ] Create textures for wood
 
 - [ ] Create models for leaves
+
+- [x] Update workflows to include permissions
 
 - [x] Floor one time should be saved to save.json
 
@@ -42,9 +44,7 @@
 
 - [x] Create contributing guidelines
 
-- [ ] Add simple keybind support
-
-- [ ] Create logic for tree creation and distribution
+- [x] Add simple keybind support
 
 - [x] Rewrite backend in Rust
 

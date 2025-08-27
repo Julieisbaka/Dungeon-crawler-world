@@ -1,6 +1,4 @@
 {
   "name": "Necro Bard",
-  "description": {
-    "markdown_file": "Classes_and_Races/Classes/Necro_bard/Description.md"
-  }
+  "description": "Classes_and_Races/Classes/Necro_bard/Description.md"
 }

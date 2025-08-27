@@ -57,6 +57,10 @@ enum PreviewWindow {
         max: bool,
         graph: FpsGraph,
     },
+    Quit {
+        open: bool,
+        max: bool,
+    },
 }
 
 impl UiPreviewManager {
@@ -73,7 +77,7 @@ impl UiPreviewManager {
     /// # Returns
     /// A static slice of string names for all supported preview windows.
     pub fn known_names() -> &'static [&'static str] {
-    &["skills", "new_save", "saves", "settings", "console", "fps_graph"]
+        &["skills", "new_save", "saves", "settings", "console", "fps_graph", "quit"]
     }
 
     /// Opens a preview window by name, creating it if it does not already exist.
@@ -86,7 +90,14 @@ impl UiPreviewManager {
     /// * `Err(String)` if the name is not recognized.
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
-        let window: &mut PreviewWindow = match key.as_str() {
+    let window: &mut PreviewWindow = match key.as_str() {
+            "quit" => (*self)
+                .windows
+                .entry(key)
+                .or_insert_with(|| PreviewWindow::Quit {
+                    open: true,
+                    max: false,
+                }),
             "fps_graph" => (*self)
                 .windows
                 .entry(key)
@@ -169,7 +180,8 @@ impl UiPreviewManager {
             | PreviewWindow::Saves { open, .. }
             | PreviewWindow::Settings { open, .. }
             | PreviewWindow::Console { open, .. }
-            | PreviewWindow::FpsGraph { open, .. } => {
+            | PreviewWindow::FpsGraph { open, .. }
+            | PreviewWindow::Quit { open, .. } => {
                 *open = true;
             }
         }
@@ -188,6 +200,34 @@ impl UiPreviewManager {
         let screen_size: egui::Vec2 = screen.size();
         for (name, win) in (*self).windows.iter_mut() {
             match win {
+                PreviewWindow::Quit { open, max } => {
+                    if !*open {
+                        continue;
+                    }
+                    let mut is_open: bool = true;
+                    let mut close_after = false;
+                    let id: egui::Id = egui::Id::new(("preview_quit", *max));
+                    egui::Window::new("Preview: Quit Confirmation")
+                        .id(id)
+                        .open(&mut is_open)
+                        .collapsible(false)
+                        .resizable(false)
+                        .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+                        .show(ctx, |ui: &mut egui::Ui| {
+                            ui.label("Are you sure you want to quit?");
+                            ui.horizontal(|ui| {
+                                if ui.button("Yes").clicked() {
+                                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                                }
+                                if ui.button("No").clicked() {
+                                    close_after = true;
+                                }
+                            });
+                        });
+                    if !is_open || close_after {
+                        *open = false;
+                    }
+                }
                 PreviewWindow::FpsGraph { open, max, graph } => {
                     if !*open {
                         continue;
@@ -427,7 +467,7 @@ impl UiPreviewManager {
                                     }
                                 },
                             );
-                            console::console_ui(ui, state);
+                            console::console_ui(ui, state, 300);
                         });
                     if !is_open {
                         *open = false;
@@ -441,7 +481,8 @@ impl UiPreviewManager {
                 | PreviewWindow::Saves { open, .. }
                 | PreviewWindow::Settings { open, .. }
                 | PreviewWindow::Console { open, .. }
-                | PreviewWindow::FpsGraph { open, .. } => {
+                | PreviewWindow::FpsGraph { open, .. }
+                | PreviewWindow::Quit { open, .. } => {
                     if !*open {
                         to_close.push(name.clone());
                     }

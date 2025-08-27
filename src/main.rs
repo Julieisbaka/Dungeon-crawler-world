@@ -16,6 +16,8 @@ use std::error::Error;
 
 // Import necessary crates and modules from eframe and egui
 use eframe::{App, Frame, NativeOptions};
+mod logger;
+use logger::{init_logger};
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
 mod saves;
 use saves::show_save_ui;
@@ -48,10 +50,12 @@ struct DungeonCrawlerworld {
     // Console session control
     console_open: bool,
     last_show_console: bool,
+    log_rx: Option<std::sync::mpsc::Receiver<String>>,
 }
 
 impl Default for DungeonCrawlerworld {
     fn default() -> Self {
+        let (_log_tx, log_rx) = init_logger();
         Self {
             show_settings: false,
             show_saves: false,
@@ -63,6 +67,7 @@ impl Default for DungeonCrawlerworld {
             fps: FpsGraph::default(),
             console_open: false,
             last_show_console: Settings::default().show_console,
+            log_rx: Some(log_rx),
         }
     }
 }
@@ -83,6 +88,12 @@ impl App for DungeonCrawlerworld {
         let dt_ms: f32 = ctx.input(|i: &egui::InputState| (*i).stable_dt) * 1000.0;
         (*self).fps.push_frame_time(dt_ms);
 
+        // ESCAPE KEY HANDLING
+        let escape_pressed: bool = ctx.input(|i: &egui::InputState| i.key_pressed(egui::Key::Escape));
+        // Quit confirmation dialog state
+        static mut QUIT_CONFIRM: bool = false;
+        let mut quit_confirm: bool = unsafe { QUIT_CONFIRM };
+
         CentralPanel::default()
             .frame(
                 egui::Frame::central_panel(&ctx.style())
@@ -90,7 +101,6 @@ impl App for DungeonCrawlerworld {
                     .outer_margin(egui::Margin::same(0)),
             )
             .show(ctx, |ui: &mut egui::Ui| {
-                // Allocate a full-screen area and center content within it
                 let avail: egui::Vec2 = ui.available_size();
                 ui.allocate_ui_with_layout(
                     avail,
@@ -103,19 +113,19 @@ impl App for DungeonCrawlerworld {
                             egui::ScrollArea::vertical().auto_shrink([false; 2]).show(
                                 ui,
                                 |ui: &mut egui::Ui| {
-                                    // Constrain a readable max width while still centered in the full area
                                     ui.set_max_width(700.0);
                                     let res: SettingsResult =
                                         settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
                                     if res.request_save {
                                         (*self).settings.save();
+                                        (*self).show_settings = false;
                                     }
                                     if res.request_back {
                                         back = true;
                                     }
                                 },
                             );
-                            if back {
+                            if back || escape_pressed {
                                 (*self).show_settings = false;
                             }
                         } else if (*self).show_saves {
@@ -128,17 +138,17 @@ impl App for DungeonCrawlerworld {
                                     show_save_ui(ui, &mut (*self).save_menu_state);
                                 },
                             );
-                            // Respect back request from saves UI
-                            if (*self).save_menu_state.back_requested {
+                            // Only close saves menu on explicit back, escape, or sub-menu exit
+                            if (*self).save_menu_state.back_requested || escape_pressed {
                                 (*self).save_menu_state.back_requested = false;
+                                (*self).save_menu_state.in_new_save_menu = false;
+                                (*self).save_menu_state.editing_save = None;
                                 (*self).show_saves = false;
                             }
                         } else {
-                            // Game Menu centered with larger controls
                             ui.add_space(8.0);
                             ui.heading(RichText::new("Game Menu").size(30.0));
                             ui.add_space(24.0);
-                            // Slightly larger buttons for presence
                             if ui
                                 .add_sized([220.0, 36.0], egui::Button::new("Saves"))
                                 .clicked()
@@ -157,12 +167,32 @@ impl App for DungeonCrawlerworld {
                                 .add_sized([220.0, 36.0], egui::Button::new("Quit"))
                                 .clicked()
                             {
-                                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                                quit_confirm = true;
                             }
+                        }
+                        // Quit confirmation dialog
+                        if quit_confirm {
+                            egui::Window::new("Quit Game?")
+                                .collapsible(false)
+                                .resizable(false)
+                                .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+                                .show(ctx, |ui| {
+                                    ui.label("Are you sure you want to quit?");
+                                    ui.horizontal(|ui| {
+                                        if ui.button("Yes").clicked() {
+                                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                                            quit_confirm = false;
+                                        }
+                                        if ui.button("No").clicked() {
+                                            quit_confirm = false;
+                                        }
+                                    });
+                                });
                         }
                     },
                 );
             });
+        unsafe { QUIT_CONFIRM = quit_confirm; }
 
         // Developer Console window: only when enabled and explicitly opened this session
         // Detect setting edge to open on user toggle (not on startup load)
@@ -171,6 +201,15 @@ impl App for DungeonCrawlerworld {
                 (*self).console_open = true;
             }
             (*self).last_show_console = (*self).settings.show_console;
+        }
+
+        // Poll logger and write to in-game console if enabled
+        if self.settings.log_to_console {
+            if let Some(rx) = &self.log_rx {
+                while let Ok(msg) = rx.try_recv() {
+                    self.console_state.log_line(msg);
+                }
+            }
         }
 
         if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).console_open {
@@ -184,7 +223,7 @@ impl App for DungeonCrawlerworld {
                 .show(ctx, |ui| {
                     // Intercept invoke commands to open previews
                     // Render console UI first
-                    console_ui(ui, &mut (*self).console_state);
+                    console_ui(ui, &mut (*self).console_state, (*self).settings.console_max_lines);
                     // Provide a minimal inline help mention for invoke
                     // (kept non-intrusive in UI; full help prints in console)
                 });

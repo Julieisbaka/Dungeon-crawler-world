@@ -12,7 +12,9 @@ pub struct Settings {
     pub verbose_logging: bool,
     pub show_console: bool,
     pub show_fps_graph: bool,
+    pub log_to_console: bool,
     pub fullscreen: bool,
+    pub console_max_lines: usize,
 }
 
 const SETTINGS_FILE: &str = "setting.json";
@@ -53,6 +55,8 @@ impl Settings {
             show_console: false,
             show_fps_graph: false,
             fullscreen: false,
+            log_to_console: false,
+            console_max_lines: 300,
         }
     }
 }
@@ -224,6 +228,20 @@ pub fn settings_ui(
                 {
                     settings.save();
                 }
+                if ui
+                    .checkbox(&mut (*settings).log_to_console, "Log to in-game Console")
+                    .changed()
+                {
+                    settings.save();
+                }
+                ui.horizontal(|ui| {
+                    ui.label("Console max lines:");
+                    let mut lines = settings.console_max_lines as u32;
+                    if ui.add(egui::DragValue::new(&mut lines).range(50..=2000)).changed() {
+                        settings.console_max_lines = lines as usize;
+                        settings.save();
+                    }
+                });
             });
         }
     }
