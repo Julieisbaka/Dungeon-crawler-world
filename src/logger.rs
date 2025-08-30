@@ -17,7 +17,7 @@ impl Log for Logger {
         if !self.enabled(record.metadata()) {
             return;
         }
-        if let Some(sender_mutex) = LOG_SENDER.get() {
+        if let Some(sender_mutex) = (&LOG_SENDER).get() {
             if let Some(sender) = &*sender_mutex.lock().unwrap() {
                 let msg: String = format!("[{}] {}", record.level(), record.args());
                 let _ = sender.send(msg);
@@ -30,7 +30,7 @@ impl Log for Logger {
 
 pub fn init_logger() -> (Sender<String>, Receiver<String>) {
     let (tx, rx) = channel();
-    LOG_SENDER.get_or_init(|| -> Mutex<Option<Sender<String>>> { Mutex::new(Some(tx.clone())) });
+    (&LOG_SENDER).get_or_init(|| -> Mutex<Option<Sender<String>>> { Mutex::new(Some((&tx).clone())) });
     log::set_logger(&LOGGER).map(|()| log::set_max_level(log::LevelFilter::Trace)).ok();
     (tx, rx)
 }
@@ -42,7 +42,7 @@ pub fn enable_logger() {
 
 #[allow(dead_code)]
 pub fn disable_logger() {
-    if let Some(sender_mutex) = LOG_SENDER.get() {
+    if let Some(sender_mutex) = (&LOG_SENDER).get() {
         *sender_mutex.lock().unwrap() = None;
     }
 }

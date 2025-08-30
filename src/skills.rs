@@ -55,11 +55,11 @@ struct SkillMeta {
 fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<TextureHandle> {
     let reader: ImageReader<std::io::BufReader<fs::File>> = ImageReader::open(icon_path).ok()?;
     let img: image::DynamicImage = reader.decode().ok()?;
-    let size: (u32, u32) = img.dimensions();
-    let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = img.to_rgba8();
-    let pixels: image::FlatSamples<&[u8]> = rgba.as_flat_samples();
+    let size: (u32, u32) = (&img).dimensions();
+    let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = (&img).to_rgba8();
+    let pixels: image::FlatSamples<&[u8]> = (&rgba).as_flat_samples();
     let color_image: ColorImage =
-        ColorImage::from_rgba_unmultiplied([size.0 as usize, size.1 as usize], pixels.as_slice());
+        ColorImage::from_rgba_unmultiplied([size.0 as usize, size.1 as usize], (&pixels).as_slice());
     Some(ctx.load_texture(
         key.to_string(),
         color_image,
@@ -74,22 +74,22 @@ fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<Textu
 fn find_skills_root() -> Option<PathBuf> {
     // Try current working directory first
     if let Ok(cwd) = std::env::current_dir() {
-        let p: PathBuf = cwd.join("Skills");
-        if p.is_dir() {
+        let p: PathBuf = (&*cwd).join("Skills");
+        if (&*p).is_dir() {
             return Some(p);
         }
     }
     // Try relative to the executable (walk up a few parents)
     if let Ok(exe) = std::env::current_exe() {
         let mut dir_opt: Option<PathBuf> =
-            exe.parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
+            (&*exe).parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
         for _ in 0..4 {
-            if let Some(dir) = dir_opt.clone() {
-                let candidate: PathBuf = dir.join("Skills");
-                if candidate.is_dir() {
+            if let Some(dir) = (&dir_opt).clone() {
+                let candidate: PathBuf = (&*dir).join("Skills");
+                if (&*candidate).is_dir() {
                     return Some(candidate);
                 }
-                dir_opt = dir.parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
+                dir_opt = (&*dir).parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
             }
         }
     }
@@ -110,12 +110,12 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
     };
     if let Ok(entries) = fs::read_dir(skills_root) {
         for entry in entries.flatten() {
-            let dir_path: PathBuf = entry.path();
-            if !dir_path.is_dir() {
+            let dir_path: PathBuf = (&entry).path();
+            if !(&*dir_path).is_dir() {
                 continue;
             }
             // Try to read optional metadata JSON; fallback to directory name and description.md
-            let mut name: String = dir_path
+            let mut name: String = (&*dir_path)
                 .file_name()
                 .and_then(|s: &std::ffi::OsStr| -> Option<&str> { s.to_str() })
                 .unwrap_or("")
@@ -124,22 +124,22 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
             // Try to find a metadata json in the directory
             if let Ok(files) = fs::read_dir(&dir_path) {
                 for f in files.flatten() {
-                    let p: PathBuf = f.path();
-                    if p.is_file()
-                        && p.extension()
+                    let p: PathBuf = (&f).path();
+                    if (&*p).is_file()
+                        && (&*p).extension()
                             .and_then(|e: &std::ffi::OsStr| -> Option<&str> { e.to_str() })
                             .map(|e| e.eq_ignore_ascii_case("json"))
                             .unwrap_or(false)
                     {
                         if let Ok(content) = fs::read_to_string(&p) {
-                            if let Ok(val) = serde_json::from_str::<Value>(&content) {
-                                if let Some(n) = val
+                            if let Ok(val) = serde_json::from_str::<Value>(&**&content) {
+                                if let Some(n) = (&val)
                                     .get("name")
                                     .and_then(|v: &Value| -> Option<&str> { v.as_str() })
                                 {
                                     name = n.to_string();
                                 }
-                                if let Some(desc) = val
+                                if let Some(desc) = (&val)
                                     .get("description")
                                     .and_then(|v: &Value| -> Option<&str> { v.as_str() })
                                 {
@@ -152,13 +152,13 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                 }
             }
             // If description points to a markdown file, load it; otherwise try description.md as a default
-            if description.ends_with(".md") {
-                let md_path: PathBuf = dir_path.join(&description);
+            if (&*description).ends_with(".md") {
+                let md_path: PathBuf = (&*dir_path).join(&description);
                 if let Ok(md) = fs::read_to_string(&md_path) {
                     description = md;
                 }
-            } else if description.is_empty() {
-                let md_path: PathBuf = dir_path.join("description.md");
+            } else if (&description).is_empty() {
+                let md_path: PathBuf = (&*dir_path).join("description.md");
                 if let Ok(md) = fs::read_to_string(&md_path) {
                     description = md;
                 }
@@ -166,24 +166,24 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
             // Attempt icon load (icon.png/jpg/jpeg)
             let mut icon_handle: Option<TextureHandle> = None;
             for candidate in ["icon.png", "icon.jpg", "icon.jpeg"] {
-                let ip: PathBuf = dir_path.join(candidate);
-                if ip.exists() {
-                    icon_handle = load_icon_texture(ctx, &format!("skill_icon_{}", name), &ip);
-                    if icon_handle.is_some() {
+                let ip: PathBuf = (&*dir_path).join(candidate);
+                if (&*ip).exists() {
+                    icon_handle = load_icon_texture(ctx, &**&format!("skill_icon_{}", name), &**&ip);
+                    if (&icon_handle).is_some() {
                         break;
                     }
                 }
             }
-            skills.push(SkillMeta {
+            (&mut skills).push(SkillMeta {
                 name,
                 description,
-                dir: dir_path.clone(),
+                dir: (&dir_path).clone(),
                 icon: icon_handle,
             });
         }
     }
-    skills.sort_by(|a: &SkillMeta, b: &SkillMeta| -> std::cmp::Ordering {
-        (*a).name.to_lowercase().cmp(&(*b).name.to_lowercase())
+    (&mut *skills).sort_by(|a: &SkillMeta, b: &SkillMeta| -> std::cmp::Ordering {
+        (&(&*(*a).name).to_lowercase()).cmp(&(&*(*b).name).to_lowercase())
     });
     skills
 }
@@ -195,25 +195,25 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 fn read_player_skills() -> HashMap<String, i32> {
     let mut map: HashMap<String, i32> = HashMap::new();
     // Attempt to read current save context (if available)
-    let current: Option<String> = crate::CURRENT_SAVE
+    let current: Option<String> = (&*crate::CURRENT_SAVE)
         .lock()
         .ok()
-        .and_then(|g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { g.clone() });
+        .and_then(|g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { (&*g).clone() });
     let Some(save) = current else { return map };
-    let path: PathBuf = Path::new("saves").join(save).join("player.json");
+    let path: PathBuf = (&*Path::new("saves").join(save)).join("player.json");
     let Ok(content) = fs::read_to_string(path) else {
         return map;
     };
-    let Ok(json) = serde_json::from_str::<Value>(&content) else {
+    let Ok(json) = serde_json::from_str::<Value>(&**&content) else {
         return map;
     };
-    if let Some(skills) = json
+    if let Some(skills) = (&json)
         .get("skills")
         .and_then(|v: &Value| -> Option<&serde_json::Map<String, Value>> { v.as_object() })
     {
         for (name, val) in skills.iter() {
             if let Some(lvl) = val.as_i64() {
-                map.insert(name.clone(), lvl as i32);
+                (&mut map).insert(name.clone(), lvl as i32);
             }
         }
     }
@@ -239,7 +239,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     // Toolbar: Reload, Only Owned filter, and optional dev Show All toggle
     ui.horizontal(|ui: &mut Ui| {
-        if ui.button("Reload").clicked() {
+        if (&ui.button("Reload")).clicked() {
             let ctx: Context = ui.ctx().clone();
             (*state).catalog = discover_skills(&ctx);
             (*state).loaded = true;
@@ -255,15 +255,15 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             } else {
                 "Show All (Dev): Off"
             };
-            if ui.toggle_value(&mut (*state).show_all, label).clicked() {
+            if (&ui.toggle_value(&mut (*state).show_all, label)).clicked() {
                 // Clear any selection when toggling preview mode
                 (*state).selected = None;
             }
         }
-        let owned_count = (*state)
-            .catalog
+        let owned_count = (&*(*state)
+            .catalog)
             .iter()
-            .filter(|m: &&SkillMeta| player_skills.contains_key(&(**m).name))
+            .filter(|m: &&SkillMeta| -> bool { (&player_skills).contains_key(&(**m).name) })
             .count();
         ui.label(format!(
             "Owned: {}  Total: {}",
@@ -286,8 +286,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             ui.horizontal_wrapped(|ui: &mut Ui| {
                 let tile_size: Vec2 = Vec2::new(140.0, 140.0);
                 let spacing: f32 = (*ui.spacing()).item_spacing.x;
-                for (idx, meta) in (*state).catalog.iter().enumerate() {
-                    let owned_real: bool = player_skills.contains_key(&(*meta).name);
+                for (idx, meta) in (&*(*state).catalog).iter().enumerate() {
+                    let owned_real: bool = (&player_skills).contains_key(&(*meta).name);
                     if (*state).only_owned && !owned_real {
                         continue;
                     }
@@ -296,7 +296,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                         cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
                     let treated_owned: bool = dev_show_all_active || owned_real;
                     let mut frame: egui::Frame =
-                        egui::Frame::group(ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+                        egui::Frame::group(&**ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
                     // Gray-out unknown (not owned and not in show_all)
                     if !treated_owned {
                         frame = frame.fill(egui::Color32::from_gray(30));
@@ -312,7 +312,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                                     ui.add_space(6.0);
                                 }
                                 ui.label(&(*meta).name);
-                                if ui.button("View").clicked() {
+                                if (&ui.button("View")).clicked() {
                                     (*state).selected = Some(idx);
                                 }
                             } else {
@@ -328,11 +328,11 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     // Detail view in a floating window for owned skills or all in preview
     if let Some(idx) = (*state).selected {
-        if let Some(meta) = (*state).catalog.get(idx) {
+        if let Some(meta) = (&*(*state).catalog).get(idx) {
             let dev_show_all_active: bool =
                 cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
-            if dev_show_all_active || player_skills.contains_key(&(*meta).name) {
-                let level: i32 = player_skills.get(&(*meta).name).copied().unwrap_or(0);
+            if dev_show_all_active || (&player_skills).contains_key(&(*meta).name) {
+                let level: i32 = (&player_skills).get(&(*meta).name).copied().unwrap_or(0);
                 let mut open: bool = true;
                 egui::Window::new(format!("{}", meta.name))
                     .open(&mut open)
@@ -348,15 +348,15 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                             });
                         });
                         ui.add_space(8.0);
-                        if !(*meta).description.trim().is_empty() {
+                        if !(&*(*meta).description).trim().is_empty() {
                             // Configure markdown rendering with local file base for images
                             // Set tooltip for links
                             (*ui.style_mut()).url_in_tooltip = true;
                             // Build a file:// base for relative images using the skill directory
                             let base_uri: String = {
                                 let abs: PathBuf =
-                                    (*meta).dir.canonicalize().unwrap_or((*meta).dir.clone());
-                                let s: String = abs.to_string_lossy().replace('\\', "/");
+                                    (&*(*meta).dir).canonicalize().unwrap_or((&(*meta).dir).clone());
+                                let s: String = (&*(&*abs).to_string_lossy()).replace('\\', "/");
                                 format!("file:///{}/", s.trim_start_matches('/'))
                             };
                             let viewer: CommonMarkViewer = CommonMarkViewer::new()
@@ -368,7 +368,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                             let _resp: egui::InnerResponse<()> = viewer.show(
                                 ui,
                                 &mut (*state).md_cache,
-                                (*meta).description.as_str(),
+                                (&(*meta).description).as_str(),
                             );
                         } else {
                             ui.label("No description available.");

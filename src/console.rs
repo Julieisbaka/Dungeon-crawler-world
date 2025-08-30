@@ -13,13 +13,13 @@ pub struct ConsoleState {
 impl ConsoleState {
     /// Clears the console log and scrolls to the end.
     pub fn clear(&mut self) {
-        (*self).log.clear();
+        (&mut (*self).log).clear();
         (*self).scroll_to_end = true;
     }
 
     /// Appends a line to the console log and scrolls to the end.
     fn push_line<S: Into<String>>(&mut self, s: S) {
-        (*self).log.push(s.into());
+        (&mut (*self).log).push(s.into());
         (*self).scroll_to_end = true;
     }
 
@@ -77,9 +77,9 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
             .auto_shrink([false; 2])
             .stick_to_bottom(true)
             .show(ui, |ui: &mut Ui| {
-                let log_len = (*state).log.len();
+                let log_len = (&(*state).log).len();
                 let start = log_len.saturating_sub(max_lines);
-                for line in (*state).log[start..].iter() {
+                for line in (&(&(*state).log)[start..]).iter() {
                     ui.label(line);
                 }
                 if (*state).scroll_to_end {
@@ -97,24 +97,24 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
         );
         // Ensure the widget has a reasonable fixed height so the window doesn't flicker/resize
         ui.add_space(4.0);
-        let pressed_enter: bool = input_resp.lost_focus()
-            && ui.input(|i: &egui::InputState| i.key_pressed(egui::Key::Enter));
+        let pressed_enter: bool = (&input_resp).lost_focus()
+            && ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Enter) });
         ui.horizontal(|ui: &mut Ui| {
-            if ui
-                .add_sized([64.0, 24.0], egui::Button::new("Run"))
+            if (&ui
+                .add_sized([64.0, 24.0], egui::Button::new("Run")))
                 .clicked()
                 || pressed_enter
             {
-                let cmd: String = (*state).input.clone();
-                if !cmd.trim().is_empty() {
-                    state.last_command = Some(cmd.clone());
+                let cmd: String = (&(*state).input).clone();
+                if !(&*cmd).trim().is_empty() {
+                    (*state).last_command = Some((&cmd).clone());
                 }
                 // Queue the command for external handling in the main loop
                 (&mut (*state).pending).push(cmd);
                 (&mut (*state).input).clear();
             }
-            if ui
-                .add_sized([64.0, 24.0], egui::Button::new("Clear"))
+            if (&ui
+                .add_sized([64.0, 24.0], egui::Button::new("Clear")))
                 .clicked()
             {
                 state.clear();
@@ -122,8 +122,8 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
         });
 
         // Up arrow recall: if input is focused and up is pressed, recall last command
-        let input_focused: bool = input_resp.has_focus();
-        let up_pressed: bool = ui.input(|i: &egui::InputState| i.key_pressed(egui::Key::ArrowUp));
+        let input_focused: bool = (&input_resp).has_focus();
+        let up_pressed: bool = ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::ArrowUp) });
         if input_focused && up_pressed {
             if let Some(cmd) = &(*state).last_command {
                 (*state).input = cmd.clone();

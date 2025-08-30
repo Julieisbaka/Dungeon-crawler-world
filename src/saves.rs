@@ -72,7 +72,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         // No back button in new save menu; only allow closing via Cancel or successful creation
         if show_new_save_ui(ui, &mut (*state).new_save_state) {
             (*state).in_new_save_menu = false;
-            (*state).new_save_state.reset();
+            (&mut (*state).new_save_state).reset();
         }
         return;
     }
@@ -82,7 +82,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     // Edit save UI
     if let Some(ref folder_name) = (*state).editing_save {
         let folder_name: String = folder_name.clone(); // Clone to avoid borrowing issues
-        let display_name: String = folder_name.replace('_', " ");
+        let display_name: String = (&*folder_name).replace('_', " ");
         egui::Window::new("Edit Save")
             .collapsible(false)
             .resizable(false)
@@ -94,23 +94,23 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                 });
                 ui.add_space(10.0);
                 ui.horizontal(|ui: &mut Ui| {
-                    if ui.button("Rename").clicked() {
-                        let new_folder: String = (*state).edit_save_name.trim().replace(' ', "_");
-                        if !new_folder.is_empty() && new_folder != *folder_name {
+                    if (&ui.button("Rename")).clicked() {
+                        let new_folder: String = (&*(*state).edit_save_name).trim().replace(' ', "_");
+                        if !(&new_folder).is_empty() && new_folder != *folder_name {
                             let old_path: std::path::PathBuf =
-                                Path::new("saves").join(folder_name.clone());
+                                Path::new("saves").join((&folder_name).clone());
                             let new_path: std::path::PathBuf = Path::new("saves").join(&new_folder);
-                            if !new_path.exists() {
+                            if !(&*new_path).exists() {
                                 let _ = fs::rename(&old_path, &new_path);
                                 (*state).editing_save = Some(new_folder);
                             }
                         }
                     }
-                    if ui.button("Delete").clicked() {
+                    if (&ui.button("Delete")).clicked() {
                         (*state).confirm_delete = true;
                         (*state).delete_target = Some(folder_name);
                     }
-                    if ui.button("Done").clicked() {
+                    if (&ui.button("Done")).clicked() {
                         (*state).editing_save = None;
                     }
                 });
@@ -118,9 +118,9 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         return;
     }
 
-    if ui.button("Create New Save").clicked() {
+    if (&ui.button("Create New Save")).clicked() {
         (*state).in_new_save_menu = true;
-        (*state).new_save_state.reset();
+        (&mut (*state).new_save_state).reset();
     }
 
     ui.add_space(20.0);
@@ -129,27 +129,27 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     let saves_dir: &Path = Path::new("saves");
     if let Ok(entries) = fs::read_dir(saves_dir) {
         for entry in entries.flatten() {
-            let path: std::path::PathBuf = entry.path();
-            if path.is_dir() {
+            let path: std::path::PathBuf = (&entry).path();
+            if (&*path).is_dir() {
                 let folder_name: std::borrow::Cow<'_, str> =
-                    path.file_name().unwrap().to_string_lossy();
-                let save_name: String = folder_name.replace('_', " ");
+                    (&*path).file_name().unwrap().to_string_lossy();
+                let save_name: String = (&*folder_name).replace('_', " ");
 
                 // Try to read save.json to get additional info
-                let save_json_path: std::path::PathBuf = path.join("save.json");
+                let save_json_path: std::path::PathBuf = (&*path).join("save.json");
                 let mut difficulty_text: String = String::new();
                 let mut created_at_text: String = String::new();
 
                 if let Ok(save_content) = fs::read_to_string(&save_json_path) {
                     if let Ok(save_data) = serde_json::from_str::<serde_json::Value>(&save_content)
                     {
-                        if let Some(difficulty) = save_data
+                        if let Some(difficulty) = (&save_data)
                             .get("difficulty")
                             .and_then(|d: &serde_json::Value| -> Option<&str> { d.as_str() })
                         {
                             difficulty_text = format!("Difficulty: {}", difficulty);
                         }
-                        if let Some(created_at) = save_data
+                        if let Some(created_at) = (&save_data)
                             .get("created_at")
                             .and_then(|d: &serde_json::Value| -> Option<&str> { d.as_str() })
                         {
@@ -161,16 +161,16 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                     }
                 }
 
-                let icon_path: std::path::PathBuf = path.join("icon.png");
+                let icon_path: std::path::PathBuf = (&*path).join("icon.png");
                 let mut icon_texture: Option<TextureHandle> = None;
-                if icon_path.exists() {
+                if (&*icon_path).exists() {
                     if let Ok(img) = ImageReader::open(&icon_path).and_then(|r: image::ImageReader<std::io::BufReader<fs::File>>| -> Result<image::DynamicImage, std::io::Error> { r.decode().map_err(|e: image::ImageError| -> std::io::Error { std::io::Error::new(std::io::ErrorKind::Other, e) }) }) {
-                        let size: (u32, u32) = img.dimensions();
+                        let size: (u32, u32) = (&img).dimensions();
                         let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = img.to_rgba8();
-                        let pixels: image::FlatSamples<&[u8]> = rgba.as_flat_samples();
+                        let pixels: image::FlatSamples<&[u8]> = (&rgba).as_flat_samples();
                         let color_image: ColorImage = ColorImage::from_rgba_unmultiplied(
                             [size.0 as usize, size.1 as usize],
-                            pixels.as_slice()
+                            (&pixels).as_slice()
                         );
                         icon_texture = Some(ui.ctx().load_texture(
                             format!("{}_icon", save_name),
@@ -187,19 +187,19 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                     }
                     ui.vertical(|ui: &mut Ui| {
                         ui.label(format!("Save: {}", save_name));
-                        if !difficulty_text.is_empty() {
+                        if !(&difficulty_text).is_empty() {
                             ui.label(difficulty_text);
                         }
-                        if !created_at_text.is_empty() {
+                        if !(&created_at_text).is_empty() {
                             ui.label(created_at_text);
                         }
                         ui.horizontal(|ui: &mut Ui| {
-                            if ui.button("Load Save").clicked() {
-                                crate::set_current_save(&folder_name);
+                            if (&ui.button("Load Save")).clicked() {
+                                crate::set_current_save(&**&folder_name);
                             }
-                            if ui.button("Edit").clicked() {
-                                (*state).editing_save = Some(folder_name.to_string());
-                                (*state).edit_save_name = save_name.clone();
+                            if (&ui.button("Edit")).clicked() {
+                                (*state).editing_save = Some((&folder_name).to_string());
+                                (*state).edit_save_name = (&save_name).clone();
                             }
                         });
                     });
@@ -213,8 +213,8 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
 
     // Bottom Back button: below the list of saves
     ui.add_space(16.0);
-    if ui
-        .add_sized([120.0, 30.0], egui::Button::new("Back"))
+    if (&ui
+        .add_sized([120.0, 30.0], egui::Button::new("Back")))
         .clicked()
     {
         (*state).in_new_save_menu = false;

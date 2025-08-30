@@ -8,7 +8,7 @@ pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
     Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
 
 pub fn set_current_save(save_name: &str) {
-    let mut current: std::sync::MutexGuard<'_, Option<String>> = CURRENT_SAVE.lock().unwrap();
+    let mut current: std::sync::MutexGuard<'_, Option<String>> = (&*CURRENT_SAVE).lock().unwrap();
     *current = Some(save_name.to_string());
     log::info!("Current save set to: {}", save_name);
 }
@@ -85,11 +85,11 @@ impl App for DungeonCrawlerworld {
         }
 
         // Update FPS graph with delta time in ms
-        let dt_ms: f32 = ctx.input(|i: &egui::InputState| (*i).stable_dt) * 1000.0;
-        (*self).fps.push_frame_time(dt_ms);
+        let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { (*i).stable_dt }) * 1000.0;
+        (&mut (*self).fps).push_frame_time(dt_ms);
 
         // ESCAPE KEY HANDLING
-        let escape_pressed: bool = ctx.input(|i: &egui::InputState| i.key_pressed(egui::Key::Escape));
+        let escape_pressed: bool = ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
         // Quit confirmation dialog state
         static mut QUIT_CONFIRM: bool = false;
         let mut quit_confirm: bool = unsafe { QUIT_CONFIRM };
@@ -117,7 +117,7 @@ impl App for DungeonCrawlerworld {
                                     let res: SettingsResult =
                                         settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
                                     if res.request_save {
-                                        (*self).settings.save();
+                                        (&(*self).settings).save();
                                         (*self).show_settings = false;
                                     }
                                     if res.request_back {
@@ -149,22 +149,22 @@ impl App for DungeonCrawlerworld {
                             ui.add_space(8.0);
                             ui.heading(RichText::new("Game Menu").size(30.0));
                             ui.add_space(24.0);
-                            if ui
-                                .add_sized([220.0, 36.0], egui::Button::new("Saves"))
+                            if (&ui
+                                .add_sized([220.0, 36.0], egui::Button::new("Saves")))
                                 .clicked()
                             {
                                 (*self).show_saves = true;
                             }
                             ui.add_space(8.0);
-                            if ui
-                                .add_sized([220.0, 36.0], egui::Button::new("Settings"))
+                            if (&ui
+                                .add_sized([220.0, 36.0], egui::Button::new("Settings")))
                                 .clicked()
                             {
                                 (*self).show_settings = true;
                             }
                             ui.add_space(8.0);
-                            if ui
-                                .add_sized([220.0, 36.0], egui::Button::new("Quit"))
+                            if (&ui
+                                .add_sized([220.0, 36.0], egui::Button::new("Quit")))
                                 .clicked()
                             {
                                 quit_confirm = true;
@@ -176,14 +176,14 @@ impl App for DungeonCrawlerworld {
                                 .collapsible(false)
                                 .resizable(false)
                                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
-                                .show(ctx, |ui| {
+                                .show(ctx, |ui: &mut egui::Ui| {
                                     ui.label("Are you sure you want to quit?");
-                                    ui.horizontal(|ui| {
-                                        if ui.button("Yes").clicked() {
+                                    ui.horizontal(|ui: &mut egui::Ui| {
+                                        if (&ui.button("Yes")).clicked() {
                                             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                                             quit_confirm = false;
                                         }
-                                        if ui.button("No").clicked() {
+                                        if (&ui.button("No")).clicked() {
                                             quit_confirm = false;
                                         }
                                     });
@@ -204,10 +204,10 @@ impl App for DungeonCrawlerworld {
         }
 
         // Poll logger and write to in-game console if enabled
-        if self.settings.log_to_console {
-            if let Some(rx) = &self.log_rx {
+        if (*self).settings.log_to_console {
+            if let Some(rx) = &(*self).log_rx {
                 while let Ok(msg) = rx.try_recv() {
-                    self.console_state.log_line(msg);
+                    (&mut (*self).console_state).log_line(msg);
                 }
             }
         }
@@ -231,45 +231,45 @@ impl App for DungeonCrawlerworld {
                 // Closing the window hides the console until re-enabled in settings
                 (*self).settings.show_console = false;
                 (*self).console_open = false;
-                (*self).settings.save();
+                (&(*self).settings).save();
             }
             // After UI event handling, process any queued commands
-            for cmd in (*self).console_state.take_pending() {
-                let trimmed = cmd.trim();
+            for cmd in (&mut (*self).console_state).take_pending() {
+                let trimmed = (&*cmd).trim();
                 if trimmed.is_empty() {
                     continue;
                 }
                 let mut parts: std::str::SplitWhitespace<'_> = trimmed.split_whitespace();
-                let head = parts.next().unwrap_or("");
+                let head = (&mut parts).next().unwrap_or("");
                 match head {
                     "invoke" => {
-                        let name: String = parts.collect::<Vec<_>>().join(" ");
-                        if name.is_empty() {
-                            (*self).console_state.log_line("Usage: invoke <ui>");
+                        let name: String = (&*parts.collect::<Vec<_>>()).join(" ");
+                        if (&name).is_empty() {
+                            (&mut (*self).console_state).log_line("Usage: invoke <ui>");
                         } else {
                             if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-                                match (*self).ui_preview.open_preview(&name) {
-                                    Ok(()) => (*self)
-                                        .console_state
+                                match (&mut (*self).ui_preview).open_preview(&name) {
+                                    Ok(()) => (&mut (*self)
+                                        .console_state)
                                         .log_line(format!("Invoked UI preview: {}", name)),
-                                    Err(e) => (*self).console_state.log_line(e),
+                                    Err(e) => (&mut (*self).console_state).log_line(e),
                                 }
                             } else {
-                                (*self)
-                                    .console_state
+                                (&mut (*self)
+                                    .console_state)
                                     .log_line("UI previews are only available in Developer Mode.");
                             }
                         }
                     }
                     // Fallback to built-in commands
-                    _ => (*self).console_state.run_command(trimmed),
+                    _ => (&mut (*self).console_state).run_command(trimmed),
                 }
             }
         }
 
         // Render any active preview windows (gated by dev mode so previews are a dev tool)
         if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-            (*self).ui_preview.render(ctx, DEV_MODE_ENABLED);
+            (&mut (*self).ui_preview).render(ctx, DEV_MODE_ENABLED);
 
             // FPS graph overlay in the bottom-right corner when enabled
             if (*self).settings.show_fps_graph {
@@ -281,7 +281,7 @@ impl App for DungeonCrawlerworld {
                         ui.with_layout(
                             egui::Layout::right_to_left(egui::Align::Min),
                             |ui: &mut egui::Ui| {
-                                (*self).fps.ui(ui);
+                                (&(*self).fps).ui(ui);
                             },
                         );
                     });
@@ -311,7 +311,7 @@ fn main() -> eframe::Result<()> {
         Box::new(|creation_context: &eframe::CreationContext<'_>| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {
             // This closure is called once when the application starts.
             // It's a good place to set up global egui styles.
-            (*creation_context).egui_ctx.set_style(Style {
+            (&(*creation_context).egui_ctx).set_style(Style {
                 visuals: Visuals::dark(), // Set egui to use its default dark theme
                 ..Default::default()
             });

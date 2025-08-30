@@ -90,16 +90,16 @@ impl UiPreviewManager {
     /// * `Err(String)` if the name is not recognized.
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
-    let window: &mut PreviewWindow = match key.as_str() {
-            "quit" => (*self)
-                .windows
+    let window: &mut PreviewWindow = match (&key).as_str() {
+            "quit" => (&mut (*self)
+                .windows)
                 .entry(key)
-                .or_insert_with(|| PreviewWindow::Quit {
+                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Quit {
                     open: true,
                     max: false,
-                }),
-            "fps_graph" => (*self)
-                .windows
+                } }),
+            "fps_graph" => (&mut (*self)
+                .windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::FpsGraph {
@@ -108,16 +108,16 @@ impl UiPreviewManager {
                         graph: FpsGraph::default(),
                     }
                 }),
-            "skills" => (*self)
-                .windows
+            "skills" => (&mut (*self)
+                .windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     let mut st: SkillsState = SkillsState::default();
                     // In preview, show all discovered skills only when dev-mode is enabled
                     // and enable developer controls conditionally.
                     if cfg!(feature = "dev-mode") {
-                        st.enable_preview();
-                        st.enable_dev_controls();
+                        (&mut st).enable_preview();
+                        (&mut st).enable_dev_controls();
                     }
                     PreviewWindow::Skills {
                         open: true,
@@ -125,8 +125,8 @@ impl UiPreviewManager {
                         state: st,
                     }
                 }),
-            "new_save" => (*self)
-                .windows
+            "new_save" => (&mut (*self)
+                .windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::NewSave {
@@ -135,8 +135,8 @@ impl UiPreviewManager {
                         state: NewSaveState::default(),
                     }
                 }),
-            "saves" => (*self)
-                .windows
+            "saves" => (&mut (*self)
+                .windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::Saves {
@@ -145,8 +145,8 @@ impl UiPreviewManager {
                         state: SaveMenuState::default(),
                     }
                 }),
-            "settings" => (*self)
-                .windows
+            "settings" => (&mut (*self)
+                .windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::Settings {
@@ -155,8 +155,8 @@ impl UiPreviewManager {
                         settings: Settings::default(),
                     }
                 }),
-            "console" => (*self)
-                .windows
+            "console" => (&mut (*self)
+                .windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::Console {
@@ -197,15 +197,15 @@ impl UiPreviewManager {
         // Render each open preview window
         let mut to_close: Vec<String> = Vec::new();
         let screen: egui::Rect = ctx.screen_rect();
-        let screen_size: egui::Vec2 = screen.size();
-        for (name, win) in (*self).windows.iter_mut() {
+        let screen_size: egui::Vec2 = (&screen).size();
+        for (name, win) in (&mut (*self).windows).iter_mut() {
             match win {
                 PreviewWindow::Quit { open, max } => {
                     if !*open {
                         continue;
                     }
                     let mut is_open: bool = true;
-                    let mut close_after = false;
+                    let mut close_after: bool = false;
                     let id: egui::Id = egui::Id::new(("preview_quit", *max));
                     egui::Window::new("Preview: Quit Confirmation")
                         .id(id)
@@ -215,11 +215,11 @@ impl UiPreviewManager {
                         .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
                         .show(ctx, |ui: &mut egui::Ui| {
                             ui.label("Are you sure you want to quit?");
-                            ui.horizontal(|ui| {
-                                if ui.button("Yes").clicked() {
+                            ui.horizontal(|ui: &mut egui::Ui| {
+                                if (&ui.button("Yes")).clicked() {
                                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                                 }
-                                if ui.button("No").clicked() {
+                                if (&ui.button("No")).clicked() {
                                     close_after = true;
                                 }
                             });
@@ -257,7 +257,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label = if *max { "Restore" } else { "Maximize" };
-                                    if ui.button(label).clicked() {
+                                    if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -298,7 +298,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label = if *max { "Restore" } else { "Maximize" };
-                                    if ui.button(label).clicked() {
+                                    if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -338,7 +338,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label = if *max { "Restore" } else { "Maximize" };
-                                    if ui.button(label).clicked() {
+                                    if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -378,7 +378,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label = if *max { "Restore" } else { "Maximize" };
-                                    if ui.button(label).clicked() {
+                                    if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -422,7 +422,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label = if *max { "Restore" } else { "Maximize" };
-                                    if ui.button(label).clicked() {
+                                    if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -462,7 +462,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label = if *max { "Restore" } else { "Maximize" };
-                                    if ui.button(label).clicked() {
+                                    if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -484,13 +484,13 @@ impl UiPreviewManager {
                 | PreviewWindow::FpsGraph { open, .. }
                 | PreviewWindow::Quit { open, .. } => {
                     if !*open {
-                        to_close.push(name.clone());
+                        (&mut to_close).push(name.clone());
                     }
                 }
             }
         }
         for key in to_close {
-            (*self).windows.remove(&key);
+            (&mut (*self).windows).remove(&key);
         }
     }
 }
