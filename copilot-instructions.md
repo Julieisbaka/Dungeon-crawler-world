@@ -12,7 +12,7 @@
 
 - Javascript is used for development scripts
 
-- A package.json file is used to store project info and access certain developer tools
+- A `package.json` file is used to store project info and access certain developer tools
 
 - A TOML file is used for the Cargo configuration
 
