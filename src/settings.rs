@@ -236,7 +236,7 @@ pub fn settings_ui(
                 }
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Console max lines:");
-                    let mut lines = (*settings).console_max_lines as u32;
+                    let mut lines = (*settings).console_max_lines as u16;
                     if (&ui.add(egui::DragValue::new(&mut lines).range(50..=2000))).changed() {
                         (*settings).console_max_lines = lines as usize;
                         settings.save();

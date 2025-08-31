@@ -34,15 +34,3 @@ pub fn init_logger() -> (Sender<String>, Receiver<String>) {
     log::set_logger(&LOGGER).map(|()| log::set_max_level(log::LevelFilter::Trace)).ok();
     (tx, rx)
 }
-
-#[allow(dead_code)]
-pub fn enable_logger() {
-    // No-op: logger always enabled, but log_to_console can be checked in main loop
-}
-
-#[allow(dead_code)]
-pub fn disable_logger() {
-    if let Some(sender_mutex) = (&LOG_SENDER).get() {
-        *sender_mutex.lock().unwrap() = None;
-    }
-}

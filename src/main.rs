@@ -96,7 +96,7 @@ impl App for DungeonCrawlerworld {
 
         CentralPanel::default()
             .frame(
-                egui::Frame::central_panel(&ctx.style())
+                egui::Frame::central_panel(&**&ctx.style())
                     .inner_margin(egui::Margin::same(0))
                     .outer_margin(egui::Margin::same(0)),
             )

@@ -186,7 +186,7 @@ fn create_new_save(
         return Err("Save name cannot be empty".to_string());
     }
     // Check for invalid characters in save name
-    if save_name.contains(&['/', '\\', ':', '*', '?', '"', '<', '>', '|'][..]) {
+    if save_name.contains(&(&['/', '\\', ':', '*', '?', '"', '<', '>', '|'])[..]) {
         return Err("Save name contains invalid characters".to_string());
     }
     // Store folder name with underscores instead of spaces
@@ -194,7 +194,7 @@ fn create_new_save(
     let saves_dir: &Path = Path::new("saves");
     let save_path: std::path::PathBuf = saves_dir.join(&folder_name);
     // Check if save already exists
-    if save_path.exists() {
+    if (&*save_path).exists() {
         return Err("A save with this name already exists".to_string());
     }
     // Create saves directory if it doesn't exist
@@ -285,7 +285,7 @@ fn create_new_save(
         }
 
     });
-    let player_file_path: std::path::PathBuf = save_path.join("player.json");
+    let player_file_path: std::path::PathBuf = (&*save_path).join("player.json");
     fs::write(
         &player_file_path,
         serde_json::to_string_pretty(&player_data).unwrap(),

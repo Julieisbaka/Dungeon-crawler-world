@@ -191,7 +191,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 /// Reads the player's owned skills from disk.
 ///
 /// # Returns
-/// * `HashMap<String, i32>` - A map of skill names to their levels.
+/// * `HashMap<String, i8>` - A map of skill names to their levels.
 fn read_player_skills() -> HashMap<String, i8> {
     let mut map: HashMap<String, i8> = HashMap::new();
     // Attempt to read current save context (if available)
