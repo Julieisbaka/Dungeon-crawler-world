@@ -128,7 +128,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                     if (&*p).is_file()
                         && (&*p).extension()
                             .and_then(|e: &std::ffi::OsStr| -> Option<&str> { e.to_str() })
-                            .map(|e| e.eq_ignore_ascii_case("json"))
+                            .map(|e: &str| -> bool { e.eq_ignore_ascii_case("json") })
                             .unwrap_or(false)
                     {
                         if let Ok(content) = fs::read_to_string(&p) {
@@ -192,8 +192,8 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 ///
 /// # Returns
 /// * `HashMap<String, i32>` - A map of skill names to their levels.
-fn read_player_skills() -> HashMap<String, i32> {
-    let mut map: HashMap<String, i32> = HashMap::new();
+fn read_player_skills() -> HashMap<String, i8> {
+    let mut map: HashMap<String, i8> = HashMap::new();
     // Attempt to read current save context (if available)
     let current: Option<String> = (&*crate::CURRENT_SAVE)
         .lock()
@@ -213,7 +213,7 @@ fn read_player_skills() -> HashMap<String, i32> {
     {
         for (name, val) in skills.iter() {
             if let Some(lvl) = val.as_i64() {
-                (&mut map).insert(name.clone(), lvl as i32);
+                (&mut map).insert(name.clone(), lvl as i8);
             }
         }
     }
@@ -235,7 +235,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         (*state).loaded = true;
     }
 
-    let player_skills: HashMap<String, i32> = read_player_skills();
+    let player_skills: HashMap<String, i8> = read_player_skills();
 
     // Toolbar: Reload, Only Owned filter, and optional dev Show All toggle
     ui.horizontal(|ui: &mut Ui| {
@@ -273,7 +273,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     });
     ui.add_space(6.0);
 
-    if (*state).catalog.is_empty() {
+    if (&(*state).catalog).is_empty() {
         ui.label("No skills found. Ensure the 'Skills' folder is located next to the executable or project root.");
         return;
     }
@@ -332,7 +332,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             let dev_show_all_active: bool =
                 cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
             if dev_show_all_active || (&player_skills).contains_key(&(*meta).name) {
-                let level: i32 = (&player_skills).get(&(*meta).name).copied().unwrap_or(0);
+                let level: i8 = (&player_skills).get(&(*meta).name).copied().unwrap_or(0);
                 let mut open: bool = true;
                 egui::Window::new(format!("{}", meta.name))
                     .open(&mut open)

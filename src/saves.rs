@@ -52,7 +52,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
             .show(ui.ctx(), |ui: &mut Ui| {
                 ui.label("Are you sure you want to delete this save? This cannot be undone.");
                 ui.horizontal(|ui: &mut Ui| {
-                    if ui.button("Delete").clicked() {
+                    if (&ui.button("Delete")).clicked() {
                         if let Some(ref folder) = (*state).delete_target {
                             let _ = fs::remove_dir_all(Path::new("saves").join(folder));
                         }
@@ -60,7 +60,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                         (*state).delete_target = None;
                         (*state).editing_save = None;
                     }
-                    if ui.button("Cancel").clicked() {
+                    if (&ui.button("Cancel")).clicked() {
                         (*state).confirm_delete = false;
                         (*state).delete_target = None;
                     }
