@@ -1,4 +1,4 @@
-use egui::{TextEdit, Ui, TextBuffer};
+use egui::{TextBuffer, TextEdit, Ui};
 use rand::Rng;
 use serde_json::{json, Value};
 use std::fs;
@@ -91,10 +91,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 (*state).selected_tab = NewSaveTab::Basics;
             }
             let gamerules_selected: bool = matches!((*state).selected_tab, NewSaveTab::Gamerules);
-            if (&ui
-                .selectable_label(gamerules_selected, "Gamerules"))
-                .clicked()
-            {
+            if (&ui.selectable_label(gamerules_selected, "Gamerules")).clicked() {
                 (*state).selected_tab = NewSaveTab::Gamerules;
             }
         });

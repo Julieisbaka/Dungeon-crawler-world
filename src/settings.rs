@@ -111,28 +111,16 @@ pub fn settings_ui(
                 _ => "Unknown",
             })
             .show_ui(ui, |ui: &mut Ui| {
-                if (&ui
-                    .selectable_value(&mut (*settings).fog, 0, "No fog"))
-                    .changed()
-                {
+                if (&ui.selectable_value(&mut (*settings).fog, 0, "No fog")).changed() {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).fog, 1, "Fast fog"))
-                    .changed()
-                {
+                if (&ui.selectable_value(&mut (*settings).fog, 1, "Fast fog")).changed() {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).fog, 2, "Default fog"))
-                    .changed()
-                {
+                if (&ui.selectable_value(&mut (*settings).fog, 2, "Default fog")).changed() {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).fog, 3, "Fancy fog"))
-                    .changed()
-                {
+                if (&ui.selectable_value(&mut (*settings).fog, 3, "Fancy fog")).changed() {
                     settings.save();
                 }
             });
@@ -151,39 +139,32 @@ pub fn settings_ui(
                 _ => "Unknown",
             })
             .show_ui(ui, |ui: &mut Ui| {
-                if (&ui
-                    .selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting"))
+                if (&ui.selectable_value(&mut (*settings).lighting, 0, "No dynamic lighting"))
                     .changed()
                 {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting"))
+                if (&ui.selectable_value(&mut (*settings).lighting, 1, "Non-shader lighting"))
                     .changed()
                 {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting"))
+                if (&ui.selectable_value(&mut (*settings).lighting, 2, "Simple shader lighting"))
                     .changed()
                 {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting"))
+                if (&ui.selectable_value(&mut (*settings).lighting, 3, "Normal shader lighting"))
                     .changed()
                 {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting"))
+                if (&ui.selectable_value(&mut (*settings).lighting, 4, "Fancy shader lighting"))
                     .changed()
                 {
                     settings.save();
                 }
-                if (&ui
-                    .selectable_value(&mut (*settings).lighting, 5, "Highest quality"))
-                    .changed()
+                if (&ui.selectable_value(&mut (*settings).lighting, 5, "Highest quality")).changed()
                 {
                     settings.save();
                 }
@@ -200,36 +181,23 @@ pub fn settings_ui(
     if dev_mode_available {
         ui.separator();
 
-        if (&ui
-            .checkbox(&mut (*settings).developer_mode, "Developer Mode"))
-            .changed()
-        {
+        if (&ui.checkbox(&mut (*settings).developer_mode, "Developer Mode")).changed() {
             settings.save();
         }
 
         if (*settings).developer_mode {
             ui.group(|ui: &mut Ui| {
                 ui.heading("Developer Options");
-                if (&ui
-                    .checkbox(&mut (*settings).verbose_logging, "Verbose Logging"))
-                    .changed()
-                {
+                if (&ui.checkbox(&mut (*settings).verbose_logging, "Verbose Logging")).changed() {
                     settings.save();
                 }
-                if (&ui
-                    .checkbox(&mut (*settings).show_console, "In-game Console"))
-                    .changed()
-                {
+                if (&ui.checkbox(&mut (*settings).show_console, "In-game Console")).changed() {
                     settings.save();
                 }
-                if (&ui
-                    .checkbox(&mut (*settings).show_fps_graph, "FPS Graph"))
-                    .changed()
-                {
+                if (&ui.checkbox(&mut (*settings).show_fps_graph, "FPS Graph")).changed() {
                     settings.save();
                 }
-                if (&ui
-                    .checkbox(&mut (*settings).log_to_console, "Log to in-game Console"))
+                if (&ui.checkbox(&mut (*settings).log_to_console, "Log to in-game Console"))
                     .changed()
                 {
                     settings.save();
@@ -247,10 +215,7 @@ pub fn settings_ui(
     }
 
     ui.separator();
-    if (&ui
-        .checkbox(&mut (*settings).fullscreen, "Fullscreen"))
-        .changed()
-    {
+    if (&ui.checkbox(&mut (*settings).fullscreen, "Fullscreen")).changed() {
         settings.save();
     }
     ui.add_space(8.0);
@@ -258,18 +223,12 @@ pub fn settings_ui(
     ui.with_layout(
         egui::Layout::left_to_right(egui::Align::Center),
         |ui: &mut Ui| {
-            if (&ui
-                .add_sized([100.0, 28.0], egui::Button::new("Save")))
-                .clicked()
-            {
+            if (&ui.add_sized([100.0, 28.0], egui::Button::new("Save"))).clicked() {
                 settings.save();
                 result.request_save = true;
             }
             ui.add_space(8.0);
-            if (&ui
-                .add_sized([100.0, 28.0], egui::Button::new("Back")))
-                .clicked()
-            {
+            if (&ui.add_sized([100.0, 28.0], egui::Button::new("Back"))).clicked() {
                 result.request_back = true;
             }
         },

@@ -58,8 +58,10 @@ fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<Textu
     let size: (u32, u32) = (&img).dimensions();
     let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = (&img).to_rgba8();
     let pixels: image::FlatSamples<&[u8]> = (&rgba).as_flat_samples();
-    let color_image: ColorImage =
-        ColorImage::from_rgba_unmultiplied([size.0 as usize, size.1 as usize], (&pixels).as_slice());
+    let color_image: ColorImage = ColorImage::from_rgba_unmultiplied(
+        [size.0 as usize, size.1 as usize],
+        (&pixels).as_slice(),
+    );
     Some(ctx.load_texture(
         key.to_string(),
         color_image,
@@ -81,15 +83,18 @@ fn find_skills_root() -> Option<PathBuf> {
     }
     // Try relative to the executable (walk up a few parents)
     if let Ok(exe) = std::env::current_exe() {
-        let mut dir_opt: Option<PathBuf> =
-            (&*exe).parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
+        let mut dir_opt: Option<PathBuf> = (&*exe)
+            .parent()
+            .map(|p: &Path| -> PathBuf { p.to_path_buf() });
         for _ in 0..4 {
             if let Some(dir) = (&dir_opt).clone() {
                 let candidate: PathBuf = (&*dir).join("Skills");
                 if (&*candidate).is_dir() {
                     return Some(candidate);
                 }
-                dir_opt = (&*dir).parent().map(|p: &Path| -> PathBuf { p.to_path_buf() });
+                dir_opt = (&*dir)
+                    .parent()
+                    .map(|p: &Path| -> PathBuf { p.to_path_buf() });
             }
         }
     }
@@ -126,7 +131,8 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                 for f in files.flatten() {
                     let p: PathBuf = (&f).path();
                     if (&*p).is_file()
-                        && (&*p).extension()
+                        && (&*p)
+                            .extension()
                             .and_then(|e: &std::ffi::OsStr| -> Option<&str> { e.to_str() })
                             .map(|e: &str| -> bool { e.eq_ignore_ascii_case("json") })
                             .unwrap_or(false)
@@ -168,7 +174,8 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
             for candidate in ["icon.png", "icon.jpg", "icon.jpeg"] {
                 let ip: PathBuf = (&*dir_path).join(candidate);
                 if (&*ip).exists() {
-                    icon_handle = load_icon_texture(ctx, &**&format!("skill_icon_{}", name), &**&ip);
+                    icon_handle =
+                        load_icon_texture(ctx, &**&format!("skill_icon_{}", name), &**&ip);
                     if (&icon_handle).is_some() {
                         break;
                     }
@@ -195,10 +202,9 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 fn read_player_skills() -> HashMap<String, i8> {
     let mut map: HashMap<String, i8> = HashMap::new();
     // Attempt to read current save context (if available)
-    let current: Option<String> = (&*crate::CURRENT_SAVE)
-        .lock()
-        .ok()
-        .and_then(|g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { (&*g).clone() });
+    let current: Option<String> = (&*crate::CURRENT_SAVE).lock().ok().and_then(
+        |g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { (&*g).clone() },
+    );
     let Some(save) = current else { return map };
     let path: PathBuf = (&*Path::new("saves").join(save)).join("player.json");
     let Ok(content) = fs::read_to_string(path) else {
@@ -260,8 +266,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 (*state).selected = None;
             }
         }
-        let owned_count = (&*(*state)
-            .catalog)
+        let owned_count = (&*(*state).catalog)
             .iter()
             .filter(|m: &&SkillMeta| -> bool { (&player_skills).contains_key(&(**m).name) })
             .count();
@@ -295,8 +300,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                     let dev_show_all_active: bool =
                         cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
                     let treated_owned: bool = dev_show_all_active || owned_real;
-                    let mut frame: egui::Frame =
-                        egui::Frame::group(&**ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+                    let mut frame: egui::Frame = egui::Frame::group(&**ui.style())
+                        .inner_margin(egui::Margin::symmetric(8, 8));
                     // Gray-out unknown (not owned and not in show_all)
                     if !treated_owned {
                         frame = frame.fill(egui::Color32::from_gray(30));
@@ -354,8 +359,9 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                             (*ui.style_mut()).url_in_tooltip = true;
                             // Build a file:// base for relative images using the skill directory
                             let base_uri: String = {
-                                let abs: PathBuf =
-                                    (&*(*meta).dir).canonicalize().unwrap_or((&(*meta).dir).clone());
+                                let abs: PathBuf = (&*(*meta).dir)
+                                    .canonicalize()
+                                    .unwrap_or((&(*meta).dir).clone());
                                 let s: String = (&*(&*abs).to_string_lossy()).replace('\\', "/");
                                 format!("file:///{}/", s.trim_start_matches('/'))
                             };

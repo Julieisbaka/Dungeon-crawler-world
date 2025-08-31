@@ -4,11 +4,11 @@ use egui::Context;
 
 // Bring in existing UI modules
 use crate::console::{self, ConsoleState};
+use crate::fps::FpsGraph;
 use crate::new_save::{self, NewSaveState};
 use crate::saves::{self, SaveMenuState};
 use crate::settings::{self, Settings};
 use crate::skills::{self, SkillsState};
-use crate::fps::FpsGraph;
 
 pub struct UiPreviewManager {
     windows: HashMap<String, PreviewWindow>,
@@ -77,7 +77,15 @@ impl UiPreviewManager {
     /// # Returns
     /// A static slice of string names for all supported preview windows.
     pub fn known_names() -> &'static [&'static str] {
-        &["skills", "new_save", "saves", "settings", "console", "fps_graph", "quit"]
+        &[
+            "skills",
+            "new_save",
+            "saves",
+            "settings",
+            "console",
+            "fps_graph",
+            "quit",
+        ]
     }
 
     /// Opens a preview window by name, creating it if it does not already exist.
@@ -90,16 +98,16 @@ impl UiPreviewManager {
     /// * `Err(String)` if the name is not recognized.
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
-    let window: &mut PreviewWindow = match (&key).as_str() {
-            "quit" => (&mut (*self)
-                .windows)
+        let window: &mut PreviewWindow = match (&key).as_str() {
+            "quit" => (&mut (*self).windows)
                 .entry(key)
-                .or_insert_with(|| -> PreviewWindow { PreviewWindow::Quit {
-                    open: true,
-                    max: false,
-                } }),
-            "fps_graph" => (&mut (*self)
-                .windows)
+                .or_insert_with(|| -> PreviewWindow {
+                    PreviewWindow::Quit {
+                        open: true,
+                        max: false,
+                    }
+                }),
+            "fps_graph" => (&mut (*self).windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::FpsGraph {
@@ -108,8 +116,7 @@ impl UiPreviewManager {
                         graph: FpsGraph::default(),
                     }
                 }),
-            "skills" => (&mut (*self)
-                .windows)
+            "skills" => (&mut (*self).windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     let mut st: SkillsState = SkillsState::default();
@@ -125,8 +132,7 @@ impl UiPreviewManager {
                         state: st,
                     }
                 }),
-            "new_save" => (&mut (*self)
-                .windows)
+            "new_save" => (&mut (*self).windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::NewSave {
@@ -135,8 +141,7 @@ impl UiPreviewManager {
                         state: NewSaveState::default(),
                     }
                 }),
-            "saves" => (&mut (*self)
-                .windows)
+            "saves" => (&mut (*self).windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::Saves {
@@ -145,8 +150,7 @@ impl UiPreviewManager {
                         state: SaveMenuState::default(),
                     }
                 }),
-            "settings" => (&mut (*self)
-                .windows)
+            "settings" => (&mut (*self).windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::Settings {
@@ -155,8 +159,7 @@ impl UiPreviewManager {
                         settings: Settings::default(),
                     }
                 }),
-            "console" => (&mut (*self)
-                .windows)
+            "console" => (&mut (*self).windows)
                 .entry(key)
                 .or_insert_with(|| -> PreviewWindow {
                     PreviewWindow::Console {
@@ -240,16 +243,8 @@ impl UiPreviewManager {
                         .resizable(true)
                         .vscroll(true)
                         .default_size(egui::vec2(
-                            if *max {
-                                screen_size.x
-                            } else {
-                                300.0
-                            },
-                            if *max {
-                                screen_size.y
-                            } else {
-                                120.0
-                            },
+                            if *max { screen_size.x } else { 300.0 },
+                            if *max { screen_size.y } else { 120.0 },
                         ))
                         .max_size(screen_size)
                         .show(ctx, |ui: &mut egui::Ui| {

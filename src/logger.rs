@@ -1,6 +1,6 @@
 use log::{Log, Metadata, Record};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Mutex, OnceLock};
-use std::sync::mpsc::{Sender, channel, Receiver};
 
 static LOGGER: Logger = Logger;
 static LOG_SENDER: OnceLock<Mutex<Option<Sender<String>>>> = OnceLock::new();
@@ -30,7 +30,10 @@ impl Log for Logger {
 
 pub fn init_logger() -> (Sender<String>, Receiver<String>) {
     let (tx, rx) = channel();
-    (&LOG_SENDER).get_or_init(|| -> Mutex<Option<Sender<String>>> { Mutex::new(Some((&tx).clone())) });
-    log::set_logger(&LOGGER).map(|()| log::set_max_level(log::LevelFilter::Trace)).ok();
+    (&LOG_SENDER)
+        .get_or_init(|| -> Mutex<Option<Sender<String>>> { Mutex::new(Some((&tx).clone())) });
+    log::set_logger(&LOGGER)
+        .map(|()| log::set_max_level(log::LevelFilter::Trace))
+        .ok();
     (tx, rx)
 }

@@ -1,5 +1,5 @@
 // Max lines is now a runtime setting, not a constant.
-use egui::{TextEdit, Ui, TextBuffer};
+use egui::{TextBuffer, TextEdit, Ui};
 
 #[derive(Default)]
 pub struct ConsoleState {
@@ -100,11 +100,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
         let pressed_enter: bool = (&input_resp).lost_focus()
             && ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Enter) });
         ui.horizontal(|ui: &mut Ui| {
-            if (&ui
-                .add_sized([64.0, 24.0], egui::Button::new("Run")))
-                .clicked()
-                || pressed_enter
-            {
+            if (&ui.add_sized([64.0, 24.0], egui::Button::new("Run"))).clicked() || pressed_enter {
                 let cmd: String = (&(*state).input).clone();
                 if !(&*cmd).trim().is_empty() {
                     (*state).last_command = Some((&cmd).clone());
@@ -113,17 +109,15 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                 (&mut (*state).pending).push(cmd);
                 (&mut (*state).input).clear();
             }
-            if (&ui
-                .add_sized([64.0, 24.0], egui::Button::new("Clear")))
-                .clicked()
-            {
+            if (&ui.add_sized([64.0, 24.0], egui::Button::new("Clear"))).clicked() {
                 state.clear();
             }
         });
 
         // Up arrow recall: if input is focused and up is pressed, recall last command
         let input_focused: bool = (&input_resp).has_focus();
-        let up_pressed: bool = ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::ArrowUp) });
+        let up_pressed: bool =
+            ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::ArrowUp) });
         if input_focused && up_pressed {
             if let Some(cmd) = &(*state).last_command {
                 (*state).input = cmd.clone();

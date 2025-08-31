@@ -95,7 +95,8 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                 ui.add_space(10.0);
                 ui.horizontal(|ui: &mut Ui| {
                     if (&ui.button("Rename")).clicked() {
-                        let new_folder: String = (&*(*state).edit_save_name).trim().replace(' ', "_");
+                        let new_folder: String =
+                            (&*(*state).edit_save_name).trim().replace(' ', "_");
                         if !(&new_folder).is_empty() && new_folder != *folder_name {
                             let old_path: std::path::PathBuf =
                                 Path::new("saves").join((&folder_name).clone());
@@ -213,10 +214,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
 
     // Bottom Back button: below the list of saves
     ui.add_space(16.0);
-    if (&ui
-        .add_sized([120.0, 30.0], egui::Button::new("Back")))
-        .clicked()
-    {
+    if (&ui.add_sized([120.0, 30.0], egui::Button::new("Back"))).clicked() {
         (*state).in_new_save_menu = false;
         (*state).editing_save = None;
         (*state).confirm_delete = false;

@@ -17,8 +17,8 @@ use std::error::Error;
 // Import necessary crates and modules from eframe and egui
 use eframe::{App, Frame, NativeOptions};
 mod logger;
-use logger::{init_logger};
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
+use logger::init_logger;
 mod saves;
 use saves::show_save_ui;
 mod new_save;
@@ -89,7 +89,8 @@ impl App for DungeonCrawlerworld {
         (&mut (*self).fps).push_frame_time(dt_ms);
 
         // ESCAPE KEY HANDLING
-        let escape_pressed: bool = ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
+        let escape_pressed: bool =
+            ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
         // Quit confirmation dialog state
         static mut QUIT_CONFIRM: bool = false;
         let mut quit_confirm: bool = unsafe { QUIT_CONFIRM };
@@ -149,24 +150,18 @@ impl App for DungeonCrawlerworld {
                             ui.add_space(8.0);
                             ui.heading(RichText::new("Game Menu").size(30.0));
                             ui.add_space(24.0);
-                            if (&ui
-                                .add_sized([220.0, 36.0], egui::Button::new("Saves")))
-                                .clicked()
+                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Saves"))).clicked()
                             {
                                 (*self).show_saves = true;
                             }
                             ui.add_space(8.0);
-                            if (&ui
-                                .add_sized([220.0, 36.0], egui::Button::new("Settings")))
+                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Settings")))
                                 .clicked()
                             {
                                 (*self).show_settings = true;
                             }
                             ui.add_space(8.0);
-                            if (&ui
-                                .add_sized([220.0, 36.0], egui::Button::new("Quit")))
-                                .clicked()
-                            {
+                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Quit"))).clicked() {
                                 quit_confirm = true;
                             }
                         }
@@ -192,7 +187,9 @@ impl App for DungeonCrawlerworld {
                     },
                 );
             });
-        unsafe { QUIT_CONFIRM = quit_confirm; }
+        unsafe {
+            QUIT_CONFIRM = quit_confirm;
+        }
 
         // Developer Console window: only when enabled and explicitly opened this session
         // Detect setting edge to open on user toggle (not on startup load)
@@ -223,7 +220,11 @@ impl App for DungeonCrawlerworld {
                 .show(ctx, |ui| {
                     // Intercept invoke commands to open previews
                     // Render console UI first
-                    console_ui(ui, &mut (*self).console_state, (*self).settings.console_max_lines);
+                    console_ui(
+                        ui,
+                        &mut (*self).console_state,
+                        (*self).settings.console_max_lines,
+                    );
                     // Provide a minimal inline help mention for invoke
                     // (kept non-intrusive in UI; full help prints in console)
                 });
@@ -249,14 +250,12 @@ impl App for DungeonCrawlerworld {
                         } else {
                             if DEV_MODE_ENABLED && (*self).settings.developer_mode {
                                 match (&mut (*self).ui_preview).open_preview(&name) {
-                                    Ok(()) => (&mut (*self)
-                                        .console_state)
+                                    Ok(()) => (&mut (*self).console_state)
                                         .log_line(format!("Invoked UI preview: {}", name)),
                                     Err(e) => (&mut (*self).console_state).log_line(e),
                                 }
                             } else {
-                                (&mut (*self)
-                                    .console_state)
+                                (&mut (*self).console_state)
                                     .log_line("UI previews are only available in Developer Mode.");
                             }
                         }
