@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["c++", "rust"]
+        language: ["rust"]
 
     steps:
       - name: Checkout repository
