@@ -243,93 +243,103 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     let player_skills: HashMap<String, i8> = read_player_skills();
 
-    // Toolbar: Reload, Only Owned filter, and optional dev Show All toggle
-    ui.horizontal(|ui: &mut Ui| {
-        if (&ui.button("Reload")).clicked() {
-            let ctx: Context = ui.ctx().clone();
-            (*state).catalog = discover_skills(&ctx);
-            (*state).loaded = true;
-            (*state).selected = None;
+    // --- Gallery Controls ---
+    static mut SEARCH: Option<String> = None;
+    static mut SORT_ASC: bool = true;
+    static mut PAGE: usize = 0;
+    const PAGE_SIZE: usize = 12;
+
+    // Controls: Search, Sort, Pagination
+    ui.horizontal(|ui| {
+        let mut search = unsafe { SEARCH.clone().unwrap_or_default() };
+        ui.label("Search:");
+        if ui.text_edit_singleline(&mut search).changed() {
+            unsafe { SEARCH = Some(search.clone()); PAGE = 0; }
         }
         ui.separator();
-        ui.checkbox(&mut (*state).only_owned, "Only owned");
-        // Show the Show All toggle only when compiled with dev-mode AND when the caller enabled dev controls
-        if cfg!(feature = "dev-mode") && (*state).dev_controls {
-            ui.separator();
-            let label = if (*state).show_all {
-                "Show All (Dev): On"
-            } else {
-                "Show All (Dev): Off"
-            };
-            if (&ui.toggle_value(&mut (*state).show_all, label)).clicked() {
-                // Clear any selection when toggling preview mode
-                (*state).selected = None;
-            }
+        let mut sort_asc = unsafe { SORT_ASC };
+        if ui.button(if sort_asc { "Sort: A-Z" } else { "Sort: Z-A" }).clicked() {
+            sort_asc = !sort_asc;
+            unsafe { SORT_ASC = sort_asc; PAGE = 0; }
         }
-        let owned_count = (&*(*state).catalog)
-            .iter()
-            .filter(|m: &&SkillMeta| -> bool { (&player_skills).contains_key(&(**m).name) })
-            .count();
-        ui.label(format!(
-            "Owned: {}  Total: {}",
-            owned_count,
-            (*state).catalog.len()
-        ));
+        ui.separator();
+        let mut page = unsafe { PAGE };
+        if page > 0 && ui.button("< Prev").clicked() {
+            page -= 1;
+            unsafe { PAGE = page; }
+        }
+        ui.label(format!("Page {}", page + 1));
+        let filtered_count = (*state).catalog.iter().filter(|meta| {
+            let owned_real = player_skills.contains_key(&meta.name);
+            let dev_show_all_active = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+            let treated_owned = dev_show_all_active || owned_real;
+            (!(*state).only_owned || treated_owned)
+                && (search.is_empty() || meta.name.to_lowercase().contains(&search.to_lowercase()))
+        }).count();
+        if (page + 1) * PAGE_SIZE < filtered_count && ui.button("Next >").clicked() {
+            page += 1;
+            unsafe { PAGE = page; }
+        }
     });
     ui.add_space(6.0);
 
-    if (&(*state).catalog).is_empty() {
-        ui.label("No skills found. Ensure the 'Skills' folder is located next to the executable or project root.");
+    // --- Gallery Grid ---
+    let search = unsafe { SEARCH.clone().unwrap_or_default() };
+    let sort_asc = unsafe { SORT_ASC };
+    let page = unsafe { PAGE };
+    let mut filtered: Vec<_> = (*state).catalog.iter().enumerate().filter(|(_, meta)| {
+        let owned_real = player_skills.contains_key(&meta.name);
+        let dev_show_all_active = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+        let treated_owned = dev_show_all_active || owned_real;
+        (!(*state).only_owned || treated_owned)
+            && (search.is_empty() || meta.name.to_lowercase().contains(&search.to_lowercase()))
+    }).collect();
+    filtered.sort_by(|a, b| {
+        let ord = a.1.name.to_lowercase().cmp(&b.1.name.to_lowercase());
+        if sort_asc { ord } else { ord.reverse() }
+    });
+    let total_pages = (filtered.len() + PAGE_SIZE - 1) / PAGE_SIZE;
+    let start = page * PAGE_SIZE;
+    let end = ((page + 1) * PAGE_SIZE).min(filtered.len());
+    let page_items = &filtered[start.min(filtered.len())..end.min(filtered.len())];
+
+    if page_items.is_empty() {
+        ui.label("No skills found. Try adjusting your search or filters.");
         return;
     }
 
-    egui::ScrollArea::vertical()
-        .auto_shrink([false; 2])
-        .show(ui, |ui: &mut Ui| {
-            // Use full available width for the gallery
-            ui.set_min_width(ui.available_width());
-            ui.horizontal_wrapped(|ui: &mut Ui| {
-                let tile_size: Vec2 = Vec2::new(140.0, 140.0);
-                let spacing: f32 = (*ui.spacing()).item_spacing.x;
-                for (idx, meta) in (&*(*state).catalog).iter().enumerate() {
-                    let owned_real: bool = (&player_skills).contains_key(&(*meta).name);
-                    if (*state).only_owned && !owned_real {
-                        continue;
+    let columns = 4;
+    egui::Grid::new("skills_gallery_grid").spacing(Vec2::splat(12.0)).show(ui, |ui| {
+        for (i, (idx, meta)) in page_items.iter().enumerate() {
+            let owned_real = player_skills.contains_key(&meta.name);
+            let dev_show_all_active = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+            let treated_owned = dev_show_all_active || owned_real;
+            let mut frame = egui::Frame::group(&**ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+            if !treated_owned {
+                frame = frame.fill(egui::Color32::from_gray(30));
+            }
+            frame.show(ui, |ui| {
+                ui.set_min_size(Vec2::new(140.0, 140.0));
+                ui.vertical_centered(|ui| {
+                    if treated_owned {
+                        if let Some(tex) = &meta.icon {
+                            ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
+                            ui.add_space(6.0);
+                        }
+                        ui.label(&meta.name);
+                        if ui.button("View").clicked() {
+                            (*state).selected = Some(*idx);
+                        }
+                    } else {
+                        ui.add_space(48.0);
                     }
-                    // Only let Show All affect behavior when dev-mode is compiled in and dev controls are enabled
-                    let dev_show_all_active: bool =
-                        cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
-                    let treated_owned: bool = dev_show_all_active || owned_real;
-                    let mut frame: egui::Frame = egui::Frame::group(&**ui.style())
-                        .inner_margin(egui::Margin::symmetric(8, 8));
-                    // Gray-out unknown (not owned and not in show_all)
-                    if !treated_owned {
-                        frame = frame.fill(egui::Color32::from_gray(30));
-                    }
-                    frame.show(ui, |ui: &mut Ui| {
-                        ui.set_min_size(tile_size);
-                        ui.vertical_centered(|ui: &mut Ui| {
-                            if treated_owned {
-                                if let Some(tex) = &(*meta).icon {
-                                    ui.add(
-                                        egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)),
-                                    );
-                                    ui.add_space(6.0);
-                                }
-                                ui.label(&(*meta).name);
-                                if (&ui.button("View")).clicked() {
-                                    (*state).selected = Some(idx);
-                                }
-                            } else {
-                                // Unknown: show a filled gray tile without name/icon/description
-                                ui.add_space(48.0);
-                            }
-                        });
-                    });
-                    ui.add_space(spacing);
-                }
+                });
             });
-        });
+            if (i + 1) % columns == 0 {
+                ui.end_row();
+            }
+        }
+    });
 
     // Detail view in a floating window for owned skills or all in preview
     if let Some(idx) = (*state).selected {
