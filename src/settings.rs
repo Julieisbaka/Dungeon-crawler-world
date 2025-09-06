@@ -15,6 +15,8 @@ pub struct Settings {
     pub log_to_console: bool,
     pub fullscreen: bool,
     pub console_max_lines: usize,
+    /// Show save creation date in saves menu
+    pub show_save_creation_date: bool,
 }
 
 const SETTINGS_FILE: &str = "setting.json";
@@ -57,6 +59,7 @@ impl Settings {
             fullscreen: false,
             log_to_console: false,
             console_max_lines: 300,
+            show_save_creation_date: true,
         }
     }
 }
@@ -99,6 +102,11 @@ pub fn settings_ui(
 ) -> SettingsResult {
     let mut result: SettingsResult = SettingsResult::default();
     // Only show heading once in the settings menu (handled in main.rs)
+    ui.horizontal(|ui: &mut Ui| {
+        if (&ui.checkbox(&mut settings.show_save_creation_date, "Show save creation date in saves menu")).changed() {
+            settings.save();
+        }
+    });
 
     ui.horizontal(|ui: &mut Ui| {
         ui.label("Fog:");

@@ -155,11 +155,9 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                     (*state).error_message = error;
                     (&mut (*state).success_message).clear();
                 } else {
-                    (*state).success_message =
-                        format!("Save '{}' created successfully!", state.save_name);
                     (&mut (*state).error_message).clear();
-                    // Clear the save name after successful creation
-                    (&mut (*state).save_name).clear();
+                    // Close the dialog after successful creation
+                    should_close = true;
                 }
             }
 
@@ -204,20 +202,25 @@ fn create_new_save(
     fs::create_dir_all(&save_path).map_err(|e: std::io::Error| -> String {
         format!("Failed to create save directory: {}", e)
     })?;
-    // Generate a time between 12h and 20h with a mean of 15h, then convert to seconds.
-    // Use a triangular distribution with (min=12, mode=13, max=20) hours so that
-    // the mean (a + b + c) / 3 = (12 + 20 + 13) / 3 = 15.
-    // Implemented via inverse transform sampling from two uniforms.
+    // Set floor_one_time to 5 days in seconds if real_time is enabled, otherwise use the random hours logic.
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    let u: f32 = (&mut rng).gen::<f32>();
-    let (a, c, b): (f32, f32, f32) = (12.0, 13.0, 20.0);
-    let fc: f32 = (c - a) / (b - a); // CDF at the mode
-    let hours: f32 = if u < fc {
-        a + ((b - a) * (c - a) * u).sqrt()
+    let floor_one_time: u32 = if real_time {
+        432000 // 5 days in seconds
     } else {
-        b - ((b - a) * (b - c) * (1.0 - u)).sqrt()
+        // Generate a time between 12h and 20h with a mean of 15h, then convert to seconds.
+        // Use a triangular distribution with (min=12, mode=13, max=20) hours so that
+        // the mean (a + b + c) / 3 = (12 + 20 + 13) / 3 = 15.
+        // Implemented via inverse transform sampling from two uniforms.
+        let u: f32 = (&mut rng).gen::<f32>();
+        let (a, c, b): (f32, f32, f32) = (12.0, 13.0, 20.0);
+        let fc: f32 = (c - a) / (b - a); // CDF at the mode
+        let hours: f32 = if u < fc {
+            a + ((b - a) * (c - a) * u).sqrt()
+        } else {
+            b - ((b - a) * (b - c) * (1.0 - u)).sqrt()
+        };
+        (hours * 3600.0).round() as u32
     };
-    let floor_one_time: u32 = (hours * 3600.0).round() as u32;
 
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();

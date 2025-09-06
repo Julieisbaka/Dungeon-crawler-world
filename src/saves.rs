@@ -140,7 +140,6 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                 let save_json_path: std::path::PathBuf = (&*path).join("save.json");
                 let mut difficulty_text: String = String::new();
                 let mut created_at_text: String = String::new();
-
                 if let Ok(save_content) = fs::read_to_string(&save_json_path) {
                     if let Ok(save_data) = serde_json::from_str::<serde_json::Value>(&save_content)
                     {
@@ -192,7 +191,9 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                             ui.label(difficulty_text);
                         }
                         if !(&created_at_text).is_empty() {
-                            ui.label(created_at_text);
+                            if crate::settings::Settings::load().show_save_creation_date {
+                                ui.label(created_at_text);
+                            }
                         }
                         ui.horizontal(|ui: &mut Ui| {
                             if (&ui.button("Load Save")).clicked() {

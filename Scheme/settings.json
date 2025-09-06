@@ -3,6 +3,11 @@
   "title": "Settings schema",
   "description": "This schema is used for validation and reading of the settings config json file.",
   "properties": {
+    "show_save_creation_date": {
+      "type": "boolean",
+      "description": "Show the save creation date in the saves menu.",
+      "default": true
+    },
     "fog": {
       "type": "integer",
       "description": "0 is no fog\n 1 is fast fog\n 2 is default fog\n 3 is fancy fog",
