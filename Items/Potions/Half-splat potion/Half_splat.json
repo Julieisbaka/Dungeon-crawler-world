@@ -1,6 +1,6 @@
 {
   "name": "Half-splat potion",
-  "description": "Allows you to Survive a fall at 5% of your max HP.",
+  "description": "",
   "item_properties": {
     "consumable": true,
     "charges": 1,
