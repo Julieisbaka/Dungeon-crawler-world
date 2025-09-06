@@ -1,0 +1,13 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "properties": {
+        "mana": {
+            "type": "integer",
+            "minimum": 0,
+            "$comment": "Item based spells do not require mana to cast but the the main spell does."
+        }
+    },
+    "additionalProperties": {
+        "$ref": "Common.json#/properties"
+    }
+}

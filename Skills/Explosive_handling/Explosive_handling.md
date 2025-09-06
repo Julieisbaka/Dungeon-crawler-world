@@ -1,0 +1,1 @@
+This skill allows crawlers to view more detailed information when inspecting explosives using the Heads-Up Display (HUD), and unlocks more crafting options.

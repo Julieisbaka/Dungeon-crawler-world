@@ -217,7 +217,7 @@ fn create_new_save(
     } else {
         b - ((b - a) * (b - c) * (1.0 - u)).sqrt()
     };
-    let floor_one_time_seconds: u32 = (hours * 3600.0).round() as u32;
+    let floor_one_time: u32 = (hours * 3600.0).round() as u32;
 
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();
@@ -231,10 +231,10 @@ fn create_new_save(
     let save_data: Value = json!({
         "save_name": save_name.trim(),
         "difficulty": difficulty.to_string(),
-        "created_at": chrono::Utc::now().to_rfc3339(),
+        "created_at": chrono::Utc::now().to_rfc3339(), // TODO: Add a setting to disable this
         "floor_one": {
             "is_cleared": false,
-            "time": floor_one_time_seconds
+            "time": floor_one_time
         },
         "gamerules": gamerules
     });

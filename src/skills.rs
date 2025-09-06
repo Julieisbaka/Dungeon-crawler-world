@@ -254,31 +254,47 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         let mut search = unsafe { SEARCH.clone().unwrap_or_default() };
         ui.label("Search:");
         if (&ui.text_edit_singleline(&mut search)).changed() {
-            unsafe { SEARCH = Some(search.clone()); PAGE = 0; }
+            unsafe {
+                SEARCH = Some(search.clone());
+                PAGE = 0;
+            }
         }
         ui.separator();
         let mut sort_asc: bool = unsafe { SORT_ASC };
         if (&ui.button(if sort_asc { "Sort: A-Z" } else { "Sort: Z-A" })).clicked() {
             sort_asc = !sort_asc;
-            unsafe { SORT_ASC = sort_asc; PAGE = 0; }
+            unsafe {
+                SORT_ASC = sort_asc;
+                PAGE = 0;
+            }
         }
         ui.separator();
         let mut page: usize = unsafe { PAGE };
         if page > 0 && (&ui.button("< Prev")).clicked() {
             page -= 1;
-            unsafe { PAGE = page; }
+            unsafe {
+                PAGE = page;
+            }
         }
         ui.label(format!("Page {}", page + 1));
-        let filtered_count: usize = (&*(*state).catalog).iter().filter(|meta| {
-            let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
-            let dev_show_all_active: bool = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
-            let treated_owned: bool = dev_show_all_active || owned_real;
-            (!(*state).only_owned || treated_owned)
-                && ((&search).is_empty() || (&*(&*(**meta).name).to_lowercase()).contains(&(&*search).to_lowercase()))
-        }).count();
+        let filtered_count: usize = (&*(*state).catalog)
+            .iter()
+            .filter(|meta| {
+                let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
+                let dev_show_all_active: bool =
+                    cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+                let treated_owned: bool = dev_show_all_active || owned_real;
+                (!(*state).only_owned || treated_owned)
+                    && ((&search).is_empty()
+                        || (&*(&*(**meta).name).to_lowercase())
+                            .contains(&(&*search).to_lowercase()))
+            })
+            .count();
         if (&((page + 1) * PAGE_SIZE)) < &filtered_count && (&ui.button("Next >")).clicked() {
             page += 1;
-            unsafe { PAGE = page; }
+            unsafe {
+                PAGE = page;
+            }
         }
     });
     ui.add_space(6.0);
@@ -287,21 +303,38 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     let search: String = unsafe { (&SEARCH).clone().unwrap_or_default() };
     let sort_asc: bool = unsafe { SORT_ASC };
     let page: usize = unsafe { PAGE };
-    let mut filtered: Vec<_> = (&*(*state).catalog).iter().enumerate().filter(|(_, meta)| {
-        let owned_real: bool = (&player_skills).contains_key(&meta.name);
-        let dev_show_all_active: bool = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
-        let treated_owned: bool = dev_show_all_active || owned_real;
-        (!(*state).only_owned || treated_owned)
-            && ((&search).is_empty() || meta.name.to_lowercase().contains(&(&*search).to_lowercase()))
-    }).collect();
-    (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
-        let ord: std::cmp::Ordering = (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase());
-        if sort_asc { ord } else { ord.reverse() }
-    });
+    let mut filtered: Vec<_> = (&*(*state).catalog)
+        .iter()
+        .enumerate()
+        .filter(|(_, meta)| {
+            let owned_real: bool = (&player_skills).contains_key(&meta.name);
+            let dev_show_all_active: bool =
+                cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+            let treated_owned: bool = dev_show_all_active || owned_real;
+            (!(*state).only_owned || treated_owned)
+                && ((&search).is_empty()
+                    || meta
+                        .name
+                        .to_lowercase()
+                        .contains(&(&*search).to_lowercase()))
+        })
+        .collect();
+    (&mut *filtered).sort_by(
+        |a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+            let ord: std::cmp::Ordering =
+                (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase());
+            if sort_asc {
+                ord
+            } else {
+                ord.reverse()
+            }
+        },
+    );
     let total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
     let start: usize = page * PAGE_SIZE;
     let end: usize = ((page + 1) * PAGE_SIZE).min((&filtered).len());
-    let page_items: &[(usize, &SkillMeta)] = &(&filtered)[start.min((&filtered).len())..end.min((&filtered).len())];
+    let page_items: &[(usize, &SkillMeta)] =
+        &(&filtered)[start.min((&filtered).len())..end.min((&filtered).len())];
 
     if page_items.is_empty() {
         ui.label("No skills found. Try adjusting your search or filters.");
@@ -309,37 +342,41 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     }
 
     let columns: usize = 4;
-    egui::Grid::new("skills_gallery_grid").spacing(Vec2::splat(12.0)).show(ui, |ui| {
-        for (i, (idx, meta)) in page_items.iter().enumerate() {
-            let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
-            let dev_show_all_active: bool = cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
-            let treated_owned: bool = dev_show_all_active || owned_real;
-            let mut frame: egui::Frame = egui::Frame::group(&**ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
-            if !treated_owned {
-                frame = frame.fill(egui::Color32::from_gray(30));
-            }
-            frame.show(ui, |ui| {
-                ui.set_min_size(Vec2::new(140.0, 140.0));
-                ui.vertical_centered(|ui| {
-                    if treated_owned {
-                        if let Some(tex) = &(**meta).icon {
-                            ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
-                            ui.add_space(6.0);
+    egui::Grid::new("skills_gallery_grid")
+        .spacing(Vec2::splat(12.0))
+        .show(ui, |ui| {
+            for (i, (idx, meta)) in page_items.iter().enumerate() {
+                let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
+                let dev_show_all_active: bool =
+                    cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
+                let treated_owned: bool = dev_show_all_active || owned_real;
+                let mut frame: egui::Frame =
+                    egui::Frame::group(&**ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+                if !treated_owned {
+                    frame = frame.fill(egui::Color32::from_gray(30));
+                }
+                frame.show(ui, |ui| {
+                    ui.set_min_size(Vec2::new(140.0, 140.0));
+                    ui.vertical_centered(|ui| {
+                        if treated_owned {
+                            if let Some(tex) = &(**meta).icon {
+                                ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));
+                                ui.add_space(6.0);
+                            }
+                            ui.label(&(**meta).name);
+                            if ui.button("View").clicked() {
+                                (*state).selected = Some(*idx);
+                            }
+                        } else {
+                            ui.add_space(48.0);
                         }
-                        ui.label(&(**meta).name);
-                        if ui.button("View").clicked() {
-                            (*state).selected = Some(*idx);
-                        }
-                    } else {
-                        ui.add_space(48.0);
-                    }
+                    });
                 });
-            });
-            if (i + 1) % columns == 0 {
-                ui.end_row();
+                if (i + 1) % columns == 0 {
+                    ui.end_row();
+                }
             }
-        }
-    });
+        });
 
     // Detail view in a floating window for owned skills or all in preview
     if let Some(idx) = (*state).selected {

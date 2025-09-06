@@ -85,8 +85,6 @@ fn handle_json_data() {
     let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()); // manifest_dir is Unused
 
     // Add JSON files that should trigger rebuilds
-    println!("cargo:rerun-if-changed=data/");
-    println!("cargo:rerun-if-changed=assets/");
     println!("cargo:rerun-if-changed=Scheme/");
     println!("cargo:rerun-if-changed=Gods_and_divine_related_entities/");
     println!("cargo:rerun-if-changed=Classes_and_Races/");
