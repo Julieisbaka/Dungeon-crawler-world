@@ -26,3 +26,5 @@ instantly.
 There is a 3-minute cooldown on the 9th floor, but there is no limit to the
 number of simultaneous marks.
 All remaining floors have no cooldown or delay to mark formation.
+
+Happy Hunting.

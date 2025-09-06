@@ -9,5 +9,9 @@
     },
     "additionalProperties": {
         "$ref": "Common.json#/properties"
-    }
+    },
+    "required": [
+        "name",
+        "description"
+    ]
 }

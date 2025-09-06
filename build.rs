@@ -82,16 +82,16 @@ fn setup_vulkan() {
 fn handle_json_data() {
     // Copy JSON data files to output directory if needed
     let out_dir: PathBuf = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()); // manifest_dir is Unused
+    let _manifest_dir: PathBuf = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 
     // Add JSON files that should trigger rebuilds
-    println!("cargo:rerun-if-changed=Scheme/");
     println!("cargo:rerun-if-changed=Gods_and_divine_related_entities/");
     println!("cargo:rerun-if-changed=Classes_and_Races/");
     println!("cargo:rerun-if-changed=Items/");
     println!("cargo:rerun-if-changed=Magic/");
     println!("cargo:rerun-if-changed=Skills/");
     println!("cargo:rerun-if-changed=Benefits/");
+    println!("cargo:rerun-if-changed=achievements/");
 
     // Create resources.rs with embedded files if needed
     let resources_path: PathBuf = (&*out_dir).join("resources.rs");

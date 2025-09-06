@@ -8,7 +8,7 @@
       "name": "Marked for death"
     }
   ],
-  "equippable": true
+  "equippable": true,
   "type": "Armor",
   "equipment_slot": "ring"
 }

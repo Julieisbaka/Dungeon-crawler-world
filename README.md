@@ -70,6 +70,12 @@ Special thanks to the following resources and libraries used in the project:
 
 - The unofficial [Dungeon Crawler Carl wiki](https://dungeon-crawler-carl.fandom.com)
 
+- [Vulkan](https://www.khronos.org/vulkan/) for the graphics API
+
+- [Rust](https://www.rust-lang.org/) for the programming language
+
+- [Cargo](https://doc.rust-lang.org/cargo/) for the build system and package manager
+
 - And of course, last and certainly not least, the Dungeon Crawler Carl series by [Matt Dinniman](https://www.mattdinniman.com/).
 
 ## [Contributing](CONTRIBUTING.md)

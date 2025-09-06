@@ -12,6 +12,8 @@
 
 - [ ] Create models for leaves
 
+- [ ] Setup Vulkan Graphics with physics engine
+
 - [x] Update workflows to include permissions
 
 - [x] Floor one time should be saved to save.json
@@ -29,8 +31,6 @@
 - [x] Create patches and fixes for non-windows operating systems
 
 - [x] Research potential alternatives to bullet physics as it is no longer maintained
-
-- [ ] Setup Vulkan Graphics with physics engine
 
 - [x] Create PR and issue templates
 
