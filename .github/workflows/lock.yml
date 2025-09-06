@@ -9,13 +9,15 @@ on:
 
 jobs:
   update-lockfile:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Rust
-        uses: actions/setup-rust@v1
+        uses: actions/setup-rust@v1 # Does not exist
         with:
           rust-version: stable
 
