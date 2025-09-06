@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use egui::{ColorImage, Context, TextureHandle, Ui, Vec2};
+use egui::{ColorImage, Context, TextureHandle, Ui, Vec2, ComboBox};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use image::{GenericImageView, ImageReader};
 use serde_json::Value;
@@ -157,17 +157,41 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                     }
                 }
             }
-            // If description points to a markdown file, load it; otherwise try description.md as a default
-            if (&*description).ends_with(".md") {
-                let md_path: PathBuf = (&*dir_path).join(&description);
-                if let Ok(md) = fs::read_to_string(&md_path) {
-                    description = md;
+            // If description points to a markdown file, load it; otherwise try description.md/Description.md as a default
+            let mut loaded_md: bool = false;
+            if (&*(&*description).trim().to_lowercase()).ends_with(".md") {
+                // Only use the file name, not a path, to avoid double Skills/Skills/
+                let desc_file: &std::ffi::OsStr = Path::new(&description).file_name().unwrap_or_default();
+                let md_path: PathBuf = (&*dir_path).join(desc_file);
+                match fs::read_to_string(&md_path) {
+                    Ok(md) => {
+                        description = md;
+                        loaded_md = true;
+                    },
+                    Err(e) => {
+                        eprintln!("[Skills] Failed to load markdown file for skill '{}': {} (path: {:?})", name, e, md_path);
+                    }
                 }
-            } else if (&description).is_empty() {
-                let md_path: PathBuf = (&*dir_path).join("description.md");
-                if let Ok(md) = fs::read_to_string(&md_path) {
-                    description = md;
+            }
+            if !loaded_md && (&*description).trim().is_empty() {
+                // Try both 'description.md' and 'Description.md' (case-insensitive)
+                let candidates = ["description.md", "Description.md"];
+                for cand in &candidates {
+                    let md_path: PathBuf = (&*dir_path).join(cand);
+                    match fs::read_to_string(&md_path) {
+                        Ok(md) => {
+                            description = md;
+                            loaded_md = true;
+                            break;
+                        },
+                        Err(e) => {
+                            eprintln!("[Skills] Failed to load default {} for skill '{}': {} (path: {:?})", cand, name, e, md_path);
+                        }
+                    }
                 }
+            }
+            if !loaded_md && ((&*description).trim().ends_with(".md") || description.trim().is_empty()) {
+                description = "No description available.".to_string();
             }
             // Attempt icon load (icon.png/jpg/jpeg)
             let mut icon_handle: Option<TextureHandle> = None;
@@ -245,13 +269,13 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     // --- Gallery Controls ---
     static mut SEARCH: Option<String> = None;
-    static mut SORT_ASC: bool = true;
+    static mut SORT_MODE: u8 = 0; // 0: Name A-Z, 1: Name Z-A, 2: Level High-Low, 3: Level Low-High
     static mut PAGE: usize = 0;
     const PAGE_SIZE: usize = 12;
 
     // Controls: Search, Sort, Pagination
     ui.horizontal(|ui| {
-        let mut search: String = unsafe { SEARCH.clone().unwrap_or_default() };
+        let mut search: String = unsafe { (&SEARCH).clone().unwrap_or_default() };
         ui.label("Search:");
         if (&ui.text_edit_singleline(&mut search)).changed() {
             unsafe {
@@ -260,11 +284,24 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             }
         }
         ui.separator();
-        let mut sort_asc: bool = unsafe { SORT_ASC };
-        if (&ui.button(if sort_asc { "Sort: A-Z" } else { "Sort: Z-A" })).clicked() {
-            sort_asc = !sort_asc;
+        let mut sort_mode: u8 = unsafe { SORT_MODE };
+        ComboBox::from_id_salt("skills_sort_mode")
+            .selected_text(match sort_mode {
+                0 => "Name (A-Z)",
+                1 => "Name (Z-A)",
+                2 => "Level (High-Low)",
+                3 => "Level (Low-High)",
+                _ => "Name (A-Z)",
+            })
+            .show_ui(ui, |ui: &mut Ui| {
+                ui.selectable_value(&mut sort_mode, 0, "Name (A-Z)");
+                ui.selectable_value(&mut sort_mode, 1, "Name (Z-A)");
+                ui.selectable_value(&mut sort_mode, 2, "Level (High-Low)");
+                ui.selectable_value(&mut sort_mode, 3, "Level (Low-High)");
+            });
+        if sort_mode != unsafe { SORT_MODE } {
             unsafe {
-                SORT_ASC = sort_asc;
+                SORT_MODE = sort_mode;
                 PAGE = 0;
             }
         }
@@ -301,7 +338,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     // --- Gallery Grid ---
     let search: String = unsafe { (&SEARCH).clone().unwrap_or_default() };
-    let sort_asc: bool = unsafe { SORT_ASC };
+    let sort_mode: u8 = unsafe { SORT_MODE };
     let page: usize = unsafe { PAGE };
     let mut filtered: Vec<_> = (&*(*state).catalog)
         .iter()
@@ -319,17 +356,21 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                         .contains(&(&*search).to_lowercase()))
         })
         .collect();
-    (&mut *filtered).sort_by(
-        |a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
-            let ord: std::cmp::Ordering =
-                (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase());
-            if sort_asc {
-                ord
-            } else {
-                ord.reverse()
-            }
-        },
-    );
+    match sort_mode {
+        0 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering { (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase()) }),
+        1 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering { (&(&*(*(*b).1).name).to_lowercase()).cmp(&(&*(*(*a).1).name).to_lowercase()) }),
+        2 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+            let la: i8 = (&player_skills).get(&(*(*a).1).name).copied().unwrap_or(0);
+            let lb: i8 = (&player_skills).get(&(*(*b).1).name).copied().unwrap_or(0);
+            (&lb).cmp(&la).then_with(|| -> std::cmp::Ordering { (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase()) })
+        }),
+        3 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+            let la: i8 = (&player_skills).get(&(*(*a).1).name).copied().unwrap_or(0);
+            let lb: i8 = (&player_skills).get(&(*(*b).1).name).copied().unwrap_or(0);
+            (&la).cmp(&lb).then_with(|| -> std::cmp::Ordering { (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase()) })
+        }),
+        _ => {},
+    }
     let total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
     let start: usize = page * PAGE_SIZE;
     let end: usize = ((page + 1) * PAGE_SIZE).min((&filtered).len());
