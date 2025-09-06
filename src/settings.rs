@@ -103,7 +103,12 @@ pub fn settings_ui(
     let mut result: SettingsResult = SettingsResult::default();
     // Only show heading once in the settings menu (handled in main.rs)
     ui.horizontal(|ui: &mut Ui| {
-        if (&ui.checkbox(&mut settings.show_save_creation_date, "Show save creation date in saves menu")).changed() {
+        if (&ui.checkbox(
+            &mut settings.show_save_creation_date,
+            "Show save creation date in saves menu",
+        ))
+            .changed()
+        {
             settings.save();
         }
     });
