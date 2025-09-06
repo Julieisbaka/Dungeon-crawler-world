@@ -35,6 +35,10 @@
             "type": "boolean",
             "default": false
         },
+        "current_floor": {
+            "type": "integer",
+            "description": "The current floor the player is on"
+        },
         "stats": {
             "type": "object",
             "properties": {

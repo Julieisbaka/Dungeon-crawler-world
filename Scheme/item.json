@@ -28,7 +28,7 @@
         "$ref": "Common.json#/properties"
     },
     "required": [
-        "name", 
+        "name",
         "description"
     ]
 }

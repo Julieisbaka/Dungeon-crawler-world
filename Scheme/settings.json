@@ -3,7 +3,7 @@
   "title": "Settings schema",
   "description": "This schema is used for validation and reading of the settings config json file.",
   "properties": {
-  "fog": {
+    "fog": {
       "type": "integer",
       "description": "0 is no fog\n 1 is fast fog\n 2 is default fog\n 3 is fancy fog",
       "default": 2,
@@ -47,7 +47,7 @@
       "description": "Enable physically based sound. If set to true then the game sound engine will apply reverb and other sound affects otherwise if set to false the sound engine will not use physically aware calculations and methods when playing sound like music and other ambience.",
       "default": true
     },
-  "fullscreen": {
+    "fullscreen": {
       "type": "boolean",
       "description": "Enable fullscreen mode.",
       "default": false

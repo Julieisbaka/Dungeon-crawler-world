@@ -232,7 +232,6 @@ fn create_new_save(
         "save_name": save_name.trim(),
         "difficulty": difficulty.to_string(),
         "created_at": chrono::Utc::now().to_rfc3339(),
-        "current_floor": 1,
         "floor_one": {
             "is_cleared": false,
             "time": floor_one_time_seconds
@@ -273,6 +272,7 @@ fn create_new_save(
         "class": "",
         "race": "",
         "has_manager": false,
+        "current_floor": 1,
         "stats": {
             "strength": strength,
             "intelligence": intelligence,
@@ -280,7 +280,6 @@ fn create_new_save(
             "charisma": charisma,
             "constitution": constitution
         }
-
     });
     let player_file_path: std::path::PathBuf = (&*save_path).join("player.json");
     fs::write(

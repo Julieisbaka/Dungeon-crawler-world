@@ -4,8 +4,8 @@
     "description": "Schema for defining celestial entities in the Dungeon Crawler World.",
     "type": "object",
     "allOf": [
-        { 
-            "$ref": "entity.json#/properties" 
+        {
+            "$ref": "entity.json#/properties"
         }
     ],
     "additionalProperties": {

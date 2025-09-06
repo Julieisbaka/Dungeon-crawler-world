@@ -24,7 +24,10 @@
                   "type": "number"
                 }
               },
-              "required": ["name", "level"],
+              "required": [
+                "name",
+                "level"
+              ],
               "additionalProperties": false
             }
           },
@@ -40,7 +43,10 @@
                   "type": "number"
                 }
               },
-              "required": ["name", "level"],
+              "required": [
+                "name",
+                "level"
+              ],
               "additionalProperties": false
             }
           }
@@ -73,7 +79,10 @@
                   "type": "number"
                 }
               },
-              "required": ["name", "level"],
+              "required": [
+                "name",
+                "level"
+              ],
               "additionalProperties": false
             }
           },
@@ -89,7 +98,10 @@
                   "type": "number"
                 }
               },
-              "required": ["name", "level"],
+              "required": [
+                "name",
+                "level"
+              ],
               "additionalProperties": false
             }
           }
