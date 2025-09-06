@@ -251,11 +251,11 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     // Controls: Search, Sort, Pagination
     ui.horizontal(|ui| {
-        let mut search = unsafe { SEARCH.clone().unwrap_or_default() };
+        let mut search: String = unsafe { SEARCH.clone().unwrap_or_default() };
         ui.label("Search:");
         if (&ui.text_edit_singleline(&mut search)).changed() {
             unsafe {
-                SEARCH = Some(search.clone());
+                SEARCH = Some((&search).clone());
                 PAGE = 0;
             }
         }
@@ -364,7 +364,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                                 ui.add_space(6.0);
                             }
                             ui.label(&(**meta).name);
-                            if ui.button("View").clicked() {
+                            if (&ui.button("View")).clicked() {
                                 (*state).selected = Some(*idx);
                             }
                         } else {

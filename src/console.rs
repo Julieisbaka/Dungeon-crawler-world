@@ -77,8 +77,8 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
             .auto_shrink([false; 2])
             .stick_to_bottom(true)
             .show(ui, |ui: &mut Ui| {
-                let log_len = (&(*state).log).len();
-                let start = log_len.saturating_sub(max_lines);
+                let log_len: usize = (&(*state).log).len();
+                let start: usize = log_len.saturating_sub(max_lines);
                 for line in (&(&(*state).log)[start..]).iter() {
                     ui.label(line);
                 }

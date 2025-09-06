@@ -104,7 +104,7 @@ pub fn settings_ui(
     // Only show heading once in the settings menu (handled in main.rs)
     ui.horizontal(|ui: &mut Ui| {
         if (&ui.checkbox(
-            &mut settings.show_save_creation_date,
+            &mut (*settings).show_save_creation_date,
             "Show save creation date in saves menu",
         ))
             .changed()
@@ -217,7 +217,7 @@ pub fn settings_ui(
                 }
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Console max lines:");
-                    let mut lines = (*settings).console_max_lines as u16;
+                    let mut lines: u16 = (*settings).console_max_lines as u16;
                     if (&ui.add(egui::DragValue::new(&mut lines).range(50..=2000))).changed() {
                         (*settings).console_max_lines = lines as usize;
                         settings.save();
