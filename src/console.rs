@@ -1,6 +1,9 @@
 // Max lines is now a runtime setting, not a constant.
 use egui::{TextBuffer, TextEdit, Ui};
 
+/// Maximum number of log lines to keep in memory to prevent unbounded growth
+const MAX_LOG_LINES: usize = 1000;
+
 #[derive(Default)]
 pub struct ConsoleState {
     input: String,
@@ -20,6 +23,13 @@ impl ConsoleState {
     /// Appends a line to the console log and scrolls to the end.
     fn push_line<S: Into<String>>(&mut self, s: S) {
         (&mut (*self).log).push(s.into());
+        
+        // Trim log to prevent unbounded growth and maintain performance
+        if (*self).log.len() > MAX_LOG_LINES {
+            let excess = (*self).log.len() - MAX_LOG_LINES;
+            (*self).log.drain(0..excess);
+        }
+        
         (*self).scroll_to_end = true;
     }
 
@@ -101,13 +111,12 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
             && ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Enter) });
         ui.horizontal(|ui: &mut Ui| {
             if (&ui.add_sized([64.0, 24.0], egui::Button::new("Run"))).clicked() || pressed_enter {
-                let cmd: String = (&(*state).input).clone();
-                if !(&*cmd).trim().is_empty() {
-                    (*state).last_command = Some((&cmd).clone());
+                let cmd = std::mem::take(&mut (*state).input);
+                if !cmd.trim().is_empty() {
+                    (*state).last_command = Some(cmd.clone());
                 }
                 // Queue the command for external handling in the main loop
                 (&mut (*state).pending).push(cmd);
-                (&mut (*state).input).clear();
             }
             if (&ui.add_sized([64.0, 24.0], egui::Button::new("Clear"))).clicked() {
                 state.clear();
@@ -124,4 +133,42 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
             }
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_log_trimming() {
+        let mut console = ConsoleState::default();
+        
+        // Add more than MAX_LOG_LINES entries
+        for i in 0..MAX_LOG_LINES + 100 {
+            console.log_line(format!("Test line {}", i));
+        }
+        
+        // Verify log is trimmed to MAX_LOG_LINES
+        assert_eq!(console.log.len(), MAX_LOG_LINES);
+        
+        // Verify the oldest entries were removed (should start from line 100)
+        assert_eq!(console.log[0], "Test line 100");
+        assert_eq!(console.log[MAX_LOG_LINES - 1], format!("Test line {}", MAX_LOG_LINES + 99));
+    }
+
+    #[test]
+    fn test_log_no_trimming_when_under_limit() {
+        let mut console = ConsoleState::default();
+        
+        // Add fewer than MAX_LOG_LINES entries
+        let test_lines = 50;
+        for i in 0..test_lines {
+            console.log_line(format!("Test line {}", i));
+        }
+        
+        // Verify all lines are kept
+        assert_eq!(console.log.len(), test_lines);
+        assert_eq!(console.log[0], "Test line 0");
+        assert_eq!(console.log[test_lines - 1], "Test line 49");
+    }
 }
