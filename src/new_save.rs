@@ -170,6 +170,40 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     should_close
 }
 
+
+/// Generate the time for floor one based on real_time flag.
+pub fn generate_floor_one_time<R: Rng + ?Sized>(real_time: bool, rng: &mut R) -> u32 {
+    if real_time {
+        432_000 // 5 days in seconds
+    } else {
+        // Triangular distribution: min=12, mode=13, max=20 hours
+        let u: f32 = rng.gen::<f32>();
+        let (a, c, b): (f32, f32, f32) = (12.0, 13.0, 20.0);
+        let fc: f32 = (c - a) / (b - a);
+        let hours: f32 = if u < fc {
+            a + ((b - a) * (c - a) * u).sqrt()
+        } else {
+            b - ((b - a) * (b - c) * (1.0 - u)).sqrt()
+        };
+        (hours * 3600.0).round() as u32
+    }
+}
+
+/// Generate random skills and stats for a new player.
+pub fn generate_stats<R: Rng + ?Sized>(rng: &mut R) -> (i8, i8, i8, i16, i16, i16, i16, i16) {
+    let skill_min: i8 = 3;
+    let skill_max: i8 = 5;
+    let walking: i8 = rng.gen_range(skill_min..=skill_max);
+    let swimming: i8 = rng.gen_range(skill_min..=skill_max);
+    let breathing: i8 = rng.gen_range(skill_min..=skill_max);
+    let strength: i16 = rng.gen_range(1..=8);
+    let intelligence: i16 = rng.gen_range(3..=5);
+    let dexterity: i16 = rng.gen_range(2..=6);
+    let charisma: i16 = rng.gen_range(2..=4);
+    let constitution: i16 = rng.gen_range(2..=6);
+    (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution)
+}
+
 fn create_new_save(
     save_name: &str,
     difficulty: &Difficulty,
@@ -202,25 +236,8 @@ fn create_new_save(
     fs::create_dir_all(&save_path).map_err(|e: std::io::Error| -> String {
         format!("Failed to create save directory: {}", e)
     })?;
-    // Set floor_one_time to 5 days in seconds if real_time is enabled, otherwise use the random hours logic.
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    let floor_one_time: u32 = if real_time {
-        432000 // 5 days in seconds
-    } else {
-        // Generate a time between 12h and 20h with a mean of 15h, then convert to seconds.
-        // Use a triangular distribution with (min=12, mode=13, max=20) hours so that
-        // the mean (a + b + c) / 3 = (12 + 20 + 13) / 3 = 15.
-        // Implemented via inverse transform sampling from two uniforms.
-        let u: f32 = (&mut rng).gen::<f32>();
-        let (a, c, b): (f32, f32, f32) = (12.0, 13.0, 20.0);
-        let fc: f32 = (c - a) / (b - a); // CDF at the mode
-        let hours: f32 = if u < fc {
-            a + ((b - a) * (c - a) * u).sqrt()
-        } else {
-            b - ((b - a) * (b - c) * (1.0 - u)).sqrt()
-        };
-        (hours * 3600.0).round() as u32
-    };
+    let floor_one_time: u32 = generate_floor_one_time(real_time, &mut rng);
 
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();
@@ -248,17 +265,7 @@ fn create_new_save(
     )
     .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
-    // Initialize core skill values randomly in [3,5]
-    let skill_min: i8 = 3;
-    let skill_max: i8 = 5;
-    let walking: i8 = (&mut rng).gen_range(skill_min..=skill_max);
-    let swimming: i8 = (&mut rng).gen_range(skill_min..=skill_max);
-    let breathing: i8 = (&mut rng).gen_range(skill_min..=skill_max);
-    let strength: i16 = (&mut rng).gen_range(1..=8);
-    let intelligence: i16 = (&mut rng).gen_range(3..=5);
-    let dexterity: i16 = (&mut rng).gen_range(2..=6);
-    let charisma: i16 = (&mut rng).gen_range(2..4);
-    let constitution: i16 = (&mut rng).gen_range(2..6);
+    let (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution) = generate_stats(&mut rng);
 
     let player_data: Value = json!({
         "name": "", // Unimplemented: Player name will be set later
