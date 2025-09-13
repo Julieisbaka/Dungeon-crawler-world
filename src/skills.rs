@@ -6,6 +6,7 @@ use egui::{ColorImage, Context, TextureHandle, Ui, Vec2, ComboBox};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use image::{GenericImageView, ImageReader};
 use serde_json::Value;
+use crate::player::Player;
 
 // Public state to be held by the caller. Not integrated into the app here.
 #[derive(Default)]
@@ -224,30 +225,19 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
 /// # Returns
 /// * `HashMap<String, i8>` - A map of skill names to their levels.
 fn read_player_skills() -> HashMap<String, i8> {
-    let mut map: HashMap<String, i8> = HashMap::new();
     // Attempt to read current save context (if available)
     let current: Option<String> = (&*crate::CURRENT_SAVE).lock().ok().and_then(
         |g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { (&*g).clone() },
     );
-    let Some(save) = current else { return map };
+    let Some(save) = current else { return HashMap::new() };
     let path: PathBuf = (&*Path::new("saves").join(save)).join("player.json");
     let Ok(content) = fs::read_to_string(path) else {
-        return map;
+        return HashMap::new();
     };
-    let Ok(json) = serde_json::from_str::<Value>(&**&content) else {
-        return map;
+    let Ok(player) = serde_json::from_str::<Player>(&**&content) else {
+        return HashMap::new();
     };
-    if let Some(skills) = (&json)
-        .get("skills")
-        .and_then(|v: &Value| -> Option<&serde_json::Map<String, Value>> { v.as_object() })
-    {
-        for (name, val) in skills.iter() {
-            if let Some(lvl) = val.as_i64() {
-                (&mut map).insert(name.clone(), lvl as i8);
-            }
-        }
-    }
-    map
+    player.skills
 }
 
 // Public UI entry: renders a gallery of all skills; unknown skills show no name/icon/description.

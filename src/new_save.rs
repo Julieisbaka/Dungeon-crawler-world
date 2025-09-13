@@ -1,6 +1,7 @@
 use egui::{TextBuffer, TextEdit, Ui};
 use rand::Rng;
 use serde_json::{json, Value};
+use crate::player::{Player, PlayerStats};
 use std::fs;
 use std::path::Path;
 
@@ -266,35 +267,36 @@ fn create_new_save(
     .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
     let (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution) = generate_stats(&mut rng);
-
-    let player_data: Value = json!({
-        "name": "", // Unimplemented: Player name will be set later
-        "level": 1,
-        "spells": {},
-        "inventory": {},
-        "skills": {
-            "Walking": walking,
-            "Swimming": swimming,
-            "Breathing": breathing
-        },
-        "coins": 0,
-        "sub_classes": [],
-        "class": "",
-        "race": "",
-        "has_manager": false,
-        "current_floor": 1,
-        "stats": {
-            "strength": strength,
-            "intelligence": intelligence,
-            "dexterity": dexterity,
-            "charisma": charisma,
-            "constitution": constitution
-        }
-    });
+    use std::collections::HashMap;
+    let mut skills = HashMap::new();
+    skills.insert("Walking".to_string(), walking);
+    skills.insert("Swimming".to_string(), swimming);
+    skills.insert("Breathing".to_string(), breathing);
+    let stats = PlayerStats {
+        strength,
+        intelligence,
+        dexterity,
+        charisma,
+        constitution,
+    };
+    let player = Player {
+        name: "".to_string(),
+        level: 1,
+        spells: HashMap::new(),
+        inventory: HashMap::new(),
+        skills,
+        coins: 0,
+        sub_classes: Vec::new(),
+        class: "".to_string(),
+        race: "".to_string(),
+        has_manager: false,
+        current_floor: 1,
+        stats,
+    };
     let player_file_path: std::path::PathBuf = (&*save_path).join("player.json");
     fs::write(
         &player_file_path,
-        serde_json::to_string_pretty(&player_data).unwrap(),
+        serde_json::to_string_pretty(&player).unwrap(),
     )
     .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
     Ok(())

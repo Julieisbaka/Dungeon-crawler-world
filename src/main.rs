@@ -22,6 +22,7 @@ use logger::init_logger;
 mod saves;
 use saves::show_save_ui;
 mod new_save;
+mod player;
 mod settings;
 use settings::{settings_ui, Settings, SettingsResult};
 mod console;
@@ -38,6 +39,8 @@ use fps::FpsGraph;
 const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 
 /// Main app struct with settings state
+use std::time::{Duration, Instant};
+
 struct DungeonCrawlerworld {
     show_settings: bool,
     show_saves: bool,
@@ -51,6 +54,7 @@ struct DungeonCrawlerworld {
     console_open: bool,
     last_show_console: bool,
     log_rx: Option<std::sync::mpsc::Receiver<String>>,
+    last_console_redraw: Option<Instant>,
 }
 
 impl Default for DungeonCrawlerworld {
@@ -68,6 +72,7 @@ impl Default for DungeonCrawlerworld {
             console_open: false,
             last_show_console: Settings::default().show_console,
             log_rx: Some(log_rx),
+            last_console_redraw: None,
         }
     }
 }
@@ -211,6 +216,10 @@ impl App for DungeonCrawlerworld {
 
         if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).console_open {
             let mut open: bool = true;
+            let now: Instant = Instant::now();
+            let redraw_interval: Duration = Duration::from_millis(33); // ~30 FPS max
+            let should_redraw: bool = (&(*self).console_state).is_dirty()
+                && (*self).last_console_redraw.map_or(true, |last: Instant| -> bool { (&now).duration_since(last) >= redraw_interval });
             egui::Window::new("Console")
                 .open(&mut open)
                 .resizable(true)
@@ -218,15 +227,15 @@ impl App for DungeonCrawlerworld {
                 .hscroll(false)
                 .default_size(egui::vec2(500.0, 250.0))
                 .show(ctx, |ui| {
-                    // Intercept invoke commands to open previews
-                    // Render console UI first
-                    console_ui(
-                        ui,
-                        &mut (*self).console_state,
-                        (*self).settings.console_max_lines,
-                    );
-                    // Provide a minimal inline help mention for invoke
-                    // (kept non-intrusive in UI; full help prints in console)
+                    if should_redraw {
+                        console_ui(
+                            ui,
+                            &mut (*self).console_state,
+                            (*self).settings.console_max_lines,
+                        );
+                        (&mut (*self).console_state).clear_dirty();
+                        (*self).last_console_redraw = Some(now);
+                    }
                 });
             if !open {
                 // Closing the window hides the console until re-enabled in settings

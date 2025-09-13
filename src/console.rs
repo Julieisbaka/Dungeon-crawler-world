@@ -8,6 +8,7 @@ pub struct ConsoleState {
     scroll_to_end: bool,
     pending: Vec<String>,
     last_command: Option<String>,
+    dirty: bool, // Tracks if the console state has changed
 }
 
 impl ConsoleState {
@@ -15,12 +16,14 @@ impl ConsoleState {
     pub fn clear(&mut self) {
         (&mut (*self).log).clear();
         (*self).scroll_to_end = true;
+        (*self).dirty = true;
     }
 
     /// Appends a line to the console log and scrolls to the end.
     fn push_line<S: Into<String>>(&mut self, s: S) {
         (&mut (*self).log).push(s.into());
         (*self).scroll_to_end = true;
+        (*self).dirty = true;
     }
 
     /// Allows external systems to log messages to the console.
@@ -63,6 +66,24 @@ impl ConsoleState {
         let mut out: Vec<String> = Vec::new();
         std::mem::swap(&mut out, &mut (*self).pending);
         out
+    }
+
+    /// Mark the console as dirty if the input changes
+    pub fn set_input(&mut self, new_input: String) {
+        if (*self).input != new_input {
+            (*self).input = new_input;
+            (*self).dirty = true;
+        }
+    }
+
+    /// Returns whether the console state is dirty (has changed since last redraw)
+    pub fn is_dirty(&self) -> bool {
+        (*self).dirty
+    }
+
+    /// Clears the dirty flag (call after redraw)
+    pub fn clear_dirty(&mut self) {
+        (*self).dirty = false;
     }
 }
 
