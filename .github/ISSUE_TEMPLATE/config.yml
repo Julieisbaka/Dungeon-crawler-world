@@ -12,3 +12,7 @@ issue_templates:
     about: Suggest a new feature or enhancement
     template: feature_request.md
     labels: [enhancement]
+  - name: Question
+    about: Ask a question about the project
+    template: question.md
+    labels: [question]

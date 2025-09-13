@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ""
+title: "[FEATURE] "
 labels: enhancement
 assignees: ""
 ---
@@ -16,5 +16,18 @@ A clear and concise description of what you want to happen.
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
 
+**Implementation considerations**
+If you have ideas about how this could be implemented, please share them here.
+
+**Use case examples**
+Provide specific examples of how this feature would be used.
+
+**Priority**
+How important is this feature to you?
+- [ ] Critical (blocks current usage)
+- [ ] High (would significantly improve experience)  
+- [ ] Medium (nice to have)
+- [ ] Low (minor improvement)
+
 **Additional context**
-Add any other context or screenshots about the feature request here.
+Add any other context, mockups, or screenshots about the feature request here.

@@ -1,6 +1,10 @@
 # Dungeon Crawler World
 
+[![CI](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/ci.yml/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql)
+[![Version](https://img.shields.io/badge/version-0.0.6-blue.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.MD)
+[![Rust](https://img.shields.io/badge/rust-1.79+-orange.svg)](https://www.rust-lang.org)
 
 ## Table of Contents
 

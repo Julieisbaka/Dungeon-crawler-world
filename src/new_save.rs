@@ -4,16 +4,23 @@ use serde_json::{json, Value};
 use std::fs;
 use std::path::Path;
 
+/// Represents the different tabs available in the new save creation dialog.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum NewSaveTab {
+    /// Basic save creation options (name, difficulty).
     Basics = 0,
+    /// Game rules and options (online mode, real-time).
     Gamerules = 1,
 }
 
+/// Represents the difficulty levels available for new saves.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Difficulty {
+    /// Easy difficulty - more forgiving gameplay.
     Easy = 0,
+    /// Medium difficulty - balanced gameplay.
     Medium = 1,
+    /// Hard difficulty - challenging gameplay.
     Hard = 2,
 }
 
@@ -28,16 +35,28 @@ impl std::fmt::Display for Difficulty {
     }
 }
 
+/// State management for the new save creation dialog.
+/// 
+/// This struct contains all the necessary state for creating a new save,
+/// including user inputs, current tab selection, and error/success messages.
 pub struct NewSaveState {
     #[allow(dead_code)]
+    /// Whether the new save dialog should be shown.
     pub show_new_save: bool,
+    /// The name entered by the user for the new save.
     pub save_name: String,
+    /// The difficulty level selected by the user.
     pub selected_difficulty: Difficulty,
+    /// The currently active tab in the new save dialog.
     pub selected_tab: NewSaveTab,
     // Gamerules
+    /// Whether online mode is enabled for this save.
     pub online_mode: bool,
+    /// Whether real-time mode is enabled for this save.
     pub real_time: bool,
+    /// Error message to display to the user, if any.
     pub error_message: String,
+    /// Success message to display to the user, if any.
     pub success_message: String,
 }
 
@@ -59,6 +78,7 @@ impl Default for NewSaveState {
 
 impl NewSaveState {
     /// Resets the state to its default values, clearing all fields.
+    /// Resets the new save state to default values, clearing user inputs and messages.
     pub fn reset(&mut self) {
         (&mut (*self).save_name).clear();
         (*self).selected_difficulty = Difficulty::Medium;
@@ -78,6 +98,19 @@ impl NewSaveState {
 ///
 /// # Returns
 /// * `bool` - Returns true if the dialog should be closed, false otherwise.
+/// Displays the new save creation UI.
+/// 
+/// This function renders the new save dialog with tabs for basic settings
+/// and game rules. It handles user input and save creation.
+/// 
+/// # Arguments
+/// 
+/// * `ui` - The egui UI context for rendering
+/// * `state` - Mutable reference to the new save state
+/// 
+/// # Returns
+/// 
+/// Returns `true` if the dialog should be closed, `false` otherwise.
 pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     let mut should_close: bool = false;
 

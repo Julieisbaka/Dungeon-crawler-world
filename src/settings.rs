@@ -3,19 +3,34 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
+/// Application settings structure.
+/// 
+/// This struct contains all configurable settings for the game, including
+/// graphics options, developer tools, and UI preferences. Settings are
+/// automatically saved to and loaded from a JSON file.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
+    /// Fog rendering intensity level (-100 to 100).
     pub fog: i8,
+    /// Lighting quality level (-100 to 100).
     pub lighting: i8,
+    /// Whether sound is enabled.
     pub sound: bool,
+    /// Whether developer mode features are enabled.
     pub developer_mode: bool,
+    /// Whether verbose logging is enabled.
     pub verbose_logging: bool,
+    /// Whether to show the developer console.
     pub show_console: bool,
+    /// Whether to show the FPS graph overlay.
     pub show_fps_graph: bool,
+    /// Whether to redirect logs to the in-game console.
     pub log_to_console: bool,
+    /// Whether the application should run in fullscreen mode.
     pub fullscreen: bool,
+    /// Maximum number of lines to keep in the console history.
     pub console_max_lines: usize,
-    /// Show save creation date in saves menu
+    /// Show save creation date in saves menu.
     pub show_save_creation_date: bool,
 }
 
@@ -71,8 +86,14 @@ impl Default for Settings {
     }
 }
 
+/// Result structure for settings UI operations.
+/// 
+/// Contains flags indicating what actions the settings UI is requesting
+/// from the parent application.
 pub struct SettingsResult {
+    /// Whether the settings should be saved to disk.
     pub request_save: bool,
+    /// Whether the user requested to go back/close the settings.
     pub request_back: bool,
 }
 
@@ -95,6 +116,20 @@ impl Default for SettingsResult {
 ///
 /// # Returns
 /// * `SettingsResult` - Indicates if the user requested to save or go back.
+/// Renders the settings UI, allowing the user to modify and save settings.
+/// 
+/// This function creates a comprehensive settings interface with options for
+/// graphics, developer tools, and UI preferences.
+/// 
+/// # Arguments
+/// 
+/// * `ui` - The egui UI context to render into
+/// * `settings` - The mutable settings object to edit
+/// * `dev_mode_available` - Whether developer mode options should be shown
+/// 
+/// # Returns
+/// 
+/// A `SettingsResult` indicating what actions are requested (save, back, etc.)
 pub fn settings_ui(
     ui: &mut Ui,
     settings: &mut Settings,

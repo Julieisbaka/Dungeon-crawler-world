@@ -1,12 +1,21 @@
 // Max lines is now a runtime setting, not a constant.
 use egui::{TextBuffer, TextEdit, Ui};
 
+/// State management for the in-game developer console.
+/// 
+/// This struct maintains the console's input history, output log, and
+/// command processing state.
 #[derive(Default)]
 pub struct ConsoleState {
+    /// Current input text being typed by the user.
     input: String,
+    /// History of console output messages.
     log: Vec<String>,
+    /// Whether the console should scroll to the end on next render.
     scroll_to_end: bool,
+    /// Queue of commands waiting to be processed.
     pending: Vec<String>,
+    /// The last command entered (for history navigation).
     last_command: Option<String>,
 }
 
@@ -24,17 +33,19 @@ impl ConsoleState {
     }
 
     /// Allows external systems to log messages to the console.
-    ///
+    /// 
     /// # Arguments
-    /// * `s` - The message to log.
+    /// 
+    /// * `s` - The message to log (can be any type that converts to String)
     pub fn log_line<S: Into<String>>(&mut self, s: S) {
         self.push_line(s);
     }
 
     /// Runs a console command, handling built-in commands like 'help' and 'clear'.
-    ///
+    /// 
     /// # Arguments
-    /// * `cmd` - The command string to execute.
+    /// 
+    /// * `cmd` - The command string to execute
     pub fn run_command(&mut self, cmd: &str) {
         let trimmed = cmd.trim();
         match trimmed {
@@ -56,9 +67,13 @@ impl ConsoleState {
     }
 
     /// Drains and returns pending commands submitted by the user in the UI.
-    ///
+    /// 
+    /// This is used to retrieve commands that were queued up during UI processing
+    /// so they can be executed by the main application loop.
+    /// 
     /// # Returns
-    /// A vector of pending command strings.
+    /// 
+    /// A vector of pending command strings (the internal queue is cleared).
     pub fn take_pending(&mut self) -> Vec<String> {
         let mut out: Vec<String> = Vec::new();
         std::mem::swap(&mut out, &mut (*self).pending);
@@ -67,10 +82,15 @@ impl ConsoleState {
 }
 
 /// Renders the console UI, including the log output and input field.
-///
+/// 
+/// This function creates a scrollable log area and a command input field.
+/// Commands entered are queued for processing by the main application.
+/// 
 /// # Arguments
-/// * `ui` - The egui UI to render into.
-/// * `state` - The mutable state of the console.
+/// 
+/// * `ui` - The egui UI context to render into
+/// * `state` - The mutable state of the console
+/// * `max_lines` - Maximum number of log lines to display (older lines are removed)
 pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
     ui.vertical(|ui: &mut Ui| {
         egui::ScrollArea::vertical()

@@ -27,5 +27,9 @@ rapier3d = { version = "0.28.0", features = [ "simd-stable" ] }
 parry3d = "0.23.0"
 egui_commonmark = "0.21"
 
+[dev-dependencies]
+proptest = "1.5"
+tempfile = "3.12"
+
 [build-dependencies]
 pkg-config = "0.3"

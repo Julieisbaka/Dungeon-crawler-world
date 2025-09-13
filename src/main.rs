@@ -4,9 +4,22 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 // Global current_save variable
+/// A global mutex-protected variable that stores the currently active save name.
+/// This is used to track which save file is currently being used by the game.
 pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
     Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
 
+/// Sets the current save name globally.
+/// 
+/// # Arguments
+/// 
+/// * `save_name` - The name of the save to set as current
+/// 
+/// # Examples
+/// 
+/// ```
+/// set_current_save("my_adventure");
+/// ```
 pub fn set_current_save(save_name: &str) {
     let mut current: std::sync::MutexGuard<'_, Option<String>> = (&*CURRENT_SAVE).lock().unwrap();
     *current = Some(save_name.to_string());
@@ -31,6 +44,8 @@ mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
+#[cfg(test)]
+mod tests;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
 /// Enabled in debug builds by default via Cargo.toml [features].
@@ -38,6 +53,9 @@ use fps::FpsGraph;
 const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 
 /// Main app struct with settings state
+/// 
+/// This struct contains all the application state including UI state, settings,
+/// save management, console state, and developer tools.
 struct DungeonCrawlerworld {
     show_settings: bool,
     show_saves: bool,
