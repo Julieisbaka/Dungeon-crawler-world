@@ -219,7 +219,11 @@ impl App for DungeonCrawlerworld {
             let now: Instant = Instant::now();
             let redraw_interval: Duration = Duration::from_millis(33); // ~30 FPS max
             let should_redraw: bool = (&(*self).console_state).is_dirty()
-                && (*self).last_console_redraw.map_or(true, |last: Instant| -> bool { (&now).duration_since(last) >= redraw_interval });
+                && (*self)
+                    .last_console_redraw
+                    .map_or(true, |last: Instant| -> bool {
+                        (&now).duration_since(last) >= redraw_interval
+                    });
             egui::Window::new("Console")
                 .open(&mut open)
                 .resizable(true)
@@ -227,12 +231,14 @@ impl App for DungeonCrawlerworld {
                 .hscroll(false)
                 .default_size(egui::vec2(500.0, 250.0))
                 .show(ctx, |ui| {
+                    // Always render the console UI so input is processed
+                    console_ui(
+                        ui,
+                        &mut (*self).console_state,
+                        (*self).settings.console_max_lines,
+                    );
+                    // Only clear dirty and update redraw time if log area changed
                     if should_redraw {
-                        console_ui(
-                            ui,
-                            &mut (*self).console_state,
-                            (*self).settings.console_max_lines,
-                        );
                         (&mut (*self).console_state).clear_dirty();
                         (*self).last_console_redraw = Some(now);
                     }

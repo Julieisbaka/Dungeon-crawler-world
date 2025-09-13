@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use egui::{ColorImage, Context, TextureHandle, Ui, Vec2, ComboBox};
+use crate::player::Player;
+use egui::{ColorImage, ComboBox, Context, TextureHandle, Ui, Vec2};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use image::{GenericImageView, ImageReader};
 use serde_json::Value;
-use crate::player::Player;
 
 // Public state to be held by the caller. Not integrated into the app here.
 #[derive(Default)]
@@ -162,15 +162,19 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
             let mut loaded_md: bool = false;
             if (&*(&*description).trim().to_lowercase()).ends_with(".md") {
                 // Only use the file name, not a path, to avoid double Skills/Skills/
-                let desc_file: &std::ffi::OsStr = Path::new(&description).file_name().unwrap_or_default();
+                let desc_file: &std::ffi::OsStr =
+                    Path::new(&description).file_name().unwrap_or_default();
                 let md_path: PathBuf = (&*dir_path).join(desc_file);
                 match fs::read_to_string(&md_path) {
                     Ok(md) => {
                         description = md;
                         loaded_md = true;
-                    },
+                    }
                     Err(e) => {
-                        eprintln!("[Skills] Failed to load markdown file for skill '{}': {} (path: {:?})", name, e, md_path);
+                        eprintln!(
+                            "[Skills] Failed to load markdown file for skill '{}': {} (path: {:?})",
+                            name, e, md_path
+                        );
                     }
                 }
             }
@@ -184,14 +188,16 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                             description = md;
                             loaded_md = true;
                             break;
-                        },
+                        }
                         Err(e) => {
                             eprintln!("[Skills] Failed to load default {} for skill '{}': {} (path: {:?})", cand, name, e, md_path);
                         }
                     }
                 }
             }
-            if !loaded_md && ((&*description).trim().ends_with(".md") || description.trim().is_empty()) {
+            if !loaded_md
+                && ((&*description).trim().ends_with(".md") || (&*description).trim().is_empty())
+            {
                 description = "No description available.".to_string();
             }
             // Attempt icon load (icon.png/jpg/jpeg)
@@ -229,7 +235,9 @@ fn read_player_skills() -> HashMap<String, i8> {
     let current: Option<String> = (&*crate::CURRENT_SAVE).lock().ok().and_then(
         |g: std::sync::MutexGuard<'_, Option<String>>| -> Option<String> { (&*g).clone() },
     );
-    let Some(save) = current else { return HashMap::new() };
+    let Some(save) = current else {
+        return HashMap::new();
+    };
     let path: PathBuf = (&*Path::new("saves").join(save)).join("player.json");
     let Ok(content) = fs::read_to_string(path) else {
         return HashMap::new();
@@ -347,19 +355,35 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         })
         .collect();
     match sort_mode {
-        0 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering { (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase()) }),
-        1 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering { (&(&*(*(*b).1).name).to_lowercase()).cmp(&(&*(*(*a).1).name).to_lowercase()) }),
-        2 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
-            let la: i8 = (&player_skills).get(&(*(*a).1).name).copied().unwrap_or(0);
-            let lb: i8 = (&player_skills).get(&(*(*b).1).name).copied().unwrap_or(0);
-            (&lb).cmp(&la).then_with(|| -> std::cmp::Ordering { (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase()) })
-        }),
-        3 => (&mut *filtered).sort_by(|a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
-            let la: i8 = (&player_skills).get(&(*(*a).1).name).copied().unwrap_or(0);
-            let lb: i8 = (&player_skills).get(&(*(*b).1).name).copied().unwrap_or(0);
-            (&la).cmp(&lb).then_with(|| -> std::cmp::Ordering { (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase()) })
-        }),
-        _ => {},
+        0 => (&mut *filtered).sort_by(
+            |a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+                (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase())
+            },
+        ),
+        1 => (&mut *filtered).sort_by(
+            |a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+                (&(&*(*(*b).1).name).to_lowercase()).cmp(&(&*(*(*a).1).name).to_lowercase())
+            },
+        ),
+        2 => (&mut *filtered).sort_by(
+            |a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+                let la: i8 = (&player_skills).get(&(*(*a).1).name).copied().unwrap_or(0);
+                let lb: i8 = (&player_skills).get(&(*(*b).1).name).copied().unwrap_or(0);
+                (&lb).cmp(&la).then_with(|| -> std::cmp::Ordering {
+                    (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase())
+                })
+            },
+        ),
+        3 => (&mut *filtered).sort_by(
+            |a: &(usize, &SkillMeta), b: &(usize, &SkillMeta)| -> std::cmp::Ordering {
+                let la: i8 = (&player_skills).get(&(*(*a).1).name).copied().unwrap_or(0);
+                let lb: i8 = (&player_skills).get(&(*(*b).1).name).copied().unwrap_or(0);
+                (&la).cmp(&lb).then_with(|| -> std::cmp::Ordering {
+                    (&(&*(*(*a).1).name).to_lowercase()).cmp(&(&*(*(*b).1).name).to_lowercase())
+                })
+            },
+        ),
+        _ => {}
     }
     let total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
     let start: usize = page * PAGE_SIZE;

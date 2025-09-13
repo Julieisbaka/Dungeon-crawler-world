@@ -1,6 +1,6 @@
 use rand::Rng;
 
-// Every swuare consists of 4 neighorhoods. The interior of these neighborhoods will not be a grid.
+// Every square consists of 4 neighborhoods. The interior of these neighborhoods will not be a grid.
 const neighborhood_size: u16 = 1609;
 
 /// Restroom distance is approximately 400m (300-500m)

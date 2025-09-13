@@ -19,14 +19,14 @@ serde = { version = "1.0", features = ["derive"] }
 once_cell = "1.19"
 egui = "0.32.1"
 eframe = "0.32.1"
-ash = "0.37" # Replace with Vulkano
+vulkano = "0.34"
 serde_json = "1.0"
 image = "0.25"
 log = "0.4"
 env_logger = "0.11"
 chrono = { version = "0.4", features = ["serde"] }
 rand = "0.8"
-rapier3d = { version = "0.28.0", features = [ "simd-stable" ] }
+rapier3d = { version = "0.28.0", features = ["simd-stable"] }
 parry3d = "0.23.0"
 egui_commonmark = "0.21"
 

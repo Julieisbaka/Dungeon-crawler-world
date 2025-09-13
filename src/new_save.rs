@@ -268,18 +268,18 @@ fn create_new_save(
     // Create player.json file (player info)
     let (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution) = generate_stats(&mut rng);
     use std::collections::HashMap;
-    let mut skills = HashMap::new();
-    skills.insert("Walking".to_string(), walking);
-    skills.insert("Swimming".to_string(), swimming);
-    skills.insert("Breathing".to_string(), breathing);
-    let stats = PlayerStats {
+    let mut skills: HashMap<String, i8> = HashMap::new();
+    (&mut skills).insert("Walking".to_string(), walking);
+    (&mut skills).insert("Swimming".to_string(), swimming);
+    (&mut skills).insert("Breathing".to_string(), breathing);
+    let stats: PlayerStats = PlayerStats {
         strength,
         intelligence,
         dexterity,
         charisma,
         constitution,
     };
-    let player = Player {
+    let player: Player = Player {
         name: "".to_string(),
         level: 1,
         spells: HashMap::new(),
