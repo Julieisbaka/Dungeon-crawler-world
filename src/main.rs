@@ -74,8 +74,10 @@ impl Default for DungeonCrawlerworld {
 
 impl App for DungeonCrawlerworld {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        // Always repaint so the FPS graph and other time-based UI update in real time
-        ctx.request_repaint();
+        // Only request repaint when needed (FPS graph is shown and dev mode is enabled)
+        if DEV_MODE_ENABLED && self.settings.developer_mode && self.settings.show_fps_graph {
+            ctx.request_repaint();
+        }
         // Apply fullscreen setting when it changes
         if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
             (*self).last_fullscreen = Some((*self).settings.fullscreen);
@@ -200,11 +202,23 @@ impl App for DungeonCrawlerworld {
             (*self).last_show_console = (*self).settings.show_console;
         }
 
-        // Poll logger and write to in-game console if enabled
-        if (*self).settings.log_to_console {
-            if let Some(rx) = &(*self).log_rx {
-                while let Ok(msg) = rx.try_recv() {
-                    (&mut (*self).console_state).log_line(msg);
+        // Poll logger and write to in-game console only when console is visible and logging is enabled
+        if DEV_MODE_ENABLED 
+            && self.settings.developer_mode 
+            && self.console_open 
+            && self.settings.log_to_console 
+        {
+            if let Some(rx) = &self.log_rx {
+                // Process multiple messages per frame to avoid backlog, but limit to prevent frame drops
+                let mut processed = 0;
+                while processed < 10 {
+                    match rx.try_recv() {
+                        Ok(msg) => {
+                            self.console_state.log_line(msg, self.settings.console_max_lines);
+                            processed += 1;
+                        }
+                        Err(_) => break,
+                    }
                 }
             }
         }
@@ -246,22 +260,22 @@ impl App for DungeonCrawlerworld {
                     "invoke" => {
                         let name: String = (&*parts.collect::<Vec<_>>()).join(" ");
                         if (&name).is_empty() {
-                            (&mut (*self).console_state).log_line("Usage: invoke <ui>");
+                            (&mut (*self).console_state).log_line("Usage: invoke <ui>", (*self).settings.console_max_lines);
                         } else {
                             if DEV_MODE_ENABLED && (*self).settings.developer_mode {
                                 match (&mut (*self).ui_preview).open_preview(&name) {
                                     Ok(()) => (&mut (*self).console_state)
-                                        .log_line(format!("Invoked UI preview: {}", name)),
-                                    Err(e) => (&mut (*self).console_state).log_line(e),
+                                        .log_line(format!("Invoked UI preview: {}", name), (*self).settings.console_max_lines),
+                                    Err(e) => (&mut (*self).console_state).log_line(e, (*self).settings.console_max_lines),
                                 }
                             } else {
                                 (&mut (*self).console_state)
-                                    .log_line("UI previews are only available in Developer Mode.");
+                                    .log_line("UI previews are only available in Developer Mode.", (*self).settings.console_max_lines);
                             }
                         }
                     }
                     // Fallback to built-in commands
-                    _ => (&mut (*self).console_state).run_command(trimmed),
+                    _ => (&mut (*self).console_state).run_command(trimmed, (*self).settings.console_max_lines),
                 }
             }
         }
