@@ -249,3 +249,152 @@ pub fn settings_ui(
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+    use std::path::PathBuf;
+
+    fn test_settings_file_path(temp_dir: &TempDir) -> PathBuf {
+        temp_dir.path().join("test_settings.json")
+    }
+
+    #[test]
+    fn test_settings_default_values() {
+        let settings = Settings::default_inner();
+        
+        assert_eq!(settings.fog, 2);
+        assert_eq!(settings.lighting, 3);
+        assert_eq!(settings.sound, true);
+        assert_eq!(settings.developer_mode, false);
+        assert_eq!(settings.verbose_logging, false);
+        assert_eq!(settings.show_console, false);
+        assert_eq!(settings.show_fps_graph, false);
+        assert_eq!(settings.fullscreen, false);
+        assert_eq!(settings.log_to_console, false);
+        assert_eq!(settings.console_max_lines, 300);
+        assert_eq!(settings.show_save_creation_date, true);
+    }
+
+    #[test]
+    fn test_settings_serialization() {
+        let settings = Settings::default_inner();
+        
+        // Test serialization
+        let json = serde_json::to_string(&settings).unwrap();
+        assert!(json.contains("fog"));
+        assert!(json.contains("lighting"));
+        assert!(json.contains("sound"));
+        
+        // Test deserialization
+        let deserialized: Settings = serde_json::from_str(&json).unwrap();
+        assert_eq!(settings, deserialized);
+    }
+
+    #[test]
+    fn test_settings_pretty_serialization() {
+        let settings = Settings::default_inner();
+        
+        let pretty_json = serde_json::to_string_pretty(&settings).unwrap();
+        assert!(pretty_json.contains("{\n"));
+        assert!(pretty_json.contains("  \"fog\""));
+        assert!(pretty_json.len() > serde_json::to_string(&settings).unwrap().len());
+    }
+
+    #[test]
+    fn test_settings_partial_deserialization() {
+        // Test that settings can be loaded even with missing fields (using defaults)
+        let partial_json = r#"{"fog": 5, "sound": false}"#;
+        
+        let settings: Settings = serde_json::from_str(partial_json).unwrap();
+        assert_eq!(settings.fog, 5);
+        assert_eq!(settings.sound, false);
+        // Other fields should have default values
+        assert_eq!(settings.lighting, 3);
+        assert_eq!(settings.developer_mode, false);
+    }
+
+    #[test]
+    fn test_settings_with_all_features_enabled() {
+        let mut settings = Settings::default_inner();
+        settings.developer_mode = true;
+        settings.verbose_logging = true;
+        settings.show_console = true;
+        settings.show_fps_graph = true;
+        settings.fullscreen = true;
+        settings.log_to_console = true;
+        
+        let json = serde_json::to_string(&settings).unwrap();
+        let deserialized: Settings = serde_json::from_str(&json).unwrap();
+        
+        assert_eq!(deserialized.developer_mode, true);
+        assert_eq!(deserialized.verbose_logging, true);
+        assert_eq!(deserialized.show_console, true);
+        assert_eq!(deserialized.show_fps_graph, true);
+        assert_eq!(deserialized.fullscreen, true);
+        assert_eq!(deserialized.log_to_console, true);
+    }
+
+    #[test]
+    fn test_settings_fog_lighting_ranges() {
+        let mut settings = Settings::default_inner();
+        
+        // Test extreme values for fog and lighting
+        settings.fog = -10;
+        settings.lighting = 100;
+        
+        let json = serde_json::to_string(&settings).unwrap();
+        let deserialized: Settings = serde_json::from_str(&json).unwrap();
+        
+        assert_eq!(deserialized.fog, -10);
+        assert_eq!(deserialized.lighting, 100);
+    }
+
+    #[test]
+    fn test_settings_console_max_lines() {
+        let mut settings = Settings::default_inner();
+        settings.console_max_lines = 1000;
+        
+        let json = serde_json::to_string(&settings).unwrap();
+        let deserialized: Settings = serde_json::from_str(&json).unwrap();
+        
+        assert_eq!(deserialized.console_max_lines, 1000);
+    }
+
+    #[test]
+    fn test_settings_result_default() {
+        let result = SettingsResult::default();
+        assert_eq!(result.request_save, false);
+        assert_eq!(result.request_back, false);
+    }
+
+    #[test]
+    fn test_invalid_json_fallback() {
+        // Test that invalid JSON falls back to defaults
+        let invalid_json = r#"{"fog": "not_a_number"}"#;
+        
+        let result = serde_json::from_str::<Settings>(invalid_json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_settings_clone() {
+        let settings1 = Settings::default_inner();
+        let settings2 = settings1.clone();
+        
+        assert_eq!(settings1, settings2);
+        assert_eq!(settings1.fog, settings2.fog);
+        assert_eq!(settings1.sound, settings2.sound);
+    }
+
+    #[test]
+    fn test_settings_debug() {
+        let settings = Settings::default_inner();
+        let debug_str = format!("{:?}", settings);
+        
+        assert!(debug_str.contains("Settings"));
+        assert!(debug_str.contains("fog"));
+        assert!(debug_str.contains("sound"));
+    }
+}

@@ -29,3 +29,8 @@ egui_commonmark = "0.21"
 
 [build-dependencies]
 pkg-config = "0.3"
+
+[dev-dependencies]
+rand_chacha = "0.3"
+proptest = "1.0"
+tempfile = "3.8"

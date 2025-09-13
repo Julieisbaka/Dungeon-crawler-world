@@ -125,3 +125,120 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
         }
     });
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_console_state_default() {
+        let state = ConsoleState::default();
+        assert!(state.input.is_empty());
+        assert!(state.log.is_empty());
+        assert_eq!(state.scroll_to_end, false);
+        assert!(state.pending.is_empty());
+        assert!(state.last_command.is_none());
+    }
+
+    #[test]
+    fn test_log_line() {
+        let mut state = ConsoleState::default();
+        
+        state.log_line("Test message");
+        assert_eq!(state.log.len(), 1);
+        assert_eq!(state.log[0], "Test message");
+        assert!(state.scroll_to_end);
+    }
+
+    #[test]
+    fn test_clear() {
+        let mut state = ConsoleState::default();
+        
+        state.log_line("Message 1");
+        state.log_line("Message 2");
+        assert_eq!(state.log.len(), 2);
+        
+        state.clear();
+        assert!(state.log.is_empty());
+        assert!(state.scroll_to_end);
+    }
+
+    #[test]
+    fn test_run_command_help() {
+        let mut state = ConsoleState::default();
+        
+        state.run_command("help");
+        
+        assert!(state.log.len() > 0);
+        assert!(state.log[0].contains("Available commands"));
+        assert!(state.log.iter().any(|line| line.contains("help")));
+        assert!(state.log.iter().any(|line| line.contains("clear")));
+        assert!(state.log.iter().any(|line| line.contains("invoke")));
+    }
+
+    #[test]
+    fn test_run_command_clear() {
+        let mut state = ConsoleState::default();
+        
+        state.log_line("Initial message");
+        assert_eq!(state.log.len(), 1);
+        
+        state.run_command("clear");
+        assert!(state.log.is_empty());
+    }
+
+    #[test]
+    fn test_run_command_empty() {
+        let mut state = ConsoleState::default();
+        
+        state.run_command("");
+        state.run_command("   ");
+        
+        // Empty commands should not produce output
+        assert!(state.log.is_empty());
+    }
+
+    #[test]
+    fn test_run_command_unknown() {
+        let mut state = ConsoleState::default();
+        
+        state.run_command("unknown_command");
+        
+        assert!(state.log.len() >= 2);
+        assert!(state.log.iter().any(|line| line.contains("Unknown command")));
+        assert!(state.log.iter().any(|line| line.contains("help")));
+    }
+
+    #[test]
+    fn test_take_pending() {
+        let mut state = ConsoleState::default();
+        
+        // Simulate adding pending commands (this would normally happen in the UI)
+        state.pending.push("command1".to_string());
+        state.pending.push("command2".to_string());
+        
+        let pending = state.take_pending();
+        assert_eq!(pending.len(), 2);
+        assert_eq!(pending[0], "command1");
+        assert_eq!(pending[1], "command2");
+        
+        // After taking, pending should be empty
+        assert!(state.pending.is_empty());
+        
+        // Taking again should return empty vector
+        let pending2 = state.take_pending();
+        assert!(pending2.is_empty());
+    }
+
+    #[test]
+    fn test_command_trimming() {
+        let mut state = ConsoleState::default();
+        
+        state.run_command("  help  ");
+        assert!(state.log.iter().any(|line| line.contains("Available commands")));
+        
+        state.log.clear();
+        state.run_command("  clear  ");
+        assert!(state.log.is_empty());
+    }
+}
