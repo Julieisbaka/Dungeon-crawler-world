@@ -236,12 +236,12 @@ impl App for DungeonCrawlerworld {
             }
             // After UI event handling, process any queued commands
             for cmd in (&mut (*self).console_state).take_pending() {
-                let trimmed = (&*cmd).trim();
+                let trimmed: &str = (&*cmd).trim();
                 if trimmed.is_empty() {
                     continue;
                 }
                 let mut parts: std::str::SplitWhitespace<'_> = trimmed.split_whitespace();
-                let head = (&mut parts).next().unwrap_or("");
+                let head: &str = (&mut parts).next().unwrap_or("");
                 match head {
                     "invoke" => {
                         let name: String = (&*parts.collect::<Vec<_>>()).join(" ");
