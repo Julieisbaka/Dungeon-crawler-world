@@ -23,3 +23,7 @@
 - `.editorconfig` is for editor settings
 
 - `.lock` is used to lock the Cargo configuration
+
+- The game builds into the `target` directory
+
+- Installed node modules are in the `node_modules` directory

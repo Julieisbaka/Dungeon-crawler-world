@@ -234,7 +234,7 @@ fn create_new_save(
     let save_data: Value = json!({
         "save_name": save_name.trim(),
         "difficulty": difficulty.to_string(),
-        "created_at": chrono::Utc::now().to_rfc3339(), // TODO: Add a setting to disable this
+        "created_at": chrono::Utc::now().to_rfc3339(),
         "floor_one": {
             "is_cleared": false,
             "time": floor_one_time
