@@ -8,18 +8,25 @@ use image::{GenericImageView, ImageReader};
 use serde_json::Value;
 
 // Public state to be held by the caller. Not integrated into the app here.
+/// State management for the skills UI system.
+/// 
+/// This struct manages the display and interaction with the game's skill system,
+/// including skill discovery, ownership tracking, and developer preview modes.
 #[derive(Default)]
 pub struct SkillsState {
+    /// Catalog of all discovered skills with their metadata.
     catalog: Vec<SkillMeta>,
+    /// Index of the currently selected skill, if any.
     selected: Option<usize>,
+    /// Whether the skill data has been loaded from disk.
     loaded: bool,
-    /// When true, show all discovered skills as 'owned' for previewing
+    /// When true, show all discovered skills as 'owned' for previewing.
     show_all: bool,
-    /// When true, show a dev-only Show All toggle
+    /// When true, show a dev-only Show All toggle.
     dev_controls: bool,
-    /// When true, hide non-owned skills from the grid
+    /// When true, hide non-owned skills from the grid.
     only_owned: bool,
-    /// Markdown render cache for images/assets
+    /// Markdown render cache for images/assets.
     md_cache: CommonMarkCache,
 }
 
@@ -257,6 +264,15 @@ fn read_player_skills() -> HashMap<String, i8> {
 /// # Arguments
 /// * `ui` - The egui UI to render into.
 /// * `state` - The mutable state for the skills UI.
+/// Renders the skills UI, displaying the skill grid and details.
+/// 
+/// This function creates a comprehensive skills interface with search functionality,
+/// filtering options, and detailed skill information display.
+/// 
+/// # Arguments
+/// 
+/// * `ui` - The egui UI context to render into
+/// * `state` - The mutable state for the skills system
 pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     // Lazy-load catalog when first shown
     if !(*state).loaded {

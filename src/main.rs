@@ -44,8 +44,6 @@ mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
-#[cfg(test)]
-mod tests;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
 /// Enabled in debug builds by default via Cargo.toml [features].

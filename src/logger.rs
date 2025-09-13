@@ -5,6 +5,10 @@ use std::sync::{Mutex, OnceLock};
 static LOGGER: Logger = Logger;
 static LOG_SENDER: OnceLock<Mutex<Option<Sender<String>>>> = OnceLock::new();
 
+/// Custom logger implementation that sends log messages to a channel.
+/// 
+/// This logger allows the application to capture log messages and display
+/// them in the in-game console or other UI components.
 pub struct Logger;
 
 impl Log for Logger {
@@ -28,6 +32,17 @@ impl Log for Logger {
     fn flush(&self) {}
 }
 
+/// Initializes the custom logger system.
+/// 
+/// This function sets up a logger that sends messages to a channel, allowing
+/// the application to display log messages in the UI. It returns both ends
+/// of the channel for sending and receiving log messages.
+/// 
+/// # Returns
+/// 
+/// A tuple containing:
+/// - `Sender<String>` - For sending additional messages to the log
+/// - `Receiver<String>` - For receiving log messages to display in UI
 pub fn init_logger() -> (Sender<String>, Receiver<String>) {
     let (tx, rx) = channel();
     (&LOG_SENDER)

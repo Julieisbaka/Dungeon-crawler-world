@@ -10,7 +10,12 @@ use crate::saves::{self, SaveMenuState};
 use crate::settings::{self, Settings};
 use crate::skills::{self, SkillsState};
 
+/// Manager for UI preview windows in developer mode.
+/// 
+/// This system allows developers to preview different UI components
+/// in separate windows for testing and development purposes.
 pub struct UiPreviewManager {
+    /// Registry of open preview windows by name.
     windows: HashMap<String, PreviewWindow>,
 }
 
@@ -68,6 +73,11 @@ impl UiPreviewManager {
     ///
     /// # Returns
     /// A new `UiPreviewManager` instance.
+    /// Creates a new UI preview manager.
+    /// 
+    /// # Returns
+    /// 
+    /// A new `UiPreviewManager` instance with no preview windows open.
     pub fn new() -> Self {
         Self::default()
     }
@@ -76,6 +86,11 @@ impl UiPreviewManager {
     ///
     /// # Returns
     /// A static slice of string names for all supported preview windows.
+    /// Returns a static list of all known preview window names that can be opened.
+    /// 
+    /// # Returns
+    /// 
+    /// A slice of string literals representing all available preview window types.
     pub fn known_names() -> &'static [&'static str] {
         &[
             "skills",
@@ -96,6 +111,16 @@ impl UiPreviewManager {
     /// # Returns
     /// * `Ok(())` if the window was opened or already exists.
     /// * `Err(String)` if the name is not recognized.
+    /// Opens a preview window for the specified UI component.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `name` - The name of the UI component to preview (e.g., "skills", "settings")
+    /// 
+    /// # Returns
+    /// 
+    /// `Ok(())` if the preview window was successfully opened, or `Err(String)` with
+    /// an error message if the component name is not recognized.
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
         let window: &mut PreviewWindow = match (&key).as_str() {
@@ -196,6 +221,15 @@ impl UiPreviewManager {
     /// # Arguments
     /// * `ctx` - The egui context to use for rendering.
     /// * `dev_enabled` - If true, developer options are enabled in some windows.
+    /// Renders all open preview windows.
+    /// 
+    /// This function iterates through all open preview windows and renders them
+    /// as separate egui windows. Only renders if developer mode is enabled.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `ctx` - The egui context for rendering
+    /// * `dev_enabled` - Whether developer mode is currently enabled
     pub fn render(&mut self, ctx: &Context, dev_enabled: bool) {
         // Render each open preview window
         let mut to_close: Vec<String> = Vec::new();

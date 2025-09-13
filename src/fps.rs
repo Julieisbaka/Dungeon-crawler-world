@@ -1,7 +1,13 @@
 use egui::{Align2, Color32, FontId, Pos2, Stroke, Ui, Vec2};
 
+/// FPS monitoring and graphing utility.
+/// 
+/// This struct maintains a rolling buffer of frame times and provides
+/// a visual graph display with FPS statistics.
 pub struct FpsGraph {
+    /// Rolling buffer of frame times in milliseconds.
     times_ms: std::collections::VecDeque<f32>,
+    /// Maximum number of frame times to keep in the buffer.
     capacity: usize,
 }
 
@@ -15,6 +21,13 @@ impl Default for FpsGraph {
 }
 
 impl FpsGraph {
+    /// Adds a new frame time to the rolling buffer.
+    /// 
+    /// If the buffer is at capacity, the oldest frame time is removed.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `dt_ms` - Frame time in milliseconds
     pub fn push_frame_time(&mut self, dt_ms: f32) {
         if (&(*self).times_ms).len() == (*self).capacity {
             (&mut (*self).times_ms).pop_front();
@@ -22,6 +35,14 @@ impl FpsGraph {
         (&mut (*self).times_ms).push_back(dt_ms);
     }
 
+    /// Renders the FPS graph as an egui widget.
+    /// 
+    /// This creates a visual bar chart showing recent frame times, with
+    /// a 60 FPS reference line and statistical information (avg, min, max FPS).
+    /// 
+    /// # Arguments
+    /// 
+    /// * `ui` - The egui UI context to render into
     pub fn ui(&self, ui: &mut Ui) {
         let desired: Vec2 = Vec2::new(260.0, 80.0);
         let (rect, _resp) = ui.allocate_at_least(desired, egui::Sense::hover());

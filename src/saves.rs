@@ -1,16 +1,27 @@
 use crate::new_save::{show_new_save_ui, NewSaveState};
 use egui::Ui;
 
+/// State management for the save/load menu system.
+/// 
+/// This struct contains all the state needed for displaying and managing
+/// game saves, including creation, editing, and deletion operations.
 pub struct SaveMenuState {
     #[allow(dead_code)]
+    /// Whether the save menu should be displayed.
     pub show_menu: bool,
+    /// State for the new save creation dialog.
     pub new_save_state: NewSaveState,
+    /// Whether the new save creation dialog is currently open.
     pub in_new_save_menu: bool,
+    /// The name of the save currently being edited, if any.
     pub editing_save: Option<String>,
+    /// The new name being entered when editing a save.
     pub edit_save_name: String,
+    /// Whether a delete confirmation dialog is showing.
     pub confirm_delete: bool,
+    /// The name of the save targeted for deletion, if any.
     pub delete_target: Option<String>,
-    // Set to true when the top-level Back is clicked; caller can observe and react
+    /// Set to true when the top-level Back button is clicked.
     pub back_requested: bool,
 }
 
@@ -31,10 +42,14 @@ impl Default for SaveMenuState {
 }
 
 /// Renders the save menu UI, including save slots and actions.
-///
+/// 
+/// This function provides a comprehensive interface for managing game saves,
+/// including creation, loading, editing, and deletion of save files.
+/// 
 /// # Arguments
-/// * `ui` - The egui UI to render into.
-/// * `state` - The mutable state for the save menu.
+/// 
+/// * `ui` - The egui UI context to render into
+/// * `state` - The mutable state for the save menu
 pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     use egui::ColorImage;
     use egui::TextureHandle;
