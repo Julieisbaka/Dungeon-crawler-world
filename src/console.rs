@@ -1,5 +1,5 @@
 // Max lines is now a runtime setting, not a constant.
-use egui::{TextEdit, Ui};
+use egui::{TextEdit, TextBuffer, Ui};
 
 #[derive(Default)]
 pub struct ConsoleState {
