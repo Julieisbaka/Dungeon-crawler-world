@@ -385,7 +385,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         ),
         _ => {}
     }
-    let _total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
+    let total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
     let start: usize = page * PAGE_SIZE;
     let end: usize = ((page + 1) * PAGE_SIZE).min((&filtered).len());
     let page_items: &[(usize, &SkillMeta)] =
