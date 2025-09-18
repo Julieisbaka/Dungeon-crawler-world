@@ -2,43 +2,34 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "properties": {
         "name": {
-            "type": "string",
-            "description": "The player's chosen character name"
+            "type": "string"
         },
         "level": {
-            "type": "number",
-            "description": "The player's current experience level"
+            "type": "number"
         },
         "spells": {
-            "type": "object",
-            "description": "A collection of known spells and their levels"
+            "type": "object"
         },
         "inventory": {
-            "type": "object",
-            "description": "Items and equipment owned by the player"
+            "type": "object"
         },
         "skills": {
-            "type": "object",
-            "description": "Character skills and their current levels"
+            "type": "object"
         },
         "coins": {
-            "type": "integer",
-            "description": "Amount of currency the player possesses"
+            "type": "integer"
         },
         "sub_classes": {
             "type": "array",
-            "description": "Additional specialized classes the player has acquired",
             "items": {
                 "type": "string"
             }
         },
         "class": {
-            "type": "string",
-            "description": "The player's primary character class"
+            "type": "string"
         },        
         "race": {
-            "type": "string",
-            "description": "The player's chosen character race"
+            "type": "string"
         },
         "has_manager": {
             "type": "boolean",
