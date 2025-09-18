@@ -69,6 +69,7 @@ impl ConsoleState {
     }
 
     /// Mark the console as dirty if the input changes
+    #[allow(dead_code)]
     pub fn set_input(&mut self, new_input: String) {
         if (*self).input != new_input {
             (*self).input = new_input;

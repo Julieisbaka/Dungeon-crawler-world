@@ -51,7 +51,7 @@ players to enjoy:
 
 Due to some features in the game affecting time true multiplayer is not possible unless we invent time travel.
 The multiplayer that will be implemented is still with real people but gameplay is altered.
-If you want to play with just friends you can create a private server or use LAN; if you choose to due this then gameplay will not be altered
+If you want to play with just friends you can create a private server or use LAN; if you choose to do this then gameplay will not be altered
 (This is toggleable in the server settings).
 
 </details>

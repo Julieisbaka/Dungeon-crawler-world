@@ -1,7 +1,7 @@
+use crate::player::{Player, PlayerStats};
 use egui::{TextBuffer, TextEdit, Ui};
 use rand::Rng;
 use serde_json::{json, Value};
-use crate::player::{Player, PlayerStats};
 use std::fs;
 use std::path::Path;
 
@@ -171,7 +171,6 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
     should_close
 }
 
-
 /// Generate the time for floor one based on real_time flag.
 pub fn generate_floor_one_time<R: Rng + ?Sized>(real_time: bool, rng: &mut R) -> u32 {
     if real_time {
@@ -202,7 +201,16 @@ pub fn generate_stats<R: Rng + ?Sized>(rng: &mut R) -> (i8, i8, i8, i16, i16, i1
     let dexterity: i16 = rng.gen_range(2..=6);
     let charisma: i16 = rng.gen_range(2..=4);
     let constitution: i16 = rng.gen_range(2..=6);
-    (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution)
+    (
+        walking,
+        swimming,
+        breathing,
+        strength,
+        intelligence,
+        dexterity,
+        charisma,
+        constitution,
+    )
 }
 
 fn create_new_save(
@@ -266,7 +274,8 @@ fn create_new_save(
     )
     .map_err(|e: std::io::Error| -> String { format!("Failed to create save file: {}", e) })?;
     // Create player.json file (player info)
-    let (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution) = generate_stats(&mut rng);
+    let (walking, swimming, breathing, strength, intelligence, dexterity, charisma, constitution) =
+        generate_stats(&mut rng);
     use std::collections::HashMap;
     let mut skills: HashMap<String, i8> = HashMap::new();
     (&mut skills).insert("Walking".to_string(), walking);

@@ -273,7 +273,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
 
     // Controls: Search, Sort, Pagination
     ui.horizontal(|ui| {
-        let mut search: String = unsafe { (&SEARCH).clone().unwrap_or_default() };
+        let mut search: String = unsafe { (&raw const SEARCH).read().clone().unwrap_or_default() };
         ui.label("Search:");
         if (&ui.text_edit_singleline(&mut search)).changed() {
             unsafe {
@@ -335,7 +335,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     ui.add_space(6.0);
 
     // --- Gallery Grid ---
-    let search: String = unsafe { (&SEARCH).clone().unwrap_or_default() };
+    let search: String = unsafe { (&raw const SEARCH).read().clone().unwrap_or_default() };
     let sort_mode: u8 = unsafe { SORT_MODE };
     let page: usize = unsafe { PAGE };
     let mut filtered: Vec<_> = (&*(*state).catalog)
@@ -385,7 +385,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         ),
         _ => {}
     }
-    let total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
+    let _total_pages: usize = ((&filtered).len() + PAGE_SIZE - 1) / PAGE_SIZE;
     let start: usize = page * PAGE_SIZE;
     let end: usize = ((page + 1) * PAGE_SIZE).min((&filtered).len());
     let page_items: &[(usize, &SkillMeta)] =
