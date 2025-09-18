@@ -1,5 +1,5 @@
 {
   "name": "Teleport",
-  "description": "",
+  "description": "A transportation spell that instantly moves the caster to a target location through magical means.",
   "duration": 0
 }
