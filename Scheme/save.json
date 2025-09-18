@@ -32,14 +32,12 @@
                     "description": "Whether the first floor has been cleared"
                 },
                 "time": {
-                    "type": "number",
-                    "description": "The time taken to complete the first floor"
+                    "type": "number"
                 }
             }
         },
         "gamerules": {
             "type": "array",
-            "description": "Special game rules enabled for this save",
             "enum": [
                 "Online", 
                 "Real-time"
