@@ -15,7 +15,7 @@ pub fn set_current_save(save_name: &str) {
 use std::error::Error;
 
 // Import necessary crates and modules from eframe and egui
-use eframe::{App, Frame, NativeOptions};
+use eframe::{App, Frame, NativeOptions}; // TODO: REMOVE EFRAME
 mod logger;
 use egui::{CentralPanel, Context, RichText, Style, Visuals};
 use logger::init_logger;
