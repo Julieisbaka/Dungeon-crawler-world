@@ -39,7 +39,7 @@ impl ConsoleState {
     /// # Arguments
     /// * `cmd` - The command string to execute.
     pub fn run_command(&mut self, cmd: &str) {
-        let trimmed = cmd.trim();
+        let trimmed: &str = cmd.trim();
         match trimmed {
             "help" => {
                 self.push_line("Available commands:");

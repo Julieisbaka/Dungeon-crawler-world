@@ -19,7 +19,7 @@ pub struct Settings {
     pub show_save_creation_date: bool,
 }
 
-const SETTINGS_FILE: &str = "setting.json";
+const SETTINGS_FILE: &str = "settings.json";
 
 impl Settings {
     /// Saves the current settings to a JSON file on disk.

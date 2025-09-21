@@ -34,8 +34,8 @@ mod fps;
 use fps::FpsGraph;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
-/// Enabled in debug builds by default via Cargo.toml [features].
-/// For release builds in CI, we pass --no-default-features to disable it.
+/// Enabled in debug builds by default via `Cargo.toml` [features].
+/// For release builds in CI, we pass `--no-default-features` to disable it.
 const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 
 /// Main app struct with settings state
@@ -264,7 +264,7 @@ impl App for DungeonCrawlerworld {
                             (&mut (*self).console_state).log_line("Usage: invoke <ui>");
                         } else {
                             if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-                                match (&mut (*self).ui_preview).open_preview(&name) {
+                                match (&mut (*self).ui_preview).open_preview(&**&name) {
                                     Ok(()) => (&mut (*self).console_state)
                                         .log_line(format!("Invoked UI preview: {}", name)),
                                     Err(e) => (&mut (*self).console_state).log_line(e),
