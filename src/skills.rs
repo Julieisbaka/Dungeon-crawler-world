@@ -180,7 +180,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
             }
             if !loaded_md && (&*description).trim().is_empty() {
                 // Try both 'description.md' and 'Description.md' (case-insensitive)
-                let candidates = ["description.md", "Description.md"];
+                let candidates: [&str; 2] = ["description.md", "Description.md"];
                 for cand in &candidates {
                     let md_path: PathBuf = (&*dir_path).join(cand);
                     match fs::read_to_string(&md_path) {
@@ -342,15 +342,15 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         .iter()
         .enumerate()
         .filter(|(_, meta)| {
-            let owned_real: bool = (&player_skills).contains_key(&meta.name);
+            let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
             let dev_show_all_active: bool =
                 cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
             let treated_owned: bool = dev_show_all_active || owned_real;
             (!(*state).only_owned || treated_owned)
                 && ((&search).is_empty()
-                    || meta
-                        .name
-                        .to_lowercase()
+                    || (&*(&*(**meta)
+                        .name)
+                        .to_lowercase())
                         .contains(&(&*search).to_lowercase()))
         })
         .collect();

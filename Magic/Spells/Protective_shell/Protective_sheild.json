@@ -1,6 +1,4 @@
 {
   "name": "Protective Shell",
-  "description": {
-    "markdown_file": "Magic/Spells/Protective_shell/Description.md"
-  }
+  "description": "Magic/Spells/Protective_shell/Description.md"
 }

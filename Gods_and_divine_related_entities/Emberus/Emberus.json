@@ -1,7 +1,5 @@
 {
   "name": "Emberus",
-  "description": {
-    "markdown_file": "Gods_and_divine_related_entities/Emberus/Description.md"
-  },
+  "description": "Gods_and_divine_related_entities/Emberus/Description.md",
   "level": 250
 }

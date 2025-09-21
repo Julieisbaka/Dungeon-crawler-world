@@ -1,14 +1,4 @@
 {
   "name": "Enchanted Night Wyrm's Ring of Divine Suffering",
-  "description": {
-    "markdown_file": "Items/Ring_of_divine_suffering/Description.md"
-  },
-  "skills": [
-    {
-      "name": "Marked for death"
-    }
-  ],
-  "equippable": true,
-  "type": "Armor",
-  "equipment_slot": "ring"
+  "description": "Items/Ring_of_divine_suffering/Description.md"
 }
