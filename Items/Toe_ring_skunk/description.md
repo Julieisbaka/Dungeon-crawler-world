@@ -1,0 +1,1 @@
+Imbues wearer with +3 Strength and gives +3 to the Powerful Strike Skill. Also, it’s a toe ring. It’s probably uncomfortable and it makes you look like one of those hippie assholes who sit around in a field juggling and hula-hooping all day.
