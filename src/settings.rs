@@ -22,11 +22,11 @@ pub struct Settings {
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum LogVerbosity {
-    Error,
-    Warn,
-    Info,
-    Debug,
-    Trace,
+    Error = 0,
+    Warn = 1,
+    Info = 2,
+    Debug = 3,
+    Trace = 4,
 }
 
 impl Default for LogVerbosity {
@@ -242,8 +242,8 @@ pub fn settings_ui(
                 });
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Log verbosity:");
-                    let mut verbosity = settings.log_verbosity;
-                    egui::ComboBox::from_id_source("log_verbosity_combo")
+                    let mut verbosity: LogVerbosity = (*settings).log_verbosity;
+                    egui::ComboBox::from_id_salt("log_verbosity_combo")
                         .selected_text(match verbosity {
                             LogVerbosity::Error => "Error",
                             LogVerbosity::Warn => "Warn",
@@ -252,16 +252,22 @@ pub fn settings_ui(
                             LogVerbosity::Trace => "Trace",
                         })
                         .show_ui(ui, |ui| {
-                            for v in [LogVerbosity::Error, LogVerbosity::Warn, LogVerbosity::Info, LogVerbosity::Debug, LogVerbosity::Trace] {
-                                let label = match v {
+                            for v in [
+                                LogVerbosity::Error,
+                                LogVerbosity::Warn,
+                                LogVerbosity::Info,
+                                LogVerbosity::Debug,
+                                LogVerbosity::Trace,
+                            ] {
+                                let label: &str = match v {
                                     LogVerbosity::Error => "Error",
                                     LogVerbosity::Warn => "Warn",
                                     LogVerbosity::Info => "Info",
                                     LogVerbosity::Debug => "Debug",
                                     LogVerbosity::Trace => "Trace",
                                 };
-                                if ui.selectable_value(&mut verbosity, v, label).changed() {
-                                    settings.log_verbosity = v;
+                                if (&ui.selectable_value(&mut verbosity, v, label)).changed() {
+                                    (*settings).log_verbosity = v;
                                     settings.save();
                                 }
                             }

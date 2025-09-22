@@ -114,18 +114,23 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
             let start: usize = log_len.saturating_sub(max_lines);
             for line in (&(&(*state).log)[start..]).iter() {
                 // Advanced syntax highlighting
-                let line = line.as_str();
+                let line: &str = line.as_str();
                 if line.starts_with("Unknown command") || line.starts_with("Error") {
                     ui.label(egui::RichText::new(line).color(egui::Color32::RED).strong());
                     continue;
                 }
                 if line.starts_with("Warning") {
-                    ui.label(egui::RichText::new(line).color(egui::Color32::YELLOW).strong());
+                    ui.label(
+                        egui::RichText::new(line)
+                            .color(egui::Color32::YELLOW)
+                            .strong(),
+                    );
                     continue;
                 }
                 if line.starts_with("Available commands:")
                     || line.starts_with("Type 'help'")
-                    || line.starts_with("Usage:") {
+                    || line.starts_with("Usage:")
+                {
                     ui.label(egui::RichText::new(line).color(egui::Color32::LIGHT_BLUE));
                     continue;
                 }
@@ -135,41 +140,42 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                     continue;
                 }
                 // Tokenize for advanced highlighting
-                let mut tokens = vec![];
-                let mut in_quotes = false;
-                let mut current = String::new();
+                let mut tokens: Vec<(String, &str)> = vec![];
+                let mut in_quotes: bool = false;
+                let mut current: String = String::new();
                 for c in line.chars() {
                     if c == '"' {
                         in_quotes = !in_quotes;
-                        current.push(c);
+                        (&mut current).push(c);
                         if !in_quotes {
-                            tokens.push((current.clone(), "quote"));
-                            current.clear();
+                            (&mut tokens).push(((&current).clone(), "quote"));
+                            (&mut current).clear();
                         }
                         continue;
                     }
                     if in_quotes {
-                        current.push(c);
+                        (&mut current).push(c);
                         continue;
                     }
                     if c.is_whitespace() {
-                        if !current.is_empty() {
-                            tokens.push((current.clone(), "word"));
-                            current.clear();
+                        if !(&current).is_empty() {
+                            (&mut tokens).push(((&current).clone(), "word"));
+                            (&mut current).clear();
                         }
-                        tokens.push((c.to_string(), "space"));
+                        (&mut tokens).push(((&c).to_string(), "space"));
                     } else {
-                        current.push(c);
+                        (&mut current).push(c);
                     }
                 }
-                if !current.is_empty() {
-                    tokens.push((current.clone(), if in_quotes { "quote" } else { "word" }));
+                if !(&current).is_empty() {
+                    (&mut tokens)
+                        .push(((&current).clone(), if in_quotes { "quote" } else { "word" }));
                 }
                 // Render tokens with color
-                ui.horizontal(|ui| {
-                    let mut is_first = true;
+                ui.horizontal(|ui: &mut Ui| {
+                    let mut is_first: bool = true;
                     for (token, kind) in tokens {
-                        let mut text = egui::RichText::new(&token);
+                        let mut text: egui::RichText = egui::RichText::new(&token);
                         match kind {
                             "quote" => {
                                 text = text.color(egui::Color32::GREEN);
@@ -177,18 +183,19 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                             "word" => {
                                 if is_first {
                                     // First word: treat as command
-                                    text = text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
-                                } else if token.parse::<f64>().is_ok() {
+                                    text =
+                                        text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
+                                } else if (&(&*token).parse::<f64>()).is_ok() {
                                     text = text.color(egui::Color32::YELLOW);
                                 }
                             }
-                            "space" => {
-                                // No color
-                            }
+                            "space" => {}
                             _ => {}
                         }
                         ui.label(text);
-                        if kind == "word" { is_first = false; }
+                        if kind == "word" {
+                            is_first = false;
+                        }
                     }
                 });
             }

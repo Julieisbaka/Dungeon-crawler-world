@@ -230,15 +230,26 @@ impl App for DungeonCrawlerworld {
         // Poll logger and write to in-game console if enabled, filter by verbosity
         if (*self).settings.log_to_console {
             if let Some(rx) = &(*self).log_rx {
-                let verbosity = &(*self).settings.log_verbosity;
+                let verbosity: &settings::LogVerbosity = &(*self).settings.log_verbosity;
                 while let Ok(msg) = rx.try_recv() {
                     // Simple filter: look for log level prefix in message
                     // e.g., "[ERROR] ...", "[WARN] ...", "[INFO] ...", "[DEBUG] ...", "[TRACE] ..."
-                    let show = match verbosity {
-                        settings::LogVerbosity::Error => msg.contains("[ERROR]"),
-                        settings::LogVerbosity::Warn => msg.contains("[ERROR]") || msg.contains("[WARN]"),
-                        settings::LogVerbosity::Info => msg.contains("[ERROR]") || msg.contains("[WARN]") || msg.contains("[INFO]"),
-                        settings::LogVerbosity::Debug => msg.contains("[ERROR]") || msg.contains("[WARN]") || msg.contains("[INFO]") || msg.contains("[DEBUG]"),
+                    let show: bool = match verbosity {
+                        settings::LogVerbosity::Error => (&*msg).contains("[ERROR]"),
+                        settings::LogVerbosity::Warn => {
+                            (&*msg).contains("[ERROR]") || (&*msg).contains("[WARN]")
+                        }
+                        settings::LogVerbosity::Info => {
+                            (&*msg).contains("[ERROR]")
+                                || (&*msg).contains("[WARN]")
+                                || (&*msg).contains("[INFO]")
+                        }
+                        settings::LogVerbosity::Debug => {
+                            (&*msg).contains("[ERROR]")
+                                || (&*msg).contains("[WARN]")
+                                || (&*msg).contains("[INFO]")
+                                || (&*msg).contains("[DEBUG]")
+                        }
                         settings::LogVerbosity::Trace => true,
                     };
                     if show {
