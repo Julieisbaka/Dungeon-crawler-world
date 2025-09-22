@@ -63,6 +63,13 @@
       "default": 300,
       "minimum": 50,
       "maximum": 3000
+    },
+    "verbosity": {
+      "type": "integer",
+      "description": "Logging verbosity level. Higher values produce more detailed logs.",
+      "default": 3,
+      "minimum": 1,
+      "maximum": 5
     }
   },
   "additionalItems": false,

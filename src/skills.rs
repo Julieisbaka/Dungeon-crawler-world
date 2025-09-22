@@ -348,10 +348,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             let treated_owned: bool = dev_show_all_active || owned_real;
             (!(*state).only_owned || treated_owned)
                 && ((&search).is_empty()
-                    || (&*(&*(**meta)
-                        .name)
-                        .to_lowercase())
-                        .contains(&(&*search).to_lowercase()))
+                    || (&*(&*(**meta).name).to_lowercase()).contains(&(&*search).to_lowercase()))
         })
         .collect();
     match sort_mode {
@@ -427,7 +424,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                         }
                     });
                 });
-                if (i + 1) % columns == 0 {
+                if &((i + 1) % columns) == &0 {
                     ui.end_row();
                 }
             }

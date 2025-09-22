@@ -1,7 +1,5 @@
 # TODO
 
-- [ ] Add data saving for saves
-
 - [ ] Create a logo for the game
 
 - [ ] Implement a fail safe to save the game in the scenario of a crash

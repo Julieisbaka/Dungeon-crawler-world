@@ -3,10 +3,14 @@
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
-// Global current_save variable
+/// Global variable holding the name of the current save file, protected by a mutex for thread safety.
 pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
     Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
 
+/// Sets the current save file name.
+///
+/// # Arguments
+/// * `save_name` - The name of the save file to set as current.
 pub fn set_current_save(save_name: &str) {
     let mut current: std::sync::MutexGuard<'_, Option<String>> = (&*CURRENT_SAVE).lock().unwrap();
     *current = Some(save_name.to_string());
@@ -41,23 +45,36 @@ const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 /// Main app struct with settings state
 use std::time::{Duration, Instant};
 
+/// Main application struct holding all UI and game state.
 struct DungeonCrawlerworld {
+    /// Whether the settings window is currently shown.
     show_settings: bool,
+    /// Whether the saves menu is currently shown.
     show_saves: bool,
+    /// Current application settings.
     settings: Settings,
+    /// State for the saves menu UI.
     save_menu_state: saves::SaveMenuState,
+    /// State for the developer console.
     console_state: ConsoleState,
+    /// Manager for UI previews (dev mode only).
     ui_preview: UiPreviewManager,
+    /// Last known fullscreen state (for toggling fullscreen mode).
     last_fullscreen: Option<bool>,
+    /// FPS graph data and rendering.
     fps: FpsGraph,
-    // Console session control
+    /// Whether the console is currently open in this session.
     console_open: bool,
+    /// Last value of the show_console setting (to detect toggles).
     last_show_console: bool,
+    /// Receiver for log messages to display in the in-game console.
     log_rx: Option<std::sync::mpsc::Receiver<String>>,
+    /// Last time the console was redrawn (for throttling redraws).
     last_console_redraw: Option<Instant>,
 }
 
 impl Default for DungeonCrawlerworld {
+    /// Creates a new default instance of the main application struct, initializing all state.
     fn default() -> Self {
         let (_log_tx, log_rx) = init_logger();
         Self {
@@ -78,6 +95,11 @@ impl Default for DungeonCrawlerworld {
 }
 
 impl App for DungeonCrawlerworld {
+    /// Updates the application state and renders the UI for each frame.
+    ///
+    /// # Arguments
+    /// * `ctx` - The egui context for UI rendering and input.
+    /// * `_frame` - The eframe frame (unused).
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         // Always repaint so the FPS graph and other time-based UI update in real time
         ctx.request_repaint();
@@ -205,11 +227,23 @@ impl App for DungeonCrawlerworld {
             (*self).last_show_console = (*self).settings.show_console;
         }
 
-        // Poll logger and write to in-game console if enabled
+        // Poll logger and write to in-game console if enabled, filter by verbosity
         if (*self).settings.log_to_console {
             if let Some(rx) = &(*self).log_rx {
+                let verbosity = &(*self).settings.log_verbosity;
                 while let Ok(msg) = rx.try_recv() {
-                    (&mut (*self).console_state).log_line(msg);
+                    // Simple filter: look for log level prefix in message
+                    // e.g., "[ERROR] ...", "[WARN] ...", "[INFO] ...", "[DEBUG] ...", "[TRACE] ..."
+                    let show = match verbosity {
+                        settings::LogVerbosity::Error => msg.contains("[ERROR]"),
+                        settings::LogVerbosity::Warn => msg.contains("[ERROR]") || msg.contains("[WARN]"),
+                        settings::LogVerbosity::Info => msg.contains("[ERROR]") || msg.contains("[WARN]") || msg.contains("[INFO]"),
+                        settings::LogVerbosity::Debug => msg.contains("[ERROR]") || msg.contains("[WARN]") || msg.contains("[INFO]") || msg.contains("[DEBUG]"),
+                        settings::LogVerbosity::Trace => true,
+                    };
+                    if show {
+                        (&mut (*self).console_state).log_line(msg);
+                    }
                 }
             }
         }
@@ -304,12 +338,11 @@ impl App for DungeonCrawlerworld {
     }
 }
 
-// The `main` function is the entry point of your Rust executable.
-// It sets up the eframe environment and runs your egui application.
+/// Entry point for the application. Sets up the window and runs the egui application loop.
 fn main() -> eframe::Result<()> {
     // Define native window options, such as initial size and title.
     let options: NativeOptions = NativeOptions {
-        viewport: egui::ViewportBuilder::default()
+        viewport: (&egui::ViewportBuilder::default)()
             .with_inner_size([400.0, 300.0]) // Initial window size (width, height)
             .with_min_inner_size([300.0, 200.0]) // Minimum resizable size
             .with_title("Dungeon crawler world"), // Window title
@@ -319,7 +352,7 @@ fn main() -> eframe::Result<()> {
     // Run the eframe application.
     // This function takes the application name, options, and a closure
     // that creates and returns your App instance.
-    eframe::run_native(
+    (&eframe::run_native)(
         "Dungeon crawler world", // The name of your application (also used as default window title)
         options,
         Box::new(|creation_context: &eframe::CreationContext<'_>| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {

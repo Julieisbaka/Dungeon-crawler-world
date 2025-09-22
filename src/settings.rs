@@ -13,10 +13,26 @@ pub struct Settings {
     pub show_console: bool,
     pub show_fps_graph: bool,
     pub log_to_console: bool,
+    pub log_verbosity: LogVerbosity,
     pub fullscreen: bool,
     pub console_max_lines: usize,
     /// Show save creation date in saves menu
     pub show_save_creation_date: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum LogVerbosity {
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+impl Default for LogVerbosity {
+    fn default() -> Self {
+        LogVerbosity::Info
+    }
 }
 
 const SETTINGS_FILE: &str = "settings.json";
@@ -58,6 +74,7 @@ impl Settings {
             show_fps_graph: false,
             fullscreen: false,
             log_to_console: false,
+            log_verbosity: LogVerbosity::Info,
             console_max_lines: 300,
             show_save_creation_date: true,
         }
@@ -222,6 +239,33 @@ pub fn settings_ui(
                         (*settings).console_max_lines = lines as usize;
                         settings.save();
                     }
+                });
+                ui.horizontal(|ui: &mut Ui| {
+                    ui.label("Log verbosity:");
+                    let mut verbosity = settings.log_verbosity;
+                    egui::ComboBox::from_id_source("log_verbosity_combo")
+                        .selected_text(match verbosity {
+                            LogVerbosity::Error => "Error",
+                            LogVerbosity::Warn => "Warn",
+                            LogVerbosity::Info => "Info",
+                            LogVerbosity::Debug => "Debug",
+                            LogVerbosity::Trace => "Trace",
+                        })
+                        .show_ui(ui, |ui| {
+                            for v in [LogVerbosity::Error, LogVerbosity::Warn, LogVerbosity::Info, LogVerbosity::Debug, LogVerbosity::Trace] {
+                                let label = match v {
+                                    LogVerbosity::Error => "Error",
+                                    LogVerbosity::Warn => "Warn",
+                                    LogVerbosity::Info => "Info",
+                                    LogVerbosity::Debug => "Debug",
+                                    LogVerbosity::Trace => "Trace",
+                                };
+                                if ui.selectable_value(&mut verbosity, v, label).changed() {
+                                    settings.log_verbosity = v;
+                                    settings.save();
+                                }
+                            }
+                        });
                 });
             });
         }

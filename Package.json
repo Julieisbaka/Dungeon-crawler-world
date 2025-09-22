@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "devDependencies": {
-    "markdownlint-cli2": "0.17.2",
+    "markdownlint-cli2": "0.18.1",
     "path": "^0.12.7"
   },
   "scripts": {

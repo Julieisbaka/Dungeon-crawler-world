@@ -438,7 +438,6 @@ impl UiPreviewManager {
                         .id(id)
                         .open(&mut is_open)
                         .resizable(true)
-                        .vscroll(true)
                         .default_size(egui::vec2(
                             if *max {
                                 screen_size.x

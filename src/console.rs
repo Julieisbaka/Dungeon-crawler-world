@@ -40,15 +40,27 @@ impl ConsoleState {
     /// * `cmd` - The command string to execute.
     pub fn run_command(&mut self, cmd: &str) {
         let trimmed: &str = cmd.trim();
-        match trimmed {
+        // Split command into head and tail for argument parsing
+        let mut parts: std::str::SplitN<'_, char> = trimmed.splitn(2, ' ');
+        let head: &str = (&mut parts).next().unwrap_or("");
+        let tail: &str = (&mut parts).next().unwrap_or("");
+        match head {
             "help" => {
                 self.push_line("Available commands:");
                 self.push_line("  help  - show this message");
                 self.push_line("  clear - clear the console output");
+                self.push_line("  log <message> - log a message to the console");
                 self.push_line("  invoke <ui> - open a preview window for a UI (e.g., skills, new_save, saves, settings, console, quit)");
             }
             "clear" => {
                 self.clear();
+            }
+            "log" => {
+                if tail.trim().is_empty() {
+                    self.push_line("Usage: log <message>");
+                } else {
+                    self.log_line(tail.trim());
+                }
             }
             "" => {}
             other => {
@@ -93,56 +105,132 @@ impl ConsoleState {
 /// * `ui` - The egui UI to render into.
 /// * `state` - The mutable state of the console.
 pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
-    ui.vertical(|ui: &mut Ui| {
-        egui::ScrollArea::vertical()
-            .auto_shrink([false; 2])
-            .stick_to_bottom(true)
-            .show(ui, |ui: &mut Ui| {
-                let log_len: usize = (&(*state).log).len();
-                let start: usize = log_len.saturating_sub(max_lines);
-                for line in (&(&(*state).log)[start..]).iter() {
-                    ui.label(line);
+    // Log output area (scrollable)
+    egui::ScrollArea::vertical()
+        .auto_shrink([false; 2])
+        .stick_to_bottom(true)
+        .show(ui, |ui: &mut Ui| {
+            let log_len: usize = (&(*state).log).len();
+            let start: usize = log_len.saturating_sub(max_lines);
+            for line in (&(&(*state).log)[start..]).iter() {
+                // Advanced syntax highlighting
+                let line = line.as_str();
+                if line.starts_with("Unknown command") || line.starts_with("Error") {
+                    ui.label(egui::RichText::new(line).color(egui::Color32::RED).strong());
+                    continue;
                 }
-                if (*state).scroll_to_end {
-                    ui.scroll_to_cursor(Some(egui::Align::BOTTOM));
-                    (*state).scroll_to_end = false;
+                if line.starts_with("Warning") {
+                    ui.label(egui::RichText::new(line).color(egui::Color32::YELLOW).strong());
+                    continue;
                 }
-            });
-
-        // Stable-size input field and action buttons
-        // Use a visible fixed height to prevent hover-based reflow/resizing
-        let input_resp: egui::Response = ui.add(
-            TextEdit::singleline(&mut (*state).input as &mut dyn TextBuffer)
-                .hint_text("Enter command...")
-                .desired_width(f32::INFINITY),
-        );
-        // Ensure the widget has a reasonable fixed height so the window doesn't flicker/resize
-        ui.add_space(4.0);
-        let pressed_enter: bool = (&input_resp).lost_focus()
-            && ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Enter) });
-        ui.horizontal(|ui: &mut Ui| {
-            if (&ui.add_sized([64.0, 24.0], egui::Button::new("Run"))).clicked() || pressed_enter {
-                let cmd: String = (&(*state).input).clone();
-                if !(&*cmd).trim().is_empty() {
-                    (*state).last_command = Some((&cmd).clone());
+                if line.starts_with("Available commands:")
+                    || line.starts_with("Type 'help'")
+                    || line.starts_with("Usage:") {
+                    ui.label(egui::RichText::new(line).color(egui::Color32::LIGHT_BLUE));
+                    continue;
                 }
-                // Queue the command for external handling in the main loop
-                (&mut (*state).pending).push(cmd);
-                (&mut (*state).input).clear();
+                if line.starts_with("  ") {
+                    // Command help lines
+                    ui.label(egui::RichText::new(line).color(egui::Color32::from_rgb(0, 200, 255)));
+                    continue;
+                }
+                // Tokenize for advanced highlighting
+                let mut tokens = vec![];
+                let mut in_quotes = false;
+                let mut current = String::new();
+                for c in line.chars() {
+                    if c == '"' {
+                        in_quotes = !in_quotes;
+                        current.push(c);
+                        if !in_quotes {
+                            tokens.push((current.clone(), "quote"));
+                            current.clear();
+                        }
+                        continue;
+                    }
+                    if in_quotes {
+                        current.push(c);
+                        continue;
+                    }
+                    if c.is_whitespace() {
+                        if !current.is_empty() {
+                            tokens.push((current.clone(), "word"));
+                            current.clear();
+                        }
+                        tokens.push((c.to_string(), "space"));
+                    } else {
+                        current.push(c);
+                    }
+                }
+                if !current.is_empty() {
+                    tokens.push((current.clone(), if in_quotes { "quote" } else { "word" }));
+                }
+                // Render tokens with color
+                ui.horizontal(|ui| {
+                    let mut is_first = true;
+                    for (token, kind) in tokens {
+                        let mut text = egui::RichText::new(&token);
+                        match kind {
+                            "quote" => {
+                                text = text.color(egui::Color32::GREEN);
+                            }
+                            "word" => {
+                                if is_first {
+                                    // First word: treat as command
+                                    text = text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
+                                } else if token.parse::<f64>().is_ok() {
+                                    text = text.color(egui::Color32::YELLOW);
+                                }
+                            }
+                            "space" => {
+                                // No color
+                            }
+                            _ => {}
+                        }
+                        ui.label(text);
+                        if kind == "word" { is_first = false; }
+                    }
+                });
             }
-            if (&ui.add_sized([64.0, 24.0], egui::Button::new("Clear"))).clicked() {
-                state.clear();
+            if (*state).scroll_to_end {
+                ui.scroll_to_cursor(Some(egui::Align::BOTTOM));
+                (*state).scroll_to_end = false;
             }
         });
 
-        // Up arrow recall: if input is focused and up is pressed, recall last command
-        let input_focused: bool = (&input_resp).has_focus();
-        let up_pressed: bool =
-            ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::ArrowUp) });
-        if input_focused && up_pressed {
-            if let Some(cmd) = &(*state).last_command {
-                (*state).input = cmd.clone();
+    // Input field and action buttons (not scrollable)
+    // Use a visible fixed height to prevent hover-based reflow/resizing
+    let input_resp: egui::Response = ui.add(
+        TextEdit::singleline(&mut (*state).input as &mut dyn TextBuffer)
+            .hint_text("Enter command...")
+            .desired_width(f32::INFINITY),
+    );
+    // Ensure the widget has a reasonable fixed height so the window doesn't flicker/resize
+    ui.add_space(4.0);
+    let pressed_enter: bool = (&input_resp).lost_focus()
+        && ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Enter) });
+    ui.horizontal(|ui: &mut Ui| {
+        if (&ui.add_sized([64.0, 24.0], egui::Button::new("Run"))).clicked() || pressed_enter {
+            let cmd: String = (&(*state).input).clone();
+            if !(&*cmd).trim().is_empty() {
+                (*state).last_command = Some((&cmd).clone());
             }
+            // Queue the command for external handling in the main loop
+            (&mut (*state).pending).push(cmd);
+            (&mut (*state).input).clear();
+        }
+        if (&ui.add_sized([64.0, 24.0], egui::Button::new("Clear"))).clicked() {
+            state.clear();
         }
     });
+
+    // Up arrow recall: if input is focused and up is pressed, recall last command
+    let input_focused: bool = (&input_resp).has_focus();
+    let up_pressed: bool =
+        ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::ArrowUp) });
+    if input_focused && up_pressed {
+        if let Some(cmd) = &(*state).last_command {
+            (*state).input = cmd.clone();
+        }
+    }
 }
