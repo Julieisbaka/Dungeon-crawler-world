@@ -2,6 +2,10 @@
 
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
+use std::panic;
+use std::fs;
+use std::path::Path;
+use serde_json::json;
 
 /// Global variable holding the name of the current save file, protected by a mutex for thread safety.
 pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
@@ -15,6 +19,90 @@ pub fn set_current_save(save_name: &str) {
     let mut current: std::sync::MutexGuard<'_, Option<String>> = (&*CURRENT_SAVE).lock().unwrap();
     *current = Some(save_name.to_string());
     log::info!("Current save set to: {}", save_name);
+}
+
+/// Emergency save function that creates a backup save in case of a crash
+/// 
+/// This function attempts to save the current game state to an emergency backup
+/// when a panic occurs, allowing players to recover their progress.
+fn emergency_save() {
+    if let Ok(current_save_guard) = CURRENT_SAVE.lock() {
+        if let Some(ref current_save) = *current_save_guard {
+            // Create emergency save directory
+            let emergency_dir = Path::new("saves").join("emergency_backups");
+            if let Err(e) = fs::create_dir_all(&emergency_dir) {
+                eprintln!("Failed to create emergency backup directory: {}", e);
+                return;
+            }
+
+            // Generate timestamp for the backup
+            let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
+            let backup_name = format!("{}_emergency_{}", current_save, timestamp);
+            let backup_path = emergency_dir.join(&backup_name);
+
+            // Copy the current save to emergency backup
+            let current_save_path = Path::new("saves").join(current_save);
+            if current_save_path.exists() {
+                if let Err(e) = copy_dir_all(&current_save_path, &backup_path) {
+                    eprintln!("Failed to copy save to emergency backup: {}", e);
+                    return;
+                }
+
+                // Create emergency metadata file
+                let emergency_metadata = json!({
+                    "original_save": current_save,
+                    "emergency_save_time": chrono::Utc::now().to_rfc3339(),
+                    "reason": "Application crash/panic",
+                    "recovery_instructions": "This is an emergency backup created during a crash. Copy contents back to the original save folder to recover."
+                });
+
+                let metadata_path = backup_path.join("emergency_metadata.json");
+                if let Err(e) = fs::write(&metadata_path, serde_json::to_string_pretty(&emergency_metadata).unwrap()) {
+                    eprintln!("Failed to write emergency metadata: {}", e);
+                }
+
+                println!("Emergency save created: {}", backup_path.display());
+                eprintln!("EMERGENCY SAVE CREATED: Your game has been backed up to {}", backup_path.display());
+            } else {
+                eprintln!("Current save path does not exist, cannot create emergency backup");
+            }
+        } else {
+            eprintln!("No current save to backup during emergency");
+        }
+    } else {
+        eprintln!("Could not access current save information for emergency backup");
+    }
+}
+
+/// Recursively copy a directory and all its contents
+fn copy_dir_all(src: &Path, dst: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+
+        if file_type.is_dir() {
+            copy_dir_all(&src_path, &dst_path)?;
+        } else {
+            fs::copy(&src_path, &dst_path)?;
+        }
+    }
+    Ok(())
+}
+
+/// Sets up the panic hook to create emergency saves on crashes
+fn setup_crash_handler() {
+    panic::set_hook(Box::new(|panic_info| {
+        eprintln!("PANIC OCCURRED: {}", panic_info);
+        eprintln!("Attempting to create emergency save...");
+        
+        // Attempt emergency save
+        emergency_save();
+        
+        eprintln!("Emergency save attempt completed. Check the 'saves/emergency_backups' directory.");
+    }));
 }
 use std::error::Error;
 
@@ -36,6 +124,7 @@ mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
+use chrono;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
 /// Enabled in debug builds by default via `Cargo.toml` [features].
@@ -351,6 +440,9 @@ impl App for DungeonCrawlerworld {
 
 /// Entry point for the application. Sets up the window and runs the egui application loop.
 fn main() -> eframe::Result<()> {
+    // Set up crash handler to create emergency saves
+    setup_crash_handler();
+    
     // Define native window options, such as initial size and title.
     let options: NativeOptions = NativeOptions {
         viewport: (&egui::ViewportBuilder::default)()

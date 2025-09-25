@@ -7,6 +7,8 @@ document provides guidelines and instructions for contributing to the project.
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Building and Testing](#building-and-testing)
 - [How to Contribute](#how-to-contribute)
 - [Pull Request Process](#pull-request-process)
 - [Coding Standards](#coding-standards)
@@ -22,12 +24,84 @@ communicate professionally. To view the full Code of Conduct please read the [Co
 ## Getting Started
 
 1. Setup [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-2. Install and setup [Rust](https://www.rust-lang.org/tools/install)
-3. Clone or fork the repository
-4. `cd` into the project directory or open the terminal in the project directory; ensure to go into the root of the project
-5. Run `cargo build` to install dependencies and build the project
-6. Make any changes and run `cargo build` to ensure everything works. After running the `cargo build` command a new directory called `target` will be created in this directory you can find a executable file. You can also use `cargo run` to run the project.
-7. Stage the changes and create a pull request
+2. Install and setup [Rust](https://www.rust-lang.org/tools/install) (version 1.70 or later recommended)
+3. Install system dependencies (platform-specific):
+   - **Linux**: `sudo apt-get install libvulkan-dev libx11-dev libxrandr-dev libxcursor-dev libxi-dev`
+   - **Windows**: Install the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
+   - **macOS**: Install the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home) and ensure Xcode command line tools are installed
+4. Clone or fork the repository: `git clone https://github.com/Julieisbaka/Dungeon-crawler-world.git`
+5. `cd` into the project directory: `cd Dungeon-crawler-world`
+6. Build the project: `cargo build`
+7. Run the project: `cargo run`
+
+## Development Setup
+
+### Prerequisites
+
+- Rust 1.70+ with Cargo
+- Vulkan drivers and SDK
+- Platform-specific GUI libraries (X11, etc.)
+- Node.js (for development tools and package.json scripts)
+
+### Feature Flags
+
+- `dev-mode` (default): Enables developer tools and console
+- `--no-default-features`: Disables developer mode for release builds
+
+### Project Structure
+
+- `src/`: Main source code
+  - `main.rs`: Application entry point and main game loop
+  - `console.rs`: Developer console implementation
+  - `saves.rs`: Save game functionality
+  - `settings.rs`: Game settings management
+  - `skills.rs`: Character skills system
+  - `player.rs`: Player data structures
+- `tests/`: Test suites including save game and stat generation tests
+- `build.rs`: Custom build script for platform setup
+- `Scheme/`: JSON schema files for data validation
+
+## Building and Testing
+
+### Build Commands
+
+```bash
+# Development build (with dev-mode features)
+cargo build --features dev-mode
+
+# Release build (optimized, no dev features)
+cargo build --release --no-default-features
+
+# Run the application
+cargo run
+
+# Run with specific features
+cargo run --features dev-mode
+```
+
+### Testing
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test file
+cargo test new_save_tests
+
+# Run tests with output
+cargo test -- --nocapture
+```
+
+**Note**: Tests require system GUI libraries to link properly. In CI environments without GUI support, tests may fail at the linking stage.
+
+### Automated Workflows
+
+The project includes several GitHub Actions workflows:
+- **CodeQL**: Security scanning on push/PR to main
+- **DevSkim**: Security analysis on push/PR to Main branch  
+- **Dependency Review**: Vulnerability scanning on PRs
+- **Build and Release**: Manual release building for Windows/macOS
+- **Lock File Update**: Automatic Cargo.lock updates
 
 ## How to Contribute
 

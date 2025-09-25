@@ -2,7 +2,7 @@
 
 - [ ] Create a logo for the game
 
-- [ ] Implement a fail safe to save the game in the scenario of a crash
+- [x] Implement a fail safe to save the game in the scenario of a crash
 
 - [ ] Replace Dungeon anarchist cookbook title image
 
