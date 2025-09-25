@@ -36,6 +36,8 @@ mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
+mod version_checker;
+use version_checker::VersionChecker;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
 /// Enabled in debug builds by default via `Cargo.toml` [features].
@@ -71,6 +73,10 @@ struct DungeonCrawlerworld {
     log_rx: Option<std::sync::mpsc::Receiver<String>>,
     /// Last time the console was redrawn (for throttling redraws).
     last_console_redraw: Option<Instant>,
+    /// Version checker for update notifications.
+    version_checker: VersionChecker,
+    /// Last time version was checked.
+    last_version_check: Option<Instant>,
 }
 
 impl Default for DungeonCrawlerworld {
@@ -90,6 +96,8 @@ impl Default for DungeonCrawlerworld {
             last_show_console: Settings::default().show_console,
             log_rx: Some(log_rx),
             last_console_redraw: None,
+            version_checker: VersionChecker::new(),
+            last_version_check: None,
         }
     }
 }
@@ -114,6 +122,40 @@ impl App for DungeonCrawlerworld {
         // Update FPS graph with delta time in ms
         let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { (*i).stable_dt }) * 1000.0;
         (&mut (*self).fps).push_frame_time(dt_ms);
+
+        // VERSION CHECKING
+        // Check for updates on startup or every 30 minutes
+        let now = Instant::now();
+        let should_check_version = match self.last_version_check {
+            None if self.settings.check_updates_on_startup => true,
+            Some(last_check) => now.duration_since(last_check) > Duration::from_secs(30 * 60), // 30 minutes
+            _ => false,
+        };
+
+        if should_check_version {
+            self.last_version_check = Some(now);
+            
+            // Perform version check in a non-blocking way (on the UI thread for simplicity)
+            // In a real implementation, this should be done on a background thread
+            match self.version_checker.check_latest_version() {
+                Ok(Some(latest_version)) => {
+                    if self.version_checker.is_update_available(&self.settings.current_version, &latest_version) {
+                        self.settings.latest_version = Some(latest_version);
+                        log::info!("Update available: {}", self.settings.latest_version.as_ref().unwrap());
+                    } else {
+                        self.settings.latest_version = None;
+                    }
+                }
+                Ok(None) => {
+                    log::info!("No releases found");
+                    self.settings.latest_version = None;
+                }
+                Err(e) => {
+                    log::warn!("Failed to check for updates: {}", e);
+                    // Don't update latest_version on error, keep previous state
+                }
+            }
+        }
 
         // ESCAPE KEY HANDLING
         let escape_pressed: bool =
@@ -150,6 +192,9 @@ impl App for DungeonCrawlerworld {
                                     }
                                     if res.request_back {
                                         back = true;
+                                    }
+                                    if res.request_update {
+                                        self.handle_update_request();
                                     }
                                 },
                             );
@@ -344,6 +389,39 @@ impl App for DungeonCrawlerworld {
                             },
                         );
                     });
+            }
+        }
+    }
+}
+
+impl DungeonCrawlerworld {
+    /// Handle the update request by downloading and installing the new version
+    fn handle_update_request(&mut self) {
+        if let Some(latest_version) = &self.settings.latest_version {
+            log::info!("Starting update process to version {}", latest_version);
+            
+            match self.version_checker.get_download_url(latest_version) {
+                Ok(Some(download_url)) => {
+                    log::info!("Download URL: {}", download_url);
+                    
+                    // For now, we'll just open the download URL in the browser
+                    // A full implementation would download, verify, and install automatically
+                    match webbrowser::open(&download_url) {
+                        Ok(_) => {
+                            log::info!("Opened download page in browser");
+                            // Show a message to the user
+                        }
+                        Err(e) => {
+                            log::error!("Failed to open browser: {}", e);
+                        }
+                    }
+                }
+                Ok(None) => {
+                    log::warn!("No download available for current platform");
+                }
+                Err(e) => {
+                    log::error!("Failed to get download URL: {}", e);
+                }
             }
         }
     }

@@ -18,6 +18,12 @@ pub struct Settings {
     pub console_max_lines: usize,
     /// Show save creation date in saves menu
     pub show_save_creation_date: bool,
+    /// Current version of the game
+    pub current_version: String,
+    /// Latest available version from GitHub
+    pub latest_version: Option<String>,
+    /// Whether to check for updates on startup
+    pub check_updates_on_startup: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -77,6 +83,9 @@ impl Settings {
             log_verbosity: LogVerbosity::Info,
             console_max_lines: 300,
             show_save_creation_date: true,
+            current_version: env!("CARGO_PKG_VERSION").to_string(),
+            latest_version: None,
+            check_updates_on_startup: true,
         }
     }
 }
@@ -91,6 +100,7 @@ impl Default for Settings {
 pub struct SettingsResult {
     pub request_save: bool,
     pub request_back: bool,
+    pub request_update: bool,
 }
 
 impl Default for SettingsResult {
@@ -99,6 +109,7 @@ impl Default for SettingsResult {
         Self {
             request_save: false,
             request_back: false,
+            request_update: false,
         }
     }
 }
@@ -207,6 +218,40 @@ pub fn settings_ui(
             settings.save();
         }
     });
+
+    // UPDATE SECTION
+    ui.separator();
+    ui.heading("Updates");
+    
+    ui.horizontal(|ui: &mut Ui| {
+        ui.label("Check for updates on startup:");
+        if (&ui.checkbox(&mut (*settings).check_updates_on_startup, "Enable")).changed() {
+            settings.save();
+        }
+    });
+    
+    ui.horizontal(|ui: &mut Ui| {
+        ui.label("Current version:");
+        ui.label(&(*settings).current_version);
+    });
+    
+    if let Some(latest_version) = &(*settings).latest_version {
+        ui.horizontal(|ui: &mut Ui| {
+            ui.label("Latest version:");
+            ui.label(latest_version);
+        });
+        
+        ui.horizontal(|ui: &mut Ui| {
+            if (&ui.add_sized([120.0, 28.0], egui::Button::new("Update Now"))).clicked() {
+                result.request_update = true;
+            }
+            ui.label("⚠ A newer version is available!");
+        });
+    } else {
+        ui.horizontal(|ui: &mut Ui| {
+            ui.label("✓ You have the latest version");
+        });
+    }
 
     if dev_mode_available {
         ui.separator();
