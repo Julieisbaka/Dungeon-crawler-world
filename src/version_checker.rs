@@ -133,3 +133,59 @@ impl Default for VersionChecker {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_version_comparison() {
+        let checker = VersionChecker::new();
+        
+        // Test basic version comparison
+        assert!(checker.is_update_available("0.0.7", "0.0.8"));
+        assert!(checker.is_update_available("0.0.7", "0.1.0"));
+        assert!(checker.is_update_available("0.0.7", "1.0.0"));
+        
+        // Test same version
+        assert!(!checker.is_update_available("0.0.7", "0.0.7"));
+        
+        // Test older version
+        assert!(!checker.is_update_available("0.0.8", "0.0.7"));
+        
+        // Test pre-release versions
+        assert!(checker.is_update_available("0.0.7", "0.0.8-beta"));
+        assert!(!checker.is_update_available("0.0.8-beta", "0.0.7"));
+    }
+    
+    #[test]
+    fn test_invalid_versions() {
+        let checker = VersionChecker::new();
+        
+        // Invalid version strings should return false (no update)
+        assert!(!checker.is_update_available("invalid", "0.0.8"));
+        assert!(!checker.is_update_available("0.0.7", "invalid"));
+        assert!(!checker.is_update_available("invalid", "invalid"));
+    }
+    
+    #[test]
+    fn test_github_api_call() {
+        let checker = VersionChecker::new();
+        
+        // This is a real API call - may fail in CI without internet
+        // But it's useful for manual testing
+        match checker.check_latest_version() {
+            Ok(Some(version)) => {
+                println!("Latest version found: {}", version);
+                assert!(!version.is_empty());
+            }
+            Ok(None) => {
+                println!("No stable releases found");
+            }
+            Err(e) => {
+                println!("API call failed (expected in CI): {}", e);
+                // Don't fail the test if API is unavailable
+            }
+        }
+    }
+}

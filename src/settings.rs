@@ -242,14 +242,18 @@ pub fn settings_ui(
         });
         
         ui.horizontal(|ui: &mut Ui| {
-            if (&ui.add_sized([120.0, 28.0], egui::Button::new("Update Now"))).clicked() {
+            if (&ui.add_sized([120.0, 32.0], egui::Button::new("🔄 Update Now"))).clicked() {
                 result.request_update = true;
             }
-            ui.label("⚠ A newer version is available!");
+            ui.colored_label(egui::Color32::from_rgb(255, 165, 0), "⚠ A newer version is available!");
+        });
+        
+        ui.horizontal(|ui: &mut Ui| {
+            ui.colored_label(egui::Color32::from_rgb(128, 128, 128), "Click 'Update Now' to download the latest version.");
         });
     } else {
         ui.horizontal(|ui: &mut Ui| {
-            ui.label("✓ You have the latest version");
+            ui.colored_label(egui::Color32::from_rgb(0, 255, 0), "✓ You have the latest version");
         });
     }
 

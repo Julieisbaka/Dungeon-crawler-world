@@ -402,25 +402,27 @@ impl DungeonCrawlerworld {
             
             match self.version_checker.get_download_url(latest_version) {
                 Ok(Some(download_url)) => {
-                    log::info!("Download URL: {}", download_url);
+                    log::info!("Opening download page: {}", download_url);
                     
-                    // For now, we'll just open the download URL in the browser
-                    // A full implementation would download, verify, and install automatically
+                    // Open the download URL in the browser
                     match webbrowser::open(&download_url) {
                         Ok(_) => {
-                            log::info!("Opened download page in browser");
-                            // Show a message to the user
+                            log::info!("Successfully opened download page in browser");
+                            log::info!("Please download and install the update, then restart the application");
                         }
                         Err(e) => {
                             log::error!("Failed to open browser: {}", e);
+                            log::error!("Please manually visit: {}", download_url);
                         }
                     }
                 }
                 Ok(None) => {
                     log::warn!("No download available for current platform");
+                    log::info!("Please visit https://github.com/Julieisbaka/Dungeon-crawler-world/releases for manual download");
                 }
                 Err(e) => {
                     log::error!("Failed to get download URL: {}", e);
+                    log::info!("Please visit https://github.com/Julieisbaka/Dungeon-crawler-world/releases for manual download");
                 }
             }
         }
