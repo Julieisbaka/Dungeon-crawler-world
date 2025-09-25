@@ -54,7 +54,7 @@ impl Settings {
     pub fn load() -> Self {
         if Path::new(SETTINGS_FILE).exists() {
             if let Ok(data) = fs::read_to_string(SETTINGS_FILE) {
-                if let Ok(settings) = serde_json::from_str::<Settings>(&**&data) {
+                if let Ok(settings) = serde_json::from_str::<Settings>(&data) {
                     return settings;
                 }
             }

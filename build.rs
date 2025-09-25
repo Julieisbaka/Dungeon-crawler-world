@@ -21,17 +21,17 @@ fn check_dependencies() {
     println!("cargo:warning=Checking for required build dependencies...");
 
     // For packaging, these would be needed but not required for the build itself
-    if (&std::env::var("CARGO_FEATURE_PACKAGE")).is_ok() {
+    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() {
         // TODO: IDK if this actually works so please check that it does
         if cfg!(target_os = "windows") {
             // Check for WiX Toolset (for MSI creation)
-            let wix: bool = (&(&mut Command::new("where")).arg("candle").output()).is_ok();
+            let wix: bool = Command::new("where").arg("candle").output().is_ok();
             if !wix {
                 println!("cargo:warning=WiX Toolset not found. MSI creation may fail.");
             }
         } else if cfg!(target_os = "macos") {
             // Check for pkgbuild (for DMG creation)
-            let pkgbuild: bool = (&(&mut Command::new("which")).arg("pkgbuild").output()).is_ok();
+            let pkgbuild: bool = Command::new("which").arg("pkgbuild").output().is_ok();
             if !pkgbuild {
                 println!("cargo:warning=pkgbuild not found. DMG creation may fail.");
             }
@@ -48,10 +48,10 @@ fn setup_vulkan() {
         println!("cargo:include={}/Include", vulkan_sdk);
     } else if cfg!(target_os = "linux") {
         // Linux fallback using pkg-config
-        if (&(&mut Command::new("pkg-config"))
+        if Command::new("pkg-config")
             .arg("--exists")
             .arg("vulkan")
-            .status())
+            .status()
             .is_ok()
         {
             println!("cargo:rustc-link-lib=vulkan");
@@ -64,15 +64,48 @@ fn setup_vulkan() {
         println!("cargo:rustc-link-lib=framework=MetalKit");
         println!("cargo:rustc-link-lib=framework=QuartzCore"); // For CAMetalLayer
 
-        // Check for MoltenVK
-        if let Ok(home) = env::var("HOME") {
-            let moltenvk_path: String = format!("{}/MoltenVK/dylib", home);
-            if std::path::Path::new(&moltenvk_path).exists() {
-                println!("cargo:rustc-link-search=native={}", moltenvk_path);
+        // Check for MoltenVK in multiple potential locations
+        let moltenvk_found = if let Ok(vulkan_sdk) = env::var("VULKAN_SDK") {
+            let sdk_path = format!("{}/lib", vulkan_sdk);
+            if std::path::Path::new(&sdk_path).join("libMoltenVK.dylib").exists() {
+                println!("cargo:rustc-link-search=native={}", sdk_path);
                 println!("cargo:rustc-link-lib=MoltenVK");
+                true
             } else {
-                println!("cargo:warning=MoltenVK not found in ~/MoltenVK/dylib. Vulkan support may be limited.");
+                false
             }
+        } else if let Ok(home) = env::var("HOME") {
+            let home_path = format!("{}/MoltenVK/dylib", home);
+            if std::path::Path::new(&home_path).exists() {
+                println!("cargo:rustc-link-search=native={}", home_path);
+                println!("cargo:rustc-link-lib=MoltenVK");
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+        
+        // Check system-wide MoltenVK installation
+        if !moltenvk_found {
+            let system_paths = [
+                "/usr/local/lib",
+                "/opt/homebrew/lib",
+                "/Applications/MoltenVKPackaging/macOS/dynamic/MoltenVK/dynamic/dylib/macOS"
+            ];
+            
+            for path in &system_paths {
+                if std::path::Path::new(path).join("libMoltenVK.dylib").exists() {
+                    println!("cargo:rustc-link-search=native={}", path);
+                    println!("cargo:rustc-link-lib=MoltenVK");
+                    break;
+                }
+            }
+        }
+        
+        if !moltenvk_found {
+            println!("cargo:warning=MoltenVK not found. Install MoltenVK for Vulkan support on macOS.");
         }
     }
 
@@ -94,8 +127,8 @@ fn handle_json_data() {
     println!("cargo:rerun-if-changed=achievements/");
 
     // Create resources.rs with embedded files if needed
-    let resources_path: PathBuf = (&*out_dir).join("resources.rs");
-    if !(&*resources_path).exists() {
+    let resources_path: PathBuf = out_dir.join("resources.rs");
+    if !resources_path.exists() {
         std::fs::write(&resources_path, "// Auto-generated resource mappings\n").unwrap();
     }
 }
