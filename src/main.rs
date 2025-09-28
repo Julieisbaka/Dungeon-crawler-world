@@ -92,6 +92,7 @@ struct App {
     egui_wgpu: Option<egui_wgpu::Renderer>,
     egui_ctx: egui::Context,
     dungeon_crawler: DungeonCrawlerworld,
+    should_quit: bool,
 }
 
 impl Default for App {
@@ -112,6 +113,7 @@ impl Default for App {
             egui_wgpu: None,
             egui_ctx,
             dungeon_crawler: DungeonCrawlerworld::default(),
+            should_quit: false,
         }
     }
 }
@@ -142,7 +144,8 @@ impl DungeonCrawlerworld {
     ///
     /// # Arguments
     /// * `ctx` - The egui context for UI rendering and input.
-    fn update(&mut self, ctx: &Context) {
+    /// * `should_quit` - Mutable reference to a flag indicating whether to quit
+    fn update(&mut self, ctx: &Context, should_quit: &mut bool) {
         // Always repaint so the FPS graph and other time-based UI update in real time
         ctx.request_repaint();
         // Apply fullscreen setting when it changes
@@ -242,7 +245,7 @@ impl DungeonCrawlerworld {
                                     ui.label("Are you sure you want to quit?");
                                     ui.horizontal(|ui: &mut egui::Ui| {
                                         if (&ui.button("Yes")).clicked() {
-                                            // Will need to handle exit via winit
+                                            *should_quit = true;
                                             quit_confirm = false;
                                         }
                                         if (&ui.button("No")).clicked() {
@@ -426,6 +429,9 @@ impl ApplicationHandler for App {
                 }
                 WindowEvent::RedrawRequested => {
                     self.render();
+                    if self.should_quit {
+                        event_loop.exit();
+                    }
                 }
                 _ => {}
             }
@@ -523,7 +529,7 @@ impl App {
             // Begin egui frame
             let raw_input = egui_winit.take_egui_input(window);
             let full_output = self.egui_ctx.run(raw_input, |ctx| {
-                self.dungeon_crawler.update(ctx);
+                self.dungeon_crawler.update(ctx, &mut self.should_quit);
             });
 
             // Handle egui output
@@ -551,7 +557,7 @@ impl App {
             egui_wgpu.update_buffers(device, queue, &mut encoder, &tris, &screen_descriptor);
 
             let command_buffer = {
-                let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                let render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: Some("Render Pass"),
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                         view: &view,
@@ -571,8 +577,12 @@ impl App {
                     timestamp_writes: None,
                 });
 
-                egui_wgpu.render(&mut render_pass, &tris, &screen_descriptor);
-                drop(render_pass);
+                egui_wgpu.render(
+                    &mut render_pass.forget_lifetime(),
+                    &tris,
+                    &screen_descriptor,
+                );
+                
                 encoder.finish()
             };
 
