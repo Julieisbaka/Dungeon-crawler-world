@@ -332,7 +332,7 @@ impl UiPreviewManager {
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
-                                    let label = if *max { "Restore" } else { "Maximize" };
+                                    let label: &str = if *max { "Restore" } else { "Maximize" };
                                     if (&ui.button(label)).clicked() {
                                         *max = !*max;
                                     }
@@ -412,7 +412,7 @@ impl UiPreviewManager {
                             },
                         ))
                         .max_size(screen_size)
-                        .show(ctx, |ui| {
+                        .show(ctx, |ui: &mut egui::Ui| {
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {

@@ -272,7 +272,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     const PAGE_SIZE: usize = 12;
 
     // Controls: Search, Sort, Pagination
-    ui.horizontal(|ui| {
+    ui.horizontal(|ui: &mut Ui| {
         let mut search: String = unsafe { (&SEARCH).clone().unwrap_or_default() };
         ui.label("Search:");
         if (&ui.text_edit_singleline(&mut search)).changed() {
@@ -314,7 +314,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         ui.label(format!("Page {}", page + 1));
         let filtered_count: usize = (&*(*state).catalog)
             .iter()
-            .filter(|meta| {
+            .filter(|meta: &&SkillMeta| {
                 let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
                 let dev_show_all_active: bool =
                     cfg!(feature = "dev-mode") && (*state).dev_controls && (*state).show_all;
@@ -396,7 +396,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     let columns: usize = 4;
     egui::Grid::new("skills_gallery_grid")
         .spacing(Vec2::splat(12.0))
-        .show(ui, |ui| {
+        .show(ui, |ui: &mut Ui| {
             for (i, (idx, meta)) in page_items.iter().enumerate() {
                 let owned_real: bool = (&player_skills).contains_key(&(**meta).name);
                 let dev_show_all_active: bool =
@@ -407,9 +407,9 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 if !treated_owned {
                     frame = frame.fill(egui::Color32::from_gray(30));
                 }
-                frame.show(ui, |ui| {
+                frame.show(ui, |ui: &mut Ui| {
                     ui.set_min_size(Vec2::new(140.0, 140.0));
-                    ui.vertical_centered(|ui| {
+                    ui.vertical_centered(|ui: &mut Ui| {
                         if treated_owned {
                             if let Some(tex) = &(**meta).icon {
                                 ui.add(egui::Image::new(tex).fit_to_exact_size(Vec2::splat(72.0)));

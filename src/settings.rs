@@ -251,7 +251,7 @@ pub fn settings_ui(
                             LogVerbosity::Debug => "Debug",
                             LogVerbosity::Trace => "Trace",
                         })
-                        .show_ui(ui, |ui| {
+                        .show_ui(ui, |ui: &mut Ui| {
                             for v in [
                                 LogVerbosity::Error,
                                 LogVerbosity::Warn,

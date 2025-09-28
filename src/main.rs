@@ -275,7 +275,7 @@ impl App for DungeonCrawlerworld {
                 .vscroll(true)
                 .hscroll(false)
                 .default_size(egui::vec2(500.0, 250.0))
-                .show(ctx, |ui| {
+                .show(ctx, |ui: &mut egui::Ui| {
                     // Always render the console UI so input is processed
                     console_ui(
                         ui,
