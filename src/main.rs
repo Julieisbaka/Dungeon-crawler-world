@@ -81,17 +81,34 @@ struct DungeonCrawlerworld {
     last_console_redraw: Option<Instant>,
 }
 
-/// Application state that manages the window and rendering
+/// Application state that manages the window and rendering.
+///
+/// This struct coordinates between winit (window management), wgpu (GPU rendering),
+/// and egui (UI framework). It holds all the state needed for the application lifecycle:
+/// - Window creation and management via winit
+/// - GPU device, queue, and surface for wgpu rendering
+/// - egui integration for UI rendering through egui-winit and egui-wgpu
+/// - The main game/application logic in DungeonCrawlerworld
 struct App {
+    /// The application window, wrapped in Arc for shared ownership with wgpu surface
     window: Option<std::sync::Arc<Window>>,
+    /// wgpu surface for rendering to the window
     surface: Option<wgpu::Surface<'static>>,
+    /// wgpu device for creating GPU resources
     device: Option<wgpu::Device>,
+    /// wgpu command queue for submitting rendering commands
     queue: Option<wgpu::Queue>,
+    /// Configuration for the wgpu surface (size, format, present mode)
     surface_config: Option<wgpu::SurfaceConfiguration>,
+    /// egui-winit state for handling window events and input
     egui_winit: Option<egui_winit::State>,
+    /// egui-wgpu renderer for drawing egui UI with wgpu
     egui_wgpu: Option<egui_wgpu::Renderer>,
+    /// egui context shared across all UI rendering
     egui_ctx: egui::Context,
+    /// The main application/game logic and state
     dungeon_crawler: DungeonCrawlerworld,
+    /// Flag to signal when the application should quit
     should_quit: bool,
 }
 
@@ -112,6 +129,8 @@ impl Default for App {
             egui_winit: None,
             egui_wgpu: None,
             egui_ctx,
+            // Initialize the main game logic with default settings, empty save state,
+            // and sets up the logging system for the in-game console
             dungeon_crawler: DungeonCrawlerworld::default(),
             should_quit: false,
         }
@@ -145,13 +164,19 @@ impl DungeonCrawlerworld {
     /// # Arguments
     /// * `ctx` - The egui context for UI rendering and input.
     /// * `should_quit` - Mutable reference to a flag indicating whether to quit
-    fn update(&mut self, ctx: &Context, should_quit: &mut bool) {
+    /// * `window` - Reference to the winit window for fullscreen control
+    fn update(&mut self, ctx: &Context, should_quit: &mut bool, window: &Window) {
         // Always repaint so the FPS graph and other time-based UI update in real time
         ctx.request_repaint();
         // Apply fullscreen setting when it changes
         if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
             (*self).last_fullscreen = Some((*self).settings.fullscreen);
-            // Note: Fullscreen handling will need to be managed via winit window
+            // Set fullscreen mode via winit
+            if (*self).settings.fullscreen {
+                window.set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
+            } else {
+                window.set_fullscreen(None);
+            }
         }
 
         // Update FPS graph with delta time in ms
@@ -493,8 +518,8 @@ impl App {
             egui::ViewportId::ROOT,
             &window,
             Some(window.scale_factor() as f32),
-            None, // theme
-            Some(2048), // max_texture_side
+            None, // theme: None uses system theme detection; dark theme is already set in egui_ctx
+            Some(2048), // max_texture_side: maximum texture size for egui textures
         );
 
         // Initialize egui-wgpu renderer
@@ -529,7 +554,7 @@ impl App {
             // Begin egui frame
             let raw_input = egui_winit.take_egui_input(window);
             let full_output = self.egui_ctx.run(raw_input, |ctx| {
-                self.dungeon_crawler.update(ctx, &mut self.should_quit);
+                self.dungeon_crawler.update(ctx, &mut self.should_quit, window);
             });
 
             // Handle egui output
