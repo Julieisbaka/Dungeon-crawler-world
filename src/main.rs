@@ -504,8 +504,12 @@ impl App {
             format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: surface_caps.present_modes[0],
-            alpha_mode: surface_caps.alpha_modes[0],
+            present_mode: surface_caps.present_modes.iter().copied()
+                .find(|mode| matches!(mode, wgpu::PresentMode::AutoVsync | wgpu::PresentMode::Fifo))
+                .unwrap_or(surface_caps.present_modes[0]),
+            alpha_mode: surface_caps.alpha_modes.iter().copied()
+                .find(|mode| matches!(mode, wgpu::CompositeAlphaMode::Auto | wgpu::CompositeAlphaMode::PreMultiplied))
+                .unwrap_or(surface_caps.alpha_modes[0]),
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
