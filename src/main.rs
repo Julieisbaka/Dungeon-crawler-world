@@ -391,22 +391,22 @@ impl winit::application::ApplicationHandler for WinitApp {
         }
         
         // Create window
-        let window_attrs = winit::window::WindowAttributes::default()
+        let window_attrs: winit::window::WindowAttributes = winit::window::WindowAttributes::default()
             .with_title("Dungeon crawler world")
             .with_inner_size(winit::dpi::PhysicalSize::new(400, 300))
             .with_min_inner_size(winit::dpi::PhysicalSize::new(300, 200));
         
-        let window = Arc::new(event_loop.create_window(window_attrs).unwrap());
+        let window: Arc<Window> = Arc::new(event_loop.create_window(window_attrs).unwrap());
         
         // Initialize wgpu
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+        let instance: wgpu::Instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             ..Default::default()
         });
         
-        let surface = instance.create_surface(window.clone()).unwrap();
+        let surface: wgpu::Surface<'_> = instance.create_surface(window.clone()).unwrap();
         
-        let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+        let adapter: wgpu::Adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::default(),
             compatible_surface: Some(&surface),
             force_fallback_adapter: false,
@@ -424,20 +424,20 @@ impl winit::application::ApplicationHandler for WinitApp {
         ))
         .unwrap();
         
-        let size = window.inner_size();
-        let surface_config = surface
+        let size: winit::dpi::PhysicalSize<u32> = window.inner_size();
+        let surface_config: wgpu::wgt::SurfaceConfiguration<Vec<wgpu::TextureFormat>> = surface
             .get_default_config(&adapter, size.width, size.height)
             .unwrap();
         surface.configure(&device, &surface_config);
         
         // Initialize egui
-        let egui_ctx = egui::Context::default();
+        let egui_ctx: Context = egui::Context::default();
         egui_ctx.set_style(Style {
             visuals: Visuals::dark(),
             ..Default::default()
         });
         
-        let egui_winit_state = egui_winit::State::new(
+        let egui_winit_state: egui_winit::State = egui_winit::State::new(
             egui_ctx.clone(),
             ViewportId::ROOT,
             event_loop,
@@ -446,7 +446,7 @@ impl winit::application::ApplicationHandler for WinitApp {
             Some(wgpu::Limits::default().max_texture_dimension_2d as usize),
         );
         
-        let egui_renderer = egui_wgpu::Renderer::new(
+        let egui_renderer: egui_wgpu::Renderer = egui_wgpu::Renderer::new(
             &device,
             surface_config.format,
             None,
@@ -455,7 +455,7 @@ impl winit::application::ApplicationHandler for WinitApp {
         );
         
         // Create app
-        let app = DungeonCrawlerworld::new();
+        let app: DungeonCrawlerworld = DungeonCrawlerworld::new();
         
         self.window = Some(window);
         self.device = Some(device);
@@ -474,10 +474,10 @@ impl winit::application::ApplicationHandler for WinitApp {
         _window_id: winit::window::WindowId,
         event: WindowEvent,
     ) {
-        let window = self.window.as_ref().unwrap();
-        let egui_winit_state = self.egui_winit_state.as_mut().unwrap();
+        let window: &Arc<Window> = self.window.as_ref().unwrap();
+        let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
         
-        let response = egui_winit_state.on_window_event(window, &event);
+        let response: egui_winit::EventResponse = egui_winit_state.on_window_event(window, &event);
         if response.consumed {
             return;
         }
@@ -525,17 +525,17 @@ impl winit::application::ApplicationHandler for WinitApp {
 
 impl WinitApp {
     fn render(&mut self) {
-        let window = self.window.as_ref().unwrap();
-        let device = self.device.as_ref().unwrap();
-        let queue = self.queue.as_ref().unwrap();
-        let surface = self.surface.as_ref().unwrap();
-        let surface_config = self.surface_config.as_ref().unwrap();
-        let egui_ctx = self.egui_ctx.as_ref().unwrap();
-        let egui_winit_state = self.egui_winit_state.as_mut().unwrap();
-        let egui_renderer = self.egui_renderer.as_mut().unwrap();
-        let app = self.app.as_mut().unwrap();
+        let window: &Arc<Window> = self.window.as_ref().unwrap();
+        let device: &egui_wgpu::wgpu::Device = self.device.as_ref().unwrap();
+        let queue: &egui_wgpu::wgpu::Queue = self.queue.as_ref().unwrap();
+        let surface: &egui_wgpu::wgpu::Surface<'_> = self.surface.as_ref().unwrap();
+        let surface_config: &egui_wgpu::wgpu::wgt::SurfaceConfiguration<Vec<egui_wgpu::wgpu::TextureFormat>> = self.surface_config.as_ref().unwrap();
+        let egui_ctx: &Context = self.egui_ctx.as_ref().unwrap();
+        let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
+        let egui_renderer: &mut egui_wgpu::Renderer = self.egui_renderer.as_mut().unwrap();
+        let app: &mut DungeonCrawlerworld = self.app.as_mut().unwrap();
         
-        let output_frame = match surface.get_current_texture() {
+        let output_frame: egui_wgpu::wgpu::SurfaceTexture = match surface.get_current_texture() {
             Ok(frame) => frame,
             Err(e) => {
                 log::error!("Failed to acquire next swap chain texture: {}", e);
@@ -543,13 +543,13 @@ impl WinitApp {
             }
         };
         
-        let output_view = output_frame
+        let output_view: egui_wgpu::wgpu::TextureView = output_frame
             .texture
             .create_view(&egui_wgpu::wgpu::TextureViewDescriptor::default());
         
         // Begin egui frame
-        let raw_input = egui_winit_state.take_egui_input(window);
-        let full_output = egui_ctx.run(raw_input, |ctx| {
+        let raw_input: egui::RawInput = egui_winit_state.take_egui_input(window);
+        let full_output: egui::FullOutput = egui_ctx.run(raw_input, |ctx: &Context| {
             app.update(ctx, window);
         });
         
@@ -557,14 +557,14 @@ impl WinitApp {
         egui_winit_state.handle_platform_output(window, full_output.platform_output);
         
         // Render egui
-        let paint_jobs = egui_ctx.tessellate(full_output.shapes, full_output.pixels_per_point);
+        let paint_jobs: Vec<egui::ClippedPrimitive> = egui_ctx.tessellate(full_output.shapes, full_output.pixels_per_point);
         
-        let screen_descriptor = egui_wgpu::ScreenDescriptor {
+        let screen_descriptor: egui_wgpu::ScreenDescriptor = egui_wgpu::ScreenDescriptor {
             size_in_pixels: [surface_config.width, surface_config.height],
             pixels_per_point: window.scale_factor() as f32,
         };
         
-        let mut encoder = device.create_command_encoder(&egui_wgpu::wgpu::CommandEncoderDescriptor {
+        let mut encoder: egui_wgpu::wgpu::CommandEncoder = device.create_command_encoder(&egui_wgpu::wgpu::CommandEncoderDescriptor {
             label: Some("egui encoder"),
         });
         
@@ -581,7 +581,7 @@ impl WinitApp {
         // but the RenderPass actually only needs to live until it's dropped.
         // This is safe because we immediately drop rpass before finishing encoder.
         {
-            let mut rpass = encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
+            let mut rpass: egui_wgpu::wgpu::RenderPass<'_> = encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
                 label: Some("egui main render pass"),
                 color_attachments: &[Some(egui_wgpu::wgpu::RenderPassColorAttachment {
                     view: &output_view,
@@ -613,8 +613,8 @@ impl WinitApp {
 
 /// Entry point for the application. Sets up the window and runs the event loop with wgpu/egui.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let event_loop = EventLoop::new()?;
-    let mut app = WinitApp::new();
+    let event_loop: EventLoop<()> = EventLoop::new()?;
+    let mut app: WinitApp = WinitApp::new();
     event_loop.run_app(&mut app)?;
     Ok(())
 }
