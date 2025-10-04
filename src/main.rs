@@ -1,7 +1,7 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 /// Global variable holding the name of the current save file, protected by a mutex for thread safety.
 pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
@@ -16,12 +16,10 @@ pub fn set_current_save(save_name: &str) {
     *current = Some(save_name.to_string());
     log::info!("Current save set to: {}", save_name);
 }
-use std::error::Error;
 
-// Import necessary crates and modules from eframe and egui
-use eframe::{App, Frame, NativeOptions}; // TODO: REMOVE EFRAME
+// Import necessary crates and modules
 mod logger;
-use egui::{CentralPanel, Context, RichText, Style, Visuals};
+use egui::{CentralPanel, Context, RichText, Style, Visuals, ViewportId};
 use logger::init_logger;
 mod saves;
 use saves::show_save_ui;
@@ -36,6 +34,10 @@ mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
+
+use winit::event_loop::EventLoop;
+use winit::window::Window;
+use winit::event::WindowEvent;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
 /// Enabled in debug builds by default via `Cargo.toml` [features].
@@ -71,11 +73,15 @@ struct DungeonCrawlerworld {
     log_rx: Option<std::sync::mpsc::Receiver<String>>,
     /// Last time the console was redrawn (for throttling redraws).
     last_console_redraw: Option<Instant>,
+    /// Quit confirmation dialog state.
+    quit_confirm: bool,
+    /// Flag indicating the app should quit.
+    should_quit: bool,
 }
 
-impl Default for DungeonCrawlerworld {
+impl DungeonCrawlerworld {
     /// Creates a new default instance of the main application struct, initializing all state.
-    fn default() -> Self {
+    fn new() -> Self {
         let (_log_tx, log_rx) = init_logger();
         Self {
             show_settings: false,
@@ -90,25 +96,25 @@ impl Default for DungeonCrawlerworld {
             last_show_console: Settings::default().show_console,
             log_rx: Some(log_rx),
             last_console_redraw: None,
+            quit_confirm: false,
+            should_quit: false,
         }
     }
-}
-
-impl App for DungeonCrawlerworld {
+    
     /// Updates the application state and renders the UI for each frame.
     ///
     /// # Arguments
     /// * `ctx` - The egui context for UI rendering and input.
-    /// * `_frame` - The eframe frame (unused).
-    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        // Always repaint so the FPS graph and other time-based UI update in real time
-        ctx.request_repaint();
+    /// * `window` - The winit window for viewport commands.
+    fn update(&mut self, ctx: &Context, window: &Window) {
         // Apply fullscreen setting when it changes
         if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
             (*self).last_fullscreen = Some((*self).settings.fullscreen);
-            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(
-                (*self).settings.fullscreen,
-            ));
+            window.set_fullscreen(if (*self).settings.fullscreen {
+                Some(winit::window::Fullscreen::Borderless(None))
+            } else {
+                None
+            });
         }
 
         // Update FPS graph with delta time in ms
@@ -118,9 +124,6 @@ impl App for DungeonCrawlerworld {
         // ESCAPE KEY HANDLING
         let escape_pressed: bool =
             ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
-        // Quit confirmation dialog state
-        static mut QUIT_CONFIRM: bool = false;
-        let mut quit_confirm: bool = unsafe { QUIT_CONFIRM };
 
         CentralPanel::default()
             .frame(
@@ -189,11 +192,11 @@ impl App for DungeonCrawlerworld {
                             }
                             ui.add_space(8.0);
                             if (&ui.add_sized([220.0, 36.0], egui::Button::new("Quit"))).clicked() {
-                                quit_confirm = true;
+                                (*self).quit_confirm = true;
                             }
                         }
                         // Quit confirmation dialog
-                        if quit_confirm {
+                        if (*self).quit_confirm {
                             egui::Window::new("Quit Game?")
                                 .collapsible(false)
                                 .resizable(false)
@@ -202,11 +205,11 @@ impl App for DungeonCrawlerworld {
                                     ui.label("Are you sure you want to quit?");
                                     ui.horizontal(|ui: &mut egui::Ui| {
                                         if (&ui.button("Yes")).clicked() {
-                                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                                            quit_confirm = false;
+                                            (*self).should_quit = true;
+                                            (*self).quit_confirm = false;
                                         }
                                         if (&ui.button("No")).clicked() {
-                                            quit_confirm = false;
+                                            (*self).quit_confirm = false;
                                         }
                                     });
                                 });
@@ -214,9 +217,6 @@ impl App for DungeonCrawlerworld {
                     },
                 );
             });
-        unsafe {
-            QUIT_CONFIRM = quit_confirm;
-        }
 
         // Developer Console window: only when enabled and explicitly opened this session
         // Detect setting edge to open on user toggle (not on startup load)
@@ -347,34 +347,274 @@ impl App for DungeonCrawlerworld {
             }
         }
     }
+    
+    /// Check if the app should quit
+    fn should_quit(&self) -> bool {
+        self.should_quit
+    }
 }
 
-/// Entry point for the application. Sets up the window and runs the egui application loop.
-fn main() -> eframe::Result<()> {
-    // Define native window options, such as initial size and title.
-    let options: NativeOptions = NativeOptions {
-        viewport: (&egui::ViewportBuilder::default)()
-            .with_inner_size([400.0, 300.0]) // Initial window size (width, height)
-            .with_min_inner_size([300.0, 200.0]) // Minimum resizable size
-            .with_title("Dungeon crawler world"), // Window title
-        ..Default::default() // Use default values for other options
-    };
+struct WinitApp {
+    window: Option<Arc<Window>>,
+    device: Option<egui_wgpu::wgpu::Device>,
+    queue: Option<egui_wgpu::wgpu::Queue>,
+    surface: Option<egui_wgpu::wgpu::Surface<'static>>,
+    surface_config: Option<egui_wgpu::wgpu::SurfaceConfiguration>,
+    egui_ctx: Option<egui::Context>,
+    egui_winit_state: Option<egui_winit::State>,
+    egui_renderer: Option<egui_wgpu::Renderer>,
+    app: Option<DungeonCrawlerworld>,
+}
 
-    // Run the eframe application.
-    // This function takes the application name, options, and a closure
-    // that creates and returns your App instance.
-    (&eframe::run_native)(
-        "Dungeon crawler world", // The name of your application (also used as default window title)
-        options,
-        Box::new(|creation_context: &eframe::CreationContext<'_>| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {
-            // This closure is called once when the application starts.
-            // It's a good place to set up global egui styles.
-            (&(*creation_context).egui_ctx).set_style(Style {
-                visuals: Visuals::dark(), // Set egui to use its default dark theme
-                ..Default::default()
+impl WinitApp {
+    fn new() -> Self {
+        Self {
+            window: None,
+            device: None,
+            queue: None,
+            surface: None,
+            surface_config: None,
+            egui_ctx: None,
+            egui_winit_state: None,
+            egui_renderer: None,
+            app: None,
+        }
+    }
+}
+
+impl winit::application::ApplicationHandler for WinitApp {
+    fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        use egui_wgpu::wgpu;
+        
+        if self.window.is_some() {
+            return;
+        }
+        
+        // Create window
+        let window_attrs = winit::window::WindowAttributes::default()
+            .with_title("Dungeon crawler world")
+            .with_inner_size(winit::dpi::PhysicalSize::new(400, 300))
+            .with_min_inner_size(winit::dpi::PhysicalSize::new(300, 200));
+        
+        let window = Arc::new(event_loop.create_window(window_attrs).unwrap());
+        
+        // Initialize wgpu
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::all(),
+            ..Default::default()
+        });
+        
+        let surface = instance.create_surface(window.clone()).unwrap();
+        
+        let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::default(),
+            compatible_surface: Some(&surface),
+            force_fallback_adapter: false,
+        }))
+        .unwrap();
+        
+        let (device, queue) = pollster::block_on(adapter.request_device(
+            &wgpu::DeviceDescriptor {
+                label: None,
+                required_features: wgpu::Features::default(),
+                required_limits: wgpu::Limits::default(),
+                memory_hints: wgpu::MemoryHints::default(),
+                trace: Default::default(),
+            },
+        ))
+        .unwrap();
+        
+        let size = window.inner_size();
+        let surface_config = surface
+            .get_default_config(&adapter, size.width, size.height)
+            .unwrap();
+        surface.configure(&device, &surface_config);
+        
+        // Initialize egui
+        let egui_ctx = egui::Context::default();
+        egui_ctx.set_style(Style {
+            visuals: Visuals::dark(),
+            ..Default::default()
+        });
+        
+        let egui_winit_state = egui_winit::State::new(
+            egui_ctx.clone(),
+            ViewportId::ROOT,
+            event_loop,
+            Some(window.scale_factor() as f32),
+            None,
+            Some(wgpu::Limits::default().max_texture_dimension_2d as usize),
+        );
+        
+        let egui_renderer = egui_wgpu::Renderer::new(
+            &device,
+            surface_config.format,
+            None,
+            1,
+            true,
+        );
+        
+        // Create app
+        let app = DungeonCrawlerworld::new();
+        
+        self.window = Some(window);
+        self.device = Some(device);
+        self.queue = Some(queue);
+        self.surface = Some(surface);
+        self.surface_config = Some(surface_config);
+        self.egui_ctx = Some(egui_ctx);
+        self.egui_winit_state = Some(egui_winit_state);
+        self.egui_renderer = Some(egui_renderer);
+        self.app = Some(app);
+    }
+    
+    fn window_event(
+        &mut self,
+        event_loop: &winit::event_loop::ActiveEventLoop,
+        _window_id: winit::window::WindowId,
+        event: WindowEvent,
+    ) {
+        let window = self.window.as_ref().unwrap();
+        let egui_winit_state = self.egui_winit_state.as_mut().unwrap();
+        
+        let response = egui_winit_state.on_window_event(window, &event);
+        if response.consumed {
+            return;
+        }
+        
+        match event {
+            WindowEvent::CloseRequested => {
+                event_loop.exit();
+            }
+            WindowEvent::Resized(physical_size) => {
+                if let (Some(surface), Some(device), Some(surface_config)) = (
+                    self.surface.as_ref(),
+                    self.device.as_ref(),
+                    self.surface_config.as_mut(),
+                ) {
+                    surface_config.width = physical_size.width;
+                    surface_config.height = physical_size.height;
+                    surface.configure(device, surface_config);
+                    window.request_redraw();
+                }
+            }
+            WindowEvent::RedrawRequested => {
+                self.render();
+                
+                // Check if app wants to quit
+                if self.app.as_ref().unwrap().should_quit() {
+                    event_loop.exit();
+                    return;
+                }
+                
+                // Request continuous repaints
+                if let Some(win) = &self.window {
+                    win.request_redraw();
+                }
+            }
+            _ => {}
+        }
+    }
+    
+    fn about_to_wait(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop) {
+        if let Some(window) = &self.window {
+            window.request_redraw();
+        }
+    }
+}
+
+impl WinitApp {
+    fn render(&mut self) {
+        let window = self.window.as_ref().unwrap();
+        let device = self.device.as_ref().unwrap();
+        let queue = self.queue.as_ref().unwrap();
+        let surface = self.surface.as_ref().unwrap();
+        let surface_config = self.surface_config.as_ref().unwrap();
+        let egui_ctx = self.egui_ctx.as_ref().unwrap();
+        let egui_winit_state = self.egui_winit_state.as_mut().unwrap();
+        let egui_renderer = self.egui_renderer.as_mut().unwrap();
+        let app = self.app.as_mut().unwrap();
+        
+        let output_frame = match surface.get_current_texture() {
+            Ok(frame) => frame,
+            Err(e) => {
+                log::error!("Failed to acquire next swap chain texture: {}", e);
+                return;
+            }
+        };
+        
+        let output_view = output_frame
+            .texture
+            .create_view(&egui_wgpu::wgpu::TextureViewDescriptor::default());
+        
+        // Begin egui frame
+        let raw_input = egui_winit_state.take_egui_input(window);
+        let full_output = egui_ctx.run(raw_input, |ctx| {
+            app.update(ctx, window);
+        });
+        
+        // Handle platform output
+        egui_winit_state.handle_platform_output(window, full_output.platform_output);
+        
+        // Render egui
+        let paint_jobs = egui_ctx.tessellate(full_output.shapes, full_output.pixels_per_point);
+        
+        let screen_descriptor = egui_wgpu::ScreenDescriptor {
+            size_in_pixels: [surface_config.width, surface_config.height],
+            pixels_per_point: window.scale_factor() as f32,
+        };
+        
+        let mut encoder = device.create_command_encoder(&egui_wgpu::wgpu::CommandEncoderDescriptor {
+            label: Some("egui encoder"),
+        });
+        
+        // Upload egui textures
+        for (id, image_delta) in &full_output.textures_delta.set {
+            egui_renderer.update_texture(device, queue, *id, image_delta);
+        }
+        
+        // Update buffers
+        egui_renderer.update_buffers(device, queue, &mut encoder, &paint_jobs, &screen_descriptor);
+        
+        // Render to texture
+        // SAFETY: Working around egui-wgpu 0.32 API bug where render() requires 'static
+        // but the RenderPass actually only needs to live until it's dropped.
+        // This is safe because we immediately drop rpass before finishing encoder.
+        {
+            let mut rpass = encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
+                label: Some("egui main render pass"),
+                color_attachments: &[Some(egui_wgpu::wgpu::RenderPassColorAttachment {
+                    view: &output_view,
+                    resolve_target: None,
+                    ops: egui_wgpu::wgpu::Operations {
+                        load: egui_wgpu::wgpu::LoadOp::Clear(egui_wgpu::wgpu::Color::BLACK),
+                        store: egui_wgpu::wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
             });
-            // Return a boxed instance of your DungeonCrawlerworld.
-            Ok(Box::new(DungeonCrawlerworld::default()) as Box<dyn App>)
-        }),
-    )
+            let rpass_static: &mut egui_wgpu::wgpu::RenderPass<'static> = unsafe {
+                std::mem::transmute(&mut rpass)
+            };
+            egui_renderer.render(rpass_static, &paint_jobs, &screen_descriptor);
+        }
+        
+        queue.submit(Some(encoder.finish()));
+        output_frame.present();
+        
+        // Free textures
+        for id in &full_output.textures_delta.free {
+            egui_renderer.free_texture(id);
+        }
+    }
+}
+
+/// Entry point for the application. Sets up the window and runs the event loop with wgpu/egui.
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let event_loop = EventLoop::new()?;
+    let mut app = WinitApp::new();
+    event_loop.run_app(&mut app)?;
+    Ok(())
 }
