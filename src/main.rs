@@ -95,9 +95,9 @@ impl DungeonCrawlerworld {
     /// * `window` - The winit window for viewport commands.
     fn update(&mut self, ctx: &Context, window: &Window) {
         // Apply fullscreen setting when it changes
-        if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
-            (*self).last_fullscreen = Some((*self).settings.fullscreen);
-            window.set_fullscreen(if (*self).settings.fullscreen {
+        if self.last_fullscreen != Some(self.settings.fullscreen) {
+            self.last_fullscreen = Some(self.settings.fullscreen);
+            window.set_fullscreen(if self.settings.fullscreen {
                 Some(winit::window::Fullscreen::Borderless(None))
             } else {
                 None
@@ -105,8 +105,8 @@ impl DungeonCrawlerworld {
         }
 
         // Update FPS graph with delta time in ms
-        let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { (*i).stable_dt }) * 1000.0;
-        (&mut (*self).fps).push_frame_time(dt_ms);
+        let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { i.stable_dt }) * 1000.0;
+        self.fps.push_frame_time(dt_ms);
 
         // ESCAPE KEY HANDLING
         let escape_pressed: bool =
@@ -114,7 +114,7 @@ impl DungeonCrawlerworld {
 
         CentralPanel::default()
             .frame(
-                egui::Frame::central_panel(&**&ctx.style())
+                egui::Frame::central_panel(&ctx.style())
                     .inner_margin(egui::Margin::same(0))
                     .outer_margin(egui::Margin::same(0)),
             )
@@ -124,7 +124,7 @@ impl DungeonCrawlerworld {
                     avail,
                     egui::Layout::top_down(egui::Align::Center),
                     |ui: &mut egui::Ui| {
-                        if (*self).show_settings {
+                        if self.show_settings {
                             ui.heading(RichText::new("Settings").size(28.0));
                             ui.add_space(8.0);
                             let mut back: bool = false;
@@ -133,10 +133,10 @@ impl DungeonCrawlerworld {
                                 |ui: &mut egui::Ui| {
                                     ui.set_max_width(700.0);
                                     let res: SettingsResult =
-                                        settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
+                                        settings_ui(ui, &mut self.settings, DEV_MODE_ENABLED);
                                     if res.request_save {
-                                        (&(*self).settings).save();
-                                        (*self).show_settings = false;
+                                        self.settings.save();
+                                        self.show_settings = false;
                                     }
                                     if res.request_back {
                                         back = true;
@@ -144,46 +144,46 @@ impl DungeonCrawlerworld {
                                 },
                             );
                             if back || escape_pressed {
-                                (*self).show_settings = false;
+                                self.show_settings = false;
                             }
-                        } else if (*self).show_saves {
+                        } else if self.show_saves {
                             ui.heading(RichText::new("Saves Menu").size(28.0));
                             ui.add_space(8.0);
                             egui::ScrollArea::vertical().auto_shrink([false; 2]).show(
                                 ui,
                                 |ui: &mut egui::Ui| {
                                     ui.set_max_width(900.0);
-                                    show_save_ui(ui, &mut (*self).save_menu_state);
+                                    show_save_ui(ui, &mut self.save_menu_state);
                                 },
                             );
                             // Only close saves menu on explicit back, escape, or sub-menu exit
-                            if (*self).save_menu_state.back_requested || escape_pressed {
-                                (*self).save_menu_state.back_requested = false;
-                                (*self).save_menu_state.in_new_save_menu = false;
-                                (*self).save_menu_state.editing_save = None;
-                                (*self).show_saves = false;
+                            if self.save_menu_state.back_requested || escape_pressed {
+                                self.save_menu_state.back_requested = false;
+                                self.save_menu_state.in_new_save_menu = false;
+                                self.save_menu_state.editing_save = None;
+                                self.show_saves = false;
                             }
                         } else {
                             ui.add_space(8.0);
                             ui.heading(RichText::new("Game Menu").size(30.0));
                             ui.add_space(24.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Saves"))).clicked()
+                            if ui.add_sized([220.0, 36.0], egui::Button::new("Saves")).clicked()
                             {
-                                (*self).show_saves = true;
+                                self.show_saves = true;
                             }
                             ui.add_space(8.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Settings")))
+                            if ui.add_sized([220.0, 36.0], egui::Button::new("Settings"))
                                 .clicked()
                             {
-                                (*self).show_settings = true;
+                                self.show_settings = true;
                             }
                             ui.add_space(8.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Quit"))).clicked() {
-                                (*self).quit_confirm = true;
+                            if ui.add_sized([220.0, 36.0], egui::Button::new("Quit")).clicked() {
+                                self.quit_confirm = true;
                             }
                         }
                         // Quit confirmation dialog
-                        if (*self).quit_confirm {
+                        if self.quit_confirm {
                             egui::Window::new("Quit Game?")
                                 .collapsible(false)
                                 .resizable(false)
@@ -191,12 +191,12 @@ impl DungeonCrawlerworld {
                                 .show(ctx, |ui: &mut egui::Ui| {
                                     ui.label("Are you sure you want to quit?");
                                     ui.horizontal(|ui: &mut egui::Ui| {
-                                        if (&ui.button("Yes")).clicked() {
-                                            (*self).should_quit = true;
-                                            (*self).quit_confirm = false;
+                                        if ui.button("Yes").clicked() {
+                                            self.should_quit = true;
+                                            self.quit_confirm = false;
                                         }
-                                        if (&ui.button("No")).clicked() {
-                                            (*self).quit_confirm = false;
+                                        if ui.button("No").clicked() {
+                                            self.quit_confirm = false;
                                         }
                                     });
                                 });
@@ -207,54 +207,54 @@ impl DungeonCrawlerworld {
 
         // Developer Console window: only when enabled and explicitly opened this session
         // Detect setting edge to open on user toggle (not on startup load)
-        if (*self).settings.show_console != (*self).last_show_console {
-            if (*self).settings.show_console {
-                (*self).console_open = true;
+        if self.settings.show_console != self.last_show_console {
+            if self.settings.show_console {
+                self.console_open = true;
             }
-            (*self).last_show_console = (*self).settings.show_console;
+            self.last_show_console = self.settings.show_console;
         }
 
         // Poll logger and write to in-game console if enabled, filter by verbosity
-        if (*self).settings.log_to_console {
-            if let Some(rx) = &(*self).log_rx {
-                let verbosity: &LogVerbosity = &(*self).settings.log_verbosity;
+        if self.settings.log_to_console {
+            if let Some(rx) = &self.log_rx {
+                let verbosity: &LogVerbosity = &self.settings.log_verbosity;
                 while let Ok(msg) = rx.try_recv() {
                     // Simple filter: look for log level prefix in message
                     // e.g., "[ERROR] ...", "[WARN] ...", "[INFO] ...", "[DEBUG] ...", "[TRACE] ..."
                     let show: bool = match verbosity {
-                        LogVerbosity::Error => (&*msg).contains("[ERROR]"),
+                        LogVerbosity::Error => msg.contains("[ERROR]"),
                         LogVerbosity::Warn => {
-                            (&*msg).contains("[ERROR]") || (&*msg).contains("[WARN]")
+                            msg.contains("[ERROR]") || msg.contains("[WARN]")
                         }
                         LogVerbosity::Info => {
-                            (&*msg).contains("[ERROR]")
-                                || (&*msg).contains("[WARN]")
-                                || (&*msg).contains("[INFO]")
+                            msg.contains("[ERROR]")
+                                || msg.contains("[WARN]")
+                                || msg.contains("[INFO]")
                         }
                         LogVerbosity::Debug => {
-                            (&*msg).contains("[ERROR]")
-                                || (&*msg).contains("[WARN]")
-                                || (&*msg).contains("[INFO]")
-                                || (&*msg).contains("[DEBUG]")
+                            msg.contains("[ERROR]")
+                                || msg.contains("[WARN]")
+                                || msg.contains("[INFO]")
+                                || msg.contains("[DEBUG]")
                         }
                         LogVerbosity::Trace => true,
                     };
                     if show {
-                        (&mut (*self).console_state).log_line(msg);
+                        self.console_state.log_line(msg);
                     }
                 }
             }
         }
 
-        if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).console_open {
+        if DEV_MODE_ENABLED && self.settings.developer_mode && self.console_open {
             let mut open: bool = true;
             let now: Instant = Instant::now();
             let redraw_interval: Duration = Duration::from_millis(33); // ~30 FPS max
-            let should_redraw: bool = (&(*self).console_state).is_dirty()
-                && (*self)
+            let should_redraw: bool = self.console_state.is_dirty()
+                && self
                     .last_console_redraw
-                    .map_or(true, |last: Instant| -> bool {
-                        (&now).duration_since(last) >= redraw_interval
+                    .is_none_or(|last: Instant| -> bool {
+                        now.duration_since(last) >= redraw_interval
                     });
             egui::Window::new("Console")
                 .open(&mut open)
@@ -266,59 +266,57 @@ impl DungeonCrawlerworld {
                     // Always render the console UI so input is processed
                     console_ui(
                         ui,
-                        &mut (*self).console_state,
-                        (*self).settings.console_max_lines,
+                        &mut self.console_state,
+                        self.settings.console_max_lines,
                     );
                     // Only clear dirty and update redraw time if log area changed
                     if should_redraw {
-                        (&mut (*self).console_state).clear_dirty();
-                        (*self).last_console_redraw = Some(now);
+                        self.console_state.clear_dirty();
+                        self.last_console_redraw = Some(now);
                     }
                 });
             if !open {
                 // Closing the window hides the console until re-enabled in settings
-                (*self).settings.show_console = false;
-                (*self).console_open = false;
-                (&(*self).settings).save();
+                self.settings.show_console = false;
+                self.console_open = false;
+                self.settings.save();
             }
             // After UI event handling, process any queued commands
-            for cmd in (&mut (*self).console_state).take_pending() {
-                let trimmed: &str = (&*cmd).trim();
+            for cmd in self.console_state.take_pending() {
+                let trimmed: &str = cmd.trim();
                 if trimmed.is_empty() {
                     continue;
                 }
                 let mut parts: std::str::SplitWhitespace<'_> = trimmed.split_whitespace();
-                let head: &str = (&mut parts).next().unwrap_or("");
+                let head: &str = parts.next().unwrap_or("");
                 match head {
                     "invoke" => {
-                        let name: String = (&*parts.collect::<Vec<_>>()).join(" ");
-                        if (&name).is_empty() {
-                            (&mut (*self).console_state).log_line("Usage: invoke <ui>");
-                        } else {
-                            if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-                                match (&mut (*self).ui_preview).open_preview(&**&name) {
-                                    Ok(()) => (&mut (*self).console_state)
-                                        .log_line(format!("Invoked UI preview: {}", name)),
-                                    Err(e) => (&mut (*self).console_state).log_line(e),
-                                }
-                            } else {
-                                (&mut (*self).console_state)
-                                    .log_line("UI previews are only available in Developer Mode.");
+                        let name: String = parts.collect::<Vec<_>>().join(" ");
+                        if name.is_empty() {
+                            self.console_state.log_line("Usage: invoke <ui>");
+                        } else if DEV_MODE_ENABLED && self.settings.developer_mode {
+                            match self.ui_preview.open_preview(&name) {
+                                Ok(()) => self.console_state
+                                    .log_line(format!("Invoked UI preview: {}", name)),
+                                Err(e) => self.console_state.log_line(e),
                             }
+                        } else {
+                            self.console_state
+                                .log_line("UI previews are only available in Developer Mode.");
                         }
                     }
                     // Fallback to built-in commands
-                    _ => (&mut (*self).console_state).run_command(trimmed),
+                    _ => self.console_state.run_command(trimmed),
                 }
             }
         }
 
         // Render any active preview windows (gated by dev mode so previews are a dev tool)
-        if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-            (&mut (*self).ui_preview).render(ctx, DEV_MODE_ENABLED);
+        if DEV_MODE_ENABLED && self.settings.developer_mode {
+            self.ui_preview.render(ctx, DEV_MODE_ENABLED);
 
             // FPS graph overlay in the bottom-right corner when enabled
-            if (*self).settings.show_fps_graph {
+            if self.settings.show_fps_graph {
                 egui::TopBottomPanel::bottom("fps_graph_panel")
                     .resizable(false)
                     .min_height(90.0)
@@ -327,7 +325,7 @@ impl DungeonCrawlerworld {
                         ui.with_layout(
                             egui::Layout::right_to_left(egui::Align::Min),
                             |ui: &mut egui::Ui| {
-                                (&(*self).fps).ui(ui);
+                                self.fps.ui(ui);
                             },
                         );
                     });

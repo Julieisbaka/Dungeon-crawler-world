@@ -26,6 +26,7 @@ pub struct PlayerStats {
 }
 
 impl Player {
+    #[allow(dead_code, clippy::too_many_arguments)]
     pub fn new(
         name: String,
         level: u32,
@@ -56,10 +57,12 @@ impl Player {
         }
     }
 
+    #[allow(dead_code)]
     pub fn from_json(json: &serde_json::Value) -> Option<Self> {
         serde_json::from_value(json.clone()).ok()
     }
 
+    #[allow(dead_code)]
     pub fn to_json(&self) -> serde_json::Value {
         serde_json::to_value(self).unwrap_or_default()
     }

@@ -19,19 +19,14 @@ pub struct Settings {
     pub show_save_creation_date: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
 pub enum LogVerbosity {
     Error = 0,
     Warn = 1,
+    #[default]
     Info = 2,
     Debug = 3,
     Trace = 4,
-}
-
-impl Default for LogVerbosity {
-    fn default() -> Self {
-        LogVerbosity::Info
-    }
 }
 
 const SETTINGS_FILE: &str = "settings.json";

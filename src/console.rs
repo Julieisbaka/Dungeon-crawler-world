@@ -14,16 +14,16 @@ pub struct ConsoleState {
 impl ConsoleState {
     /// Clears the console log and scrolls to the end.
     pub fn clear(&mut self) {
-        (&mut (*self).log).clear();
-        (*self).scroll_to_end = true;
-        (*self).dirty = true;
+        self.log.clear();
+        self.scroll_to_end = true;
+        self.dirty = true;
     }
 
     /// Appends a line to the console log and scrolls to the end.
     fn push_line<S: Into<String>>(&mut self, s: S) {
-        (&mut (*self).log).push(s.into());
-        (*self).scroll_to_end = true;
-        (*self).dirty = true;
+        self.log.push(s.into());
+        self.scroll_to_end = true;
+        self.dirty = true;
     }
 
     /// Allows external systems to log messages to the console.
@@ -42,8 +42,8 @@ impl ConsoleState {
         let trimmed: &str = cmd.trim();
         // Split command into head and tail for argument parsing
         let mut parts: std::str::SplitN<'_, char> = trimmed.splitn(2, ' ');
-        let head: &str = (&mut parts).next().unwrap_or("");
-        let tail: &str = (&mut parts).next().unwrap_or("");
+        let head: &str = parts.next().unwrap_or("");
+        let tail: &str = parts.next().unwrap_or("");
         match head {
             "help" => {
                 self.push_line("Available commands:");
@@ -76,26 +76,27 @@ impl ConsoleState {
     /// A vector of pending command strings.
     pub fn take_pending(&mut self) -> Vec<String> {
         let mut out: Vec<String> = Vec::new();
-        std::mem::swap(&mut out, &mut (*self).pending);
+        std::mem::swap(&mut out, &mut self.pending);
         out
     }
 
     /// Mark the console as dirty if the input changes
+    #[allow(dead_code)]
     pub fn set_input(&mut self, new_input: String) {
-        if (*self).input != new_input {
-            (*self).input = new_input;
-            (*self).dirty = true;
+        if self.input != new_input {
+            self.input = new_input;
+            self.dirty = true;
         }
     }
 
     /// Returns whether the console state is dirty (has changed since last redraw)
     pub fn is_dirty(&self) -> bool {
-        (*self).dirty
+        self.dirty
     }
 
     /// Clears the dirty flag (call after redraw)
     pub fn clear_dirty(&mut self) {
-        (*self).dirty = false;
+        self.dirty = false;
     }
 }
 
@@ -110,9 +111,9 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
         .auto_shrink([false; 2])
         .stick_to_bottom(true)
         .show(ui, |ui: &mut Ui| {
-            let log_len: usize = (&(*state).log).len();
+            let log_len: usize = state.log.len();
             let start: usize = log_len.saturating_sub(max_lines);
-            for line in (&(&(*state).log)[start..]).iter() {
+            for line in state.log[start..].iter() {
                 // Advanced syntax highlighting
                 let line: &str = line.as_str();
                 if line.starts_with("Unknown command") || line.starts_with("Error") {
@@ -146,30 +147,30 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                 for c in line.chars() {
                     if c == '"' {
                         in_quotes = !in_quotes;
-                        (&mut current).push(c);
+                        current.push(c);
                         if !in_quotes {
-                            (&mut tokens).push(((&current).clone(), "quote"));
-                            (&mut current).clear();
+                            tokens.push((current.clone(), "quote"));
+                            current.clear();
                         }
                         continue;
                     }
                     if in_quotes {
-                        (&mut current).push(c);
+                        current.push(c);
                         continue;
                     }
                     if c.is_whitespace() {
-                        if !(&current).is_empty() {
-                            (&mut tokens).push(((&current).clone(), "word"));
-                            (&mut current).clear();
+                        if !current.is_empty() {
+                            tokens.push((current.clone(), "word"));
+                            current.clear();
                         }
-                        (&mut tokens).push(((&c).to_string(), "space"));
+                        tokens.push((c.to_string(), "space"));
                     } else {
-                        (&mut current).push(c);
+                        current.push(c);
                     }
                 }
-                if !(&current).is_empty() {
-                    (&mut tokens)
-                        .push(((&current).clone(), if in_quotes { "quote" } else { "word" }));
+                if !current.is_empty() {
+                    tokens
+                        .push((current.clone(), if in_quotes { "quote" } else { "word" }));
                 }
                 // Render tokens with color
                 ui.horizontal(|ui: &mut Ui| {
@@ -185,7 +186,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                                     // First word: treat as command
                                     text =
                                         text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
-                                } else if (&(&*token).parse::<f64>()).is_ok() {
+                                } else if token.parse::<f64>().is_ok() {
                                     text = text.color(egui::Color32::YELLOW);
                                 }
                             }
@@ -199,45 +200,45 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                     }
                 });
             }
-            if (*state).scroll_to_end {
+            if state.scroll_to_end {
                 ui.scroll_to_cursor(Some(egui::Align::BOTTOM));
-                (*state).scroll_to_end = false;
+                state.scroll_to_end = false;
             }
         });
 
     // Input field and action buttons (not scrollable)
     // Use a visible fixed height to prevent hover-based reflow/resizing
     let input_resp: egui::Response = ui.add(
-        TextEdit::singleline(&mut (*state).input as &mut dyn TextBuffer)
+        TextEdit::singleline(&mut state.input as &mut dyn TextBuffer)
             .hint_text("Enter command...")
             .desired_width(f32::INFINITY),
     );
     // Ensure the widget has a reasonable fixed height so the window doesn't flicker/resize
     ui.add_space(4.0);
-    let pressed_enter: bool = (&input_resp).lost_focus()
+    let pressed_enter: bool = input_resp.lost_focus()
         && ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Enter) });
     ui.horizontal(|ui: &mut Ui| {
-        if (&ui.add_sized([64.0, 24.0], egui::Button::new("Run"))).clicked() || pressed_enter {
-            let cmd: String = (&(*state).input).clone();
-            if !(&*cmd).trim().is_empty() {
-                (*state).last_command = Some((&cmd).clone());
+        if ui.add_sized([64.0, 24.0], egui::Button::new("Run")).clicked() || pressed_enter {
+            let cmd: String = state.input.clone();
+            if !cmd.trim().is_empty() {
+                state.last_command = Some(cmd.clone());
             }
             // Queue the command for external handling in the main loop
-            (&mut (*state).pending).push(cmd);
-            (&mut (*state).input).clear();
+            state.pending.push(cmd);
+            state.input.clear();
         }
-        if (&ui.add_sized([64.0, 24.0], egui::Button::new("Clear"))).clicked() {
+        if ui.add_sized([64.0, 24.0], egui::Button::new("Clear")).clicked() {
             state.clear();
         }
     });
 
     // Up arrow recall: if input is focused and up is pressed, recall last command
-    let input_focused: bool = (&input_resp).has_focus();
+    let input_focused: bool = input_resp.has_focus();
     let up_pressed: bool =
         ui.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::ArrowUp) });
     if input_focused && up_pressed {
-        if let Some(cmd) = &(*state).last_command {
-            (*state).input = cmd.clone();
+        if let Some(cmd) = &state.last_command {
+            state.input = cmd.clone();
         }
     }
 }

@@ -124,7 +124,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                 let icon_path = path.join("icon.png");
                 let mut icon_texture: Option<TextureHandle> = None;
                 if icon_path.exists() {
-                    if let Ok(img) = ImageReader::open(&icon_path).and_then(|r| r.decode().map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))) {
+                    if let Ok(img) = ImageReader::open(&icon_path).and_then(|r| r.decode().map_err(std::io::Error::other)) {
                         let size = img.dimensions();
                         let rgba = img.to_rgba8();
                         let pixels = rgba.as_flat_samples();
@@ -150,11 +150,10 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                         if !difficulty_text.is_empty() {
                             ui.label(difficulty_text);
                         }
-                        if !created_at_text.is_empty() {
-                            if Settings::load().show_save_creation_date {
+                        if !created_at_text.is_empty()
+                            && Settings::load().show_save_creation_date {
                                 ui.label(created_at_text);
                             }
-                        }
                         ui.horizontal(|ui: &mut Ui| {
                             if ui.button("Load Save").clicked() {
                                 // Update the library's current save tracker
