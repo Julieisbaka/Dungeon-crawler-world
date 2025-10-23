@@ -8,7 +8,8 @@ use crate::fps::FpsGraph;
 use crate::new_save::{self, NewSaveState};
 use crate::saves::{self, SaveMenuState};
 use crate::settings::{self, Settings};
-use crate::skills::{self, SkillsState};
+use dungeon_crawler_world::logic::skills_logic::SkillsState;
+use dungeon_crawler_world::ui::skills_ui;
 
 pub struct UiPreviewManager {
     windows: HashMap<String, PreviewWindow>,
@@ -298,7 +299,7 @@ impl UiPreviewManager {
                                     }
                                 },
                             );
-                            skills::skills_ui(ui, state);
+                            skills_ui::skills_ui(ui, state);
                         });
                     if !is_open {
                         *open = false;

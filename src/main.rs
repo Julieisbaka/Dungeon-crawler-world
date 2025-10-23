@@ -29,7 +29,6 @@ mod settings;
 use settings::{settings_ui, Settings, SettingsResult};
 mod console;
 use console::{console_ui, ConsoleState};
-mod skills;
 mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;

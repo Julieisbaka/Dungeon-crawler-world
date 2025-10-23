@@ -197,7 +197,11 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                         }
                         ui.horizontal(|ui: &mut Ui| {
                             if (&ui.button("Load Save")).clicked() {
-                                crate::set_current_save(&**&folder_name);
+                                // Update both the binary's and the library's current save trackers
+                                crate::set_current_save(&folder_name);
+                                if let Ok(mut g) = dungeon_crawler_world::CURRENT_SAVE.lock() {
+                                    *g = Some(folder_name.to_string());
+                                }
                             }
                             if (&ui.button("Edit")).clicked() {
                                 (*state).editing_save = Some((&folder_name).to_string());
