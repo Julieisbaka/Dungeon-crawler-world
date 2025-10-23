@@ -165,25 +165,18 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     let player_skills = read_player_skills();
 
     // --- Gallery Controls ---
-    static mut SEARCH: Option<String> = None;
-    static mut SORT_MODE: u8 = 0; // 0: Name A-Z, 1: Name Z-A, 2: Level High-Low, 3: Level Low-High
-    static mut PAGE: usize = 0;
     const PAGE_SIZE: usize = 12;
 
     // Controls: Search, Sort, Pagination
     ui.horizontal(|ui: &mut Ui| {
-        let mut search: String = unsafe { SEARCH.clone().unwrap_or_default() };
         ui.label("Search:");
-        if ui.text_edit_singleline(&mut search).changed() {
-            unsafe {
-                SEARCH = Some(search.clone());
-                PAGE = 0;
-            }
+        if ui.text_edit_singleline(&mut state.search).changed() {
+            state.page = 0;
         }
         ui.separator();
-        let mut sort_mode: u8 = unsafe { SORT_MODE };
+        let old_sort = state.sort_mode;
         ComboBox::from_id_salt("skills_sort_mode")
-            .selected_text(match sort_mode {
+            .selected_text(match state.sort_mode {
                 0 => "Name (A-Z)",
                 1 => "Name (Z-A)",
                 2 => "Level (High-Low)",
@@ -191,26 +184,19 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 _ => "Name (A-Z)",
             })
             .show_ui(ui, |ui: &mut Ui| {
-                ui.selectable_value(&mut sort_mode, 0, "Name (A-Z)");
-                ui.selectable_value(&mut sort_mode, 1, "Name (Z-A)");
-                ui.selectable_value(&mut sort_mode, 2, "Level (High-Low)");
-                ui.selectable_value(&mut sort_mode, 3, "Level (Low-High)");
+                ui.selectable_value(&mut state.sort_mode, 0, "Name (A-Z)");
+                ui.selectable_value(&mut state.sort_mode, 1, "Name (Z-A)");
+                ui.selectable_value(&mut state.sort_mode, 2, "Level (High-Low)");
+                ui.selectable_value(&mut state.sort_mode, 3, "Level (Low-High)");
             });
-        if sort_mode != unsafe { SORT_MODE } {
-            unsafe {
-                SORT_MODE = sort_mode;
-                PAGE = 0;
-            }
+        if state.sort_mode != old_sort {
+            state.page = 0;
         }
         ui.separator();
-        let mut page: usize = unsafe { PAGE };
-        if page > 0 && ui.button("< Prev").clicked() {
-            page -= 1;
-            unsafe {
-                PAGE = page;
-            }
+        if state.page > 0 && ui.button("< Prev").clicked() {
+            state.page -= 1;
         }
-        ui.label(format!("Page {}", page + 1));
+        ui.label(format!("Page {}", state.page + 1));
         let filtered_count: usize = state
             .catalog
             .iter()
@@ -220,23 +206,17 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                     cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
                 let treated_owned: bool = dev_show_all_active || owned_real;
                 (!state.only_owned || treated_owned)
-                    && (search.is_empty()
-                        || meta.name.to_lowercase().contains(&search.to_lowercase()))
+                    && (state.search.is_empty()
+                        || meta.name.to_lowercase().contains(&state.search.to_lowercase()))
             })
             .count();
-        if (page + 1) * PAGE_SIZE < filtered_count && ui.button("Next >").clicked() {
-            page += 1;
-            unsafe {
-                PAGE = page;
-            }
+        if (state.page + 1) * PAGE_SIZE < filtered_count && ui.button("Next >").clicked() {
+            state.page += 1;
         }
     });
     ui.add_space(6.0);
 
     // --- Gallery Grid ---
-    let search: String = unsafe { SEARCH.clone().unwrap_or_default() };
-    let sort_mode: u8 = unsafe { SORT_MODE };
-    let page: usize = unsafe { PAGE };
     let mut filtered: Vec<_> = state
         .catalog
         .iter()
@@ -246,10 +226,10 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             let dev_show_all_active: bool = cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
             let treated_owned: bool = dev_show_all_active || owned_real;
             (!state.only_owned || treated_owned)
-                && (search.is_empty() || meta.name.to_lowercase().contains(&search.to_lowercase()))
+                && (state.search.is_empty() || meta.name.to_lowercase().contains(&state.search.to_lowercase()))
         })
         .collect();
-    match sort_mode {
+    match state.sort_mode {
         0 => filtered.sort_by(|a, b| a.1.name.to_lowercase().cmp(&b.1.name.to_lowercase())),
         1 => filtered.sort_by(|a, b| b.1.name.to_lowercase().cmp(&a.1.name.to_lowercase())),
         2 => filtered.sort_by(|a, b| {
@@ -264,9 +244,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         }),
         _ => {}
     }
-    let total_pages: usize = (filtered.len() + PAGE_SIZE - 1) / PAGE_SIZE;
-    let start: usize = page * PAGE_SIZE;
-    let end: usize = ((page + 1) * PAGE_SIZE).min(filtered.len());
+    let start: usize = state.page * PAGE_SIZE;
+    let end: usize = ((state.page + 1) * PAGE_SIZE).min(filtered.len());
     let page_items: &[(usize, &SkillMeta)] = &filtered[start.min(filtered.len())..end.min(filtered.len())];
 
     if page_items.is_empty() {

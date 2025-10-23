@@ -6,10 +6,12 @@ use egui::Context;
 use crate::console::{self, ConsoleState};
 use crate::fps::FpsGraph;
 use crate::new_save::{self, NewSaveState};
-use crate::saves::{self, SaveMenuState};
-use crate::settings::{self, Settings};
 use dungeon_crawler_world::logic::skills_logic::SkillsState;
 use dungeon_crawler_world::ui::skills_ui;
+use dungeon_crawler_world::logic::saves_logic::SaveMenuState;
+use dungeon_crawler_world::ui::saves_ui;
+use dungeon_crawler_world::logic::settings_logic::Settings;
+use dungeon_crawler_world::ui::settings_ui;
 
 pub struct UiPreviewManager {
     windows: HashMap<String, PreviewWindow>,
@@ -379,7 +381,7 @@ impl UiPreviewManager {
                                     }
                                 },
                             );
-                            saves::show_save_ui(ui, state);
+                            saves_ui::show_save_ui(ui, state);
                         });
                     if !is_open {
                         *open = false;
@@ -423,7 +425,7 @@ impl UiPreviewManager {
                                     }
                                 },
                             );
-                            settings::settings_ui(ui, settings, dev_enabled);
+                            settings_ui::settings_ui(ui, settings, dev_enabled);
                         });
                     if !is_open {
                         *open = false;

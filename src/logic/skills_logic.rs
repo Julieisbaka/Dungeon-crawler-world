@@ -20,6 +20,12 @@ pub struct SkillsState {
     pub only_owned: bool,
     /// Markdown render cache for images/assets
     pub md_cache: CommonMarkCache,
+    /// Search query for filtering skills
+    pub search: String,
+    /// Sort mode: 0=Name A-Z, 1=Name Z-A, 2=Level High-Low, 3=Level Low-High
+    pub sort_mode: u8,
+    /// Current page number for pagination
+    pub page: usize,
 }
 
 impl SkillsState {

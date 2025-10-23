@@ -1,32 +1,20 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
-use once_cell::sync::Lazy;
-use std::sync::{Arc, Mutex};
-
-/// Global variable holding the name of the current save file, protected by a mutex for thread safety.
-pub static CURRENT_SAVE: Lazy<Mutex<Option<String>>> =
-    Lazy::new(|| -> Mutex<Option<String>> { Mutex::new(None) });
-
-/// Sets the current save file name.
-///
-/// # Arguments
-/// * `save_name` - The name of the save file to set as current.
-pub fn set_current_save(save_name: &str) {
-    let mut current: std::sync::MutexGuard<'_, Option<String>> = (&*CURRENT_SAVE).lock().unwrap();
-    *current = Some(save_name.to_string());
-    log::info!("Current save set to: {}", save_name);
-}
+use std::sync::Arc;
 
 // Import necessary crates and modules
 mod logger;
 use egui::{CentralPanel, Context, RichText, Style, Visuals, ViewportId};
 use logger::init_logger;
-mod saves;
-use saves::show_save_ui;
+
+// Import saves and settings from library modules
+use dungeon_crawler_world::logic::saves_logic::SaveMenuState;
+use dungeon_crawler_world::ui::saves_ui::show_save_ui;
+use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings, SettingsResult};
+use dungeon_crawler_world::ui::settings_ui::settings_ui;
+
 mod new_save;
 mod player;
-mod settings;
-use settings::{settings_ui, Settings, SettingsResult};
 mod console;
 use console::{console_ui, ConsoleState};
 mod ui_preview;
@@ -55,7 +43,7 @@ struct DungeonCrawlerworld {
     /// Current application settings.
     settings: Settings,
     /// State for the saves menu UI.
-    save_menu_state: saves::SaveMenuState,
+    save_menu_state: SaveMenuState,
     /// State for the developer console.
     console_state: ConsoleState,
     /// Manager for UI previews (dev mode only).
@@ -86,7 +74,7 @@ impl DungeonCrawlerworld {
             show_settings: false,
             show_saves: false,
             settings: Settings::default(),
-            save_menu_state: saves::SaveMenuState::default(),
+            save_menu_state: SaveMenuState::default(),
             console_state: ConsoleState::default(),
             ui_preview: UiPreviewManager::new(),
             last_fullscreen: None,
@@ -229,27 +217,27 @@ impl DungeonCrawlerworld {
         // Poll logger and write to in-game console if enabled, filter by verbosity
         if (*self).settings.log_to_console {
             if let Some(rx) = &(*self).log_rx {
-                let verbosity: &settings::LogVerbosity = &(*self).settings.log_verbosity;
+                let verbosity: &LogVerbosity = &(*self).settings.log_verbosity;
                 while let Ok(msg) = rx.try_recv() {
                     // Simple filter: look for log level prefix in message
                     // e.g., "[ERROR] ...", "[WARN] ...", "[INFO] ...", "[DEBUG] ...", "[TRACE] ..."
                     let show: bool = match verbosity {
-                        settings::LogVerbosity::Error => (&*msg).contains("[ERROR]"),
-                        settings::LogVerbosity::Warn => {
+                        LogVerbosity::Error => (&*msg).contains("[ERROR]"),
+                        LogVerbosity::Warn => {
                             (&*msg).contains("[ERROR]") || (&*msg).contains("[WARN]")
                         }
-                        settings::LogVerbosity::Info => {
+                        LogVerbosity::Info => {
                             (&*msg).contains("[ERROR]")
                                 || (&*msg).contains("[WARN]")
                                 || (&*msg).contains("[INFO]")
                         }
-                        settings::LogVerbosity::Debug => {
+                        LogVerbosity::Debug => {
                             (&*msg).contains("[ERROR]")
                                 || (&*msg).contains("[WARN]")
                                 || (&*msg).contains("[INFO]")
                                 || (&*msg).contains("[DEBUG]")
                         }
-                        settings::LogVerbosity::Trace => true,
+                        LogVerbosity::Trace => true,
                     };
                     if show {
                         (&mut (*self).console_state).log_line(msg);
