@@ -95,6 +95,9 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
 
     ui.add_space(20.0);
 
+    // Load settings once before iterating to avoid repeated I/O
+    let show_creation_date = Settings::load().show_save_creation_date;
+
     // List all save folders in the 'saves' directory
     let saves_dir = Path::new("saves");
     if let Ok(entries) = fs::read_dir(saves_dir) {
@@ -150,10 +153,9 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
                         if !difficulty_text.is_empty() {
                             ui.label(difficulty_text);
                         }
-                        if !created_at_text.is_empty()
-                            && Settings::load().show_save_creation_date {
-                                ui.label(created_at_text);
-                            }
+                        if !created_at_text.is_empty() && show_creation_date {
+                            ui.label(created_at_text);
+                        }
                         ui.horizontal(|ui: &mut Ui| {
                             if ui.button("Load Save").clicked() {
                                 // Update the library's current save tracker
