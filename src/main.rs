@@ -219,25 +219,19 @@ impl DungeonCrawlerworld {
             if let Some(rx) = &(*self).log_rx {
                 let verbosity: &LogVerbosity = &(*self).settings.log_verbosity;
                 while let Ok(msg) = rx.try_recv() {
-                    // Simple filter: look for log level prefix in message
-                    // e.g., "[ERROR] ...", "[WARN] ...", "[INFO] ...", "[DEBUG] ...", "[TRACE] ..."
-                    let show: bool = match verbosity {
-                        LogVerbosity::Error => (&*msg).contains("[ERROR]"),
-                        LogVerbosity::Warn => {
-                            (&*msg).contains("[ERROR]") || (&*msg).contains("[WARN]")
-                        }
-                        LogVerbosity::Info => {
-                            (&*msg).contains("[ERROR]")
-                                || (&*msg).contains("[WARN]")
-                                || (&*msg).contains("[INFO]")
-                        }
-                        LogVerbosity::Debug => {
-                            (&*msg).contains("[ERROR]")
-                                || (&*msg).contains("[WARN]")
-                                || (&*msg).contains("[INFO]")
-                                || (&*msg).contains("[DEBUG]")
-                        }
-                        LogVerbosity::Trace => true,
+                    // Optimized filter: check log level prefix once
+                    let show: bool = if msg.contains("[ERROR]") {
+                        true // Always show errors
+                    } else if msg.contains("[WARN]") {
+                        !matches!(verbosity, LogVerbosity::Error)
+                    } else if msg.contains("[INFO]") {
+                        matches!(verbosity, LogVerbosity::Info | LogVerbosity::Debug | LogVerbosity::Trace)
+                    } else if msg.contains("[DEBUG]") {
+                        matches!(verbosity, LogVerbosity::Debug | LogVerbosity::Trace)
+                    } else if msg.contains("[TRACE]") {
+                        matches!(verbosity, LogVerbosity::Trace)
+                    } else {
+                        true // Show messages without level prefix
                     };
                     if show {
                         (&mut (*self).console_state).log_line(msg);

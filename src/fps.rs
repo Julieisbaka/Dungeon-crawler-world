@@ -45,8 +45,9 @@ impl FpsGraph {
         let h: f32 = (&rect).height().max(1.0);
         // Compute FPS stats
         let mut sum_fps: f32 = 0.0;
-        let mut min_fps: f32 = f32::INFINITY;
+        let mut min_fps: f32 = 0.0;
         let mut max_fps: f32 = 0.0;
+        
         for (i, ms) in (&(*self).times_ms).iter().enumerate() {
             let x: f32 = (&rect).left() + (i as f32 / ((*self).capacity.max(1) as f32)) * w;
             let y: f32 = (&rect).bottom() - ((*ms).min(max_ms) / max_ms) * h;
@@ -61,7 +62,7 @@ impl FpsGraph {
             );
             let fps: f32 = if *ms > 0.0 { 1000.0 / *ms } else { 0.0 };
             sum_fps += fps;
-            if fps < min_fps {
+            if i == 0 || fps < min_fps {
                 min_fps = fps;
             }
             if fps > max_fps {

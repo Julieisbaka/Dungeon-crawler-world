@@ -115,18 +115,23 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 // Difficulty selection
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Difficulty:");
-                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Easy, "Easy");
+                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Easy, "Easy")
+                        .on_hover_text("Easy mode: More resources, weaker enemies, and forgiving gameplay");
                     ui.radio_value(
                         &mut (*state).selected_difficulty,
                         Difficulty::Medium,
                         "Medium",
-                    );
-                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Hard, "Hard");
+                    )
+                        .on_hover_text("Medium mode: Balanced gameplay with standard difficulty");
+                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Hard, "Hard")
+                        .on_hover_text("Hard mode: Scarce resources, stronger enemies, and challenging gameplay");
                 });
             }
             NewSaveTab::Gamerules => {
-                ui.checkbox(&mut (*state).online_mode, "Online mode");
-                ui.checkbox(&mut (*state).real_time, "Real-time");
+                ui.checkbox(&mut (*state).online_mode, "Online mode")
+                    .on_hover_text("Enable multiplayer features and online interactions with other players");
+                ui.checkbox(&mut (*state).real_time, "Real-time")
+                    .on_hover_text("Enable real-time gameplay with a fixed time limit of 5 days for floor one. When disabled, uses a randomized time between 12-20 hours");
             }
         }
 
