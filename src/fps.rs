@@ -47,7 +47,6 @@ impl FpsGraph {
         let mut sum_fps: f32 = 0.0;
         let mut min_fps: f32 = 0.0;
         let mut max_fps: f32 = 0.0;
-        
         for (i, ms) in (&(*self).times_ms).iter().enumerate() {
             let x: f32 = (&rect).left() + (i as f32 / ((*self).capacity.max(1) as f32)) * w;
             let y: f32 = (&rect).bottom() - ((*ms).min(max_ms) / max_ms) * h;
