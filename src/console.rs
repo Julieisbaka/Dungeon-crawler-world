@@ -146,16 +146,17 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                     let mut token_start: usize = 0;
                     
                     for (i, c) in line.char_indices() {
-                        let is_last = i + c.len_utf8() >= line.len();
-                        
                         if c == '"' {
-                            in_quotes = !in_quotes;
-                            if !in_quotes && i > token_start {
+                            if !in_quotes {
+                                // Start of quoted string - capture opening quote
+                                token_start = i;
+                            } else if i > token_start {
                                 // End of quoted string
                                 let token = &line[token_start..i + 1];
                                 ui.label(egui::RichText::new(token).color(egui::Color32::GREEN));
                                 token_start = i + 1;
                             }
+                            in_quotes = !in_quotes;
                         } else if !in_quotes && c.is_whitespace() {
                             if i > token_start {
                                 // Render accumulated word
@@ -170,20 +171,22 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                                 ui.label(text);
                             }
                             token_start = i + c.len_utf8();
-                        } else if is_last {
-                            // Render final token
-                            let token = &line[token_start..];
-                            if !token.is_empty() {
-                                let mut text = egui::RichText::new(token);
-                                if in_quotes {
-                                    text = text.color(egui::Color32::GREEN);
-                                } else if is_first {
-                                    text = text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
-                                } else if token.parse::<f64>().is_ok() {
-                                    text = text.color(egui::Color32::YELLOW);
-                                }
-                                ui.label(text);
+                        }
+                    }
+                    
+                    // Render final token after loop completes
+                    if token_start < line.len() {
+                        let token = &line[token_start..];
+                        if !token.is_empty() {
+                            let mut text = egui::RichText::new(token);
+                            if in_quotes {
+                                text = text.color(egui::Color32::GREEN);
+                            } else if is_first {
+                                text = text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
+                            } else if token.parse::<f64>().is_ok() {
+                                text = text.color(egui::Color32::YELLOW);
                             }
+                            ui.label(text);
                         }
                     }
                 });
