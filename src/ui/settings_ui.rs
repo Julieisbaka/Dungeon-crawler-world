@@ -157,7 +157,6 @@ pub fn settings_ui(
                         .on_hover_text("Maximum number of lines to display in the console buffer");
                     let mut lines = settings.console_max_lines as u16;
                     if ui.add(egui::DragValue::new(&mut lines).range(50..=2000))
-                        .on_hover_text("Drag to adjust the console line buffer size (50-2000 lines)")
                         .changed() {
                         settings.console_max_lines = lines as usize;
                         settings.save();
