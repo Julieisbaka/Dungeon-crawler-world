@@ -131,7 +131,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 ui.checkbox(&mut (*state).online_mode, "Online mode")
                     .on_hover_text("Enable multiplayer features and online interactions with other players");
                 ui.checkbox(&mut (*state).real_time, "Real-time")
-                    .on_hover_text("Enable real-time gameplay with a fixed time limit of 5 days for floor one. When disabled, uses a randomized time between 12-20 hours");
+                    .on_hover_text("Enable real-time gameplay with a 5-day time limit for floor one. When disabled, time is randomized between 12-20 hours.");
             }
         }
 
