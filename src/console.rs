@@ -145,8 +145,8 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                     let mut in_quotes: bool = false;
                     let mut token_start: usize = 0;
                     
-                    for (i, c) in line.char_indices() {
-                        if c == '"' {
+                    for (i, ch) in line.char_indices() {
+                        if ch == '"' {
                             if !in_quotes {
                                 // Start of quoted string - capture opening quote
                                 if i > token_start {
@@ -166,10 +166,10 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                                 // End of quoted string
                                 let token = &line[token_start..i + 1];
                                 ui.label(egui::RichText::new(token).color(egui::Color32::GREEN));
-                                token_start = i + c.len_utf8();
+                                token_start = i + ch.len_utf8();
                             }
                             in_quotes = !in_quotes;
-                        } else if !in_quotes && c.is_whitespace() {
+                        } else if !in_quotes && ch.is_whitespace() {
                             if i > token_start {
                                 // Render accumulated word
                                 let token = &line[token_start..i];
@@ -182,7 +182,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                                 }
                                 ui.label(text);
                             }
-                            token_start = i + c.len_utf8();
+                            token_start = i + ch.len_utf8();
                         }
                     }
                     
