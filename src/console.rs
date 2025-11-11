@@ -149,6 +149,18 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                         if c == '"' {
                             if !in_quotes {
                                 // Start of quoted string - capture opening quote
+                                if i > token_start {
+                                    // Render accumulated word before the quote
+                                    let token = &line[token_start..i];
+                                    let mut text = egui::RichText::new(token);
+                                    if is_first {
+                                        text = text.color(egui::Color32::from_rgb(0, 200, 255)).strong();
+                                        is_first = false;
+                                    } else if token.parse::<f64>().is_ok() {
+                                        text = text.color(egui::Color32::YELLOW);
+                                    }
+                                    ui.label(text);
+                                }
                                 token_start = i;
                             } else if i > token_start {
                                 // End of quoted string
