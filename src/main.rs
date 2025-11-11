@@ -4,14 +4,12 @@ use std::sync::Arc;
 
 // Import necessary crates and modules
 mod logger;
-use egui::{CentralPanel, Context, RichText, Style, Visuals, ViewportId};
+use egui::{Context, Style, Visuals, ViewportId};
 use logger::init_logger;
 
 // Import saves and settings from library modules
-use dungeon_crawler_world::logic::saves_logic::SaveMenuState;
-use dungeon_crawler_world::ui::saves_ui::show_save_ui;
-use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings, SettingsResult};
-use dungeon_crawler_world::ui::settings_ui::settings_ui;
+use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings};
+use dungeon_crawler_world::ui::main_menu::MainMenu;
 
 mod new_save;
 mod player;
@@ -36,14 +34,10 @@ use std::time::{Duration, Instant};
 
 /// Main application struct holding all UI and game state.
 struct DungeonCrawlerworld {
-    /// Whether the settings window is currently shown.
-    show_settings: bool,
-    /// Whether the saves menu is currently shown.
-    show_saves: bool,
+    /// Main menu UI state.
+    menu: MainMenu,
     /// Current application settings.
     settings: Settings,
-    /// State for the saves menu UI.
-    save_menu_state: SaveMenuState,
     /// State for the developer console.
     console_state: ConsoleState,
     /// Manager for UI previews (dev mode only).
@@ -60,8 +54,6 @@ struct DungeonCrawlerworld {
     log_rx: Option<std::sync::mpsc::Receiver<String>>,
     /// Last time the console was redrawn (for throttling redraws).
     last_console_redraw: Option<Instant>,
-    /// Quit confirmation dialog state.
-    quit_confirm: bool,
     /// Flag indicating the app should quit.
     should_quit: bool,
 }
@@ -71,10 +63,8 @@ impl DungeonCrawlerworld {
     fn new() -> Self {
         let (_log_tx, log_rx) = init_logger();
         Self {
-            show_settings: false,
-            show_saves: false,
+            menu: MainMenu::new(),
             settings: Settings::default(),
-            save_menu_state: SaveMenuState::default(),
             console_state: ConsoleState::default(),
             ui_preview: UiPreviewManager::new(),
             last_fullscreen: None,
@@ -83,7 +73,6 @@ impl DungeonCrawlerworld {
             last_show_console: Settings::default().show_console,
             log_rx: Some(log_rx),
             last_console_redraw: None,
-            quit_confirm: false,
             should_quit: false,
         }
     }
@@ -108,102 +97,11 @@ impl DungeonCrawlerworld {
         let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { (*i).stable_dt }) * 1000.0;
         (&mut (*self).fps).push_frame_time(dt_ms);
 
-        // ESCAPE KEY HANDLING
-        let escape_pressed: bool =
-            ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
+        // Render the main menu UI and check if user wants to quit
+        if (*self).menu.show(ctx, &mut (*self).settings, DEV_MODE_ENABLED) {
+            (*self).should_quit = true;
+        }
 
-        CentralPanel::default()
-            .frame(
-                egui::Frame::central_panel(&**&ctx.style())
-                    .inner_margin(egui::Margin::same(0))
-                    .outer_margin(egui::Margin::same(0)),
-            )
-            .show(ctx, |ui: &mut egui::Ui| {
-                let avail: egui::Vec2 = ui.available_size();
-                ui.allocate_ui_with_layout(
-                    avail,
-                    egui::Layout::top_down(egui::Align::Center),
-                    |ui: &mut egui::Ui| {
-                        if (*self).show_settings {
-                            ui.heading(RichText::new("Settings").size(28.0));
-                            ui.add_space(8.0);
-                            let mut back: bool = false;
-                            egui::ScrollArea::vertical().auto_shrink([false; 2]).show(
-                                ui,
-                                |ui: &mut egui::Ui| {
-                                    ui.set_max_width(700.0);
-                                    let res: SettingsResult =
-                                        settings_ui(ui, &mut (*self).settings, DEV_MODE_ENABLED);
-                                    if res.request_save {
-                                        (&(*self).settings).save();
-                                        (*self).show_settings = false;
-                                    }
-                                    if res.request_back {
-                                        back = true;
-                                    }
-                                },
-                            );
-                            if back || escape_pressed {
-                                (*self).show_settings = false;
-                            }
-                        } else if (*self).show_saves {
-                            ui.heading(RichText::new("Saves Menu").size(28.0));
-                            ui.add_space(8.0);
-                            egui::ScrollArea::vertical().auto_shrink([false; 2]).show(
-                                ui,
-                                |ui: &mut egui::Ui| {
-                                    ui.set_max_width(900.0);
-                                    show_save_ui(ui, &mut (*self).save_menu_state);
-                                },
-                            );
-                            // Only close saves menu on explicit back, escape, or sub-menu exit
-                            if (*self).save_menu_state.back_requested || escape_pressed {
-                                (*self).save_menu_state.back_requested = false;
-                                (*self).save_menu_state.in_new_save_menu = false;
-                                (*self).save_menu_state.editing_save = None;
-                                (*self).show_saves = false;
-                            }
-                        } else {
-                            ui.add_space(8.0);
-                            ui.heading(RichText::new("Game Menu").size(30.0));
-                            ui.add_space(24.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Saves"))).clicked()
-                            {
-                                (*self).show_saves = true;
-                            }
-                            ui.add_space(8.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Settings")))
-                                .clicked()
-                            {
-                                (*self).show_settings = true;
-                            }
-                            ui.add_space(8.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Quit"))).clicked() {
-                                (*self).quit_confirm = true;
-                            }
-                        }
-                        // Quit confirmation dialog
-                        if (*self).quit_confirm {
-                            egui::Window::new("Quit Game?")
-                                .collapsible(false)
-                                .resizable(false)
-                                .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
-                                .show(ctx, |ui: &mut egui::Ui| {
-                                    ui.label("Are you sure you want to quit?");
-                                    ui.horizontal(|ui: &mut egui::Ui| {
-                                        if (&ui.button("Yes")).clicked() {
-                                            (*self).should_quit = true;
-                                            (*self).quit_confirm = false;
-                                        }
-                                        if (&ui.button("No")).clicked() {
-                                            (*self).quit_confirm = false;
-                                        }
-                                    });
-                                });
-                        }
-                    },
-                );
-            });
 
         // Developer Console window: only when enabled and explicitly opened this session
         // Detect setting edge to open on user toggle (not on startup load)
