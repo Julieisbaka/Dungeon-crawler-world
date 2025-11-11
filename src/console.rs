@@ -166,7 +166,7 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                                 // End of quoted string
                                 let token = &line[token_start..i + 1];
                                 ui.label(egui::RichText::new(token).color(egui::Color32::GREEN));
-                                token_start = i + 1;
+                                token_start = i + c.len_utf8();
                             }
                             in_quotes = !in_quotes;
                         } else if !in_quotes && c.is_whitespace() {

@@ -201,7 +201,7 @@ pub fn settings_ui(
 
     ui.separator();
     if ui.checkbox(&mut settings.fullscreen, "Fullscreen")
-        .on_hover_text("Toggle fullscreen mode (press F11 or Alt+Enter)")
+        .on_hover_text("Toggle fullscreen mode")
         .changed() {
         settings.save();
     }

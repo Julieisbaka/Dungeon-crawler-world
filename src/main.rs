@@ -231,7 +231,8 @@ impl DungeonCrawlerworld {
                     } else if msg.contains("[TRACE]") {
                         matches!(verbosity, LogVerbosity::Trace)
                     } else {
-                        true // Show messages without level prefix
+                        // Messages without level prefix: show at Info level and above
+                        matches!(verbosity, LogVerbosity::Info | LogVerbosity::Debug | LogVerbosity::Trace)
                     };
                     if show {
                         (&mut (*self).console_state).log_line(msg);
