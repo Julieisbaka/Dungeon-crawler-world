@@ -18,6 +18,34 @@ struct Token {
     kind: TokenKind,
 }
 
+/// Quick check if a string looks like a number (avoids full parsing overhead)
+fn looks_like_number(s: &str) -> bool {
+    if s.is_empty() {
+        return false;
+    }
+    let mut chars = s.chars().peekable();
+    // Optional sign
+    if matches!(chars.peek(), Some('+' | '-')) {
+        chars.next();
+    }
+    // Must have at least one digit
+    let mut has_digit = false;
+    let mut has_dot = false;
+    for c in chars {
+        if c.is_ascii_digit() {
+            has_digit = true;
+        } else if c == '.' && !has_dot {
+            has_dot = true;
+        } else if c == 'e' || c == 'E' {
+            // Scientific notation - fall back to full parse
+            return s.parse::<f64>().is_ok();
+        } else {
+            return false;
+        }
+    }
+    has_digit
+}
+
 /// Line type for fast prefix-based highlighting
 #[derive(Clone, PartialEq)]
 enum LineType {
@@ -105,7 +133,7 @@ impl HighlightedLine {
                     let kind = if is_first_word {
                         is_first_word = false;
                         TokenKind::Command
-                    } else if current.parse::<f64>().is_ok() {
+                    } else if looks_like_number(&current) {
                         TokenKind::Number
                     } else {
                         TokenKind::Word
@@ -140,7 +168,7 @@ impl HighlightedLine {
                 TokenKind::Quote
             } else if is_first_word {
                 TokenKind::Command
-            } else if current.parse::<f64>().is_ok() {
+            } else if looks_like_number(&current) {
                 TokenKind::Number
             } else {
                 TokenKind::Word
