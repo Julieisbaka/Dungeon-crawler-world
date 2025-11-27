@@ -33,7 +33,8 @@ enum LineType {
 struct HighlightedLine {
     line_type: LineType,
     raw: String,
-    tokens: Vec<Token>,
+    /// Tokens for Normal lines, None for other line types
+    tokens: Option<Vec<Token>>,
 }
 
 impl HighlightedLine {
@@ -56,9 +57,9 @@ impl HighlightedLine {
 
         // Only tokenize normal lines (others are rendered as single colored text)
         let tokens = if line_type == LineType::Normal {
-            Self::tokenize(&line)
+            Some(Self::tokenize(&line))
         } else {
-            Vec::new()
+            None
         };
 
         Self {
@@ -73,18 +74,25 @@ impl HighlightedLine {
         let mut tokens = Vec::new();
         let mut in_quotes = false;
         let mut current = String::new();
+        let mut whitespace = String::new();
         let mut is_first_word = true;
 
         for c in line.chars() {
             if c == '"' {
+                // Flush any accumulated whitespace before the quote
+                if !whitespace.is_empty() {
+                    tokens.push(Token {
+                        text: std::mem::take(&mut whitespace),
+                        kind: TokenKind::Space,
+                    });
+                }
                 in_quotes = !in_quotes;
                 current.push(c);
                 if !in_quotes {
                     tokens.push(Token {
-                        text: current.clone(),
+                        text: std::mem::take(&mut current),
                         kind: TokenKind::Quote,
                     });
-                    current.clear();
                 }
                 continue;
             }
@@ -103,18 +111,29 @@ impl HighlightedLine {
                         TokenKind::Word
                     };
                     tokens.push(Token {
-                        text: current.clone(),
+                        text: std::mem::take(&mut current),
                         kind,
                     });
-                    current.clear();
                 }
-                tokens.push(Token {
-                    text: c.to_string(),
-                    kind: TokenKind::Space,
-                });
+                // Accumulate consecutive whitespace
+                whitespace.push(c);
             } else {
+                // Flush accumulated whitespace before non-whitespace
+                if !whitespace.is_empty() {
+                    tokens.push(Token {
+                        text: std::mem::take(&mut whitespace),
+                        kind: TokenKind::Space,
+                    });
+                }
                 current.push(c);
             }
+        }
+        // Flush remaining tokens
+        if !whitespace.is_empty() {
+            tokens.push(Token {
+                text: whitespace,
+                kind: TokenKind::Space,
+            });
         }
         if !current.is_empty() {
             let kind = if in_quotes {
@@ -275,24 +294,27 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                     }
                     LineType::Normal => {
                         // Render pre-computed tokens with color
-                        ui.horizontal(|ui: &mut Ui| {
-                            for token in &highlighted_line.tokens {
-                                let text = match token.kind {
-                                    TokenKind::Quote => {
-                                        egui::RichText::new(&token.text).color(egui::Color32::GREEN)
-                                    }
-                                    TokenKind::Command => egui::RichText::new(&token.text)
-                                        .color(egui::Color32::from_rgb(0, 200, 255))
-                                        .strong(),
-                                    TokenKind::Number => egui::RichText::new(&token.text)
-                                        .color(egui::Color32::YELLOW),
-                                    TokenKind::Word | TokenKind::Space => {
-                                        egui::RichText::new(&token.text)
-                                    }
-                                };
-                                ui.label(text);
-                            }
-                        });
+                        if let Some(tokens) = &highlighted_line.tokens {
+                            ui.horizontal(|ui: &mut Ui| {
+                                for token in tokens {
+                                    let text = match token.kind {
+                                        TokenKind::Quote => {
+                                            egui::RichText::new(&token.text)
+                                                .color(egui::Color32::GREEN)
+                                        }
+                                        TokenKind::Command => egui::RichText::new(&token.text)
+                                            .color(egui::Color32::from_rgb(0, 200, 255))
+                                            .strong(),
+                                        TokenKind::Number => egui::RichText::new(&token.text)
+                                            .color(egui::Color32::YELLOW),
+                                        TokenKind::Word | TokenKind::Space => {
+                                            egui::RichText::new(&token.text)
+                                        }
+                                    };
+                                    ui.label(text);
+                                }
+                            });
+                        }
                     }
                 }
             }
