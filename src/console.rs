@@ -77,7 +77,8 @@ impl HighlightedLine {
             || line.starts_with("Usage:")
         {
             LineType::Help
-        } else if line.starts_with("  ") {
+        } else if line.starts_with("  ") && line.contains(" - ") {
+            // Help detail lines have format "  <command> - <description>"
             LineType::HelpDetail
         } else {
             LineType::Normal
@@ -617,9 +618,25 @@ mod tests {
 
         #[test]
         fn test_help_detail_detection() {
+            // Help detail lines have format "  <command> - <description>"
             let line = HighlightedLine::new("  help  - show this message".to_string());
             assert_eq!(line.line_type, LineType::HelpDetail);
             assert!(line.tokens.is_none());
+
+            let line = HighlightedLine::new("  clear - clear the console output".to_string());
+            assert_eq!(line.line_type, LineType::HelpDetail);
+        }
+
+        #[test]
+        fn test_indented_normal_lines_not_help_detail() {
+            // Lines starting with spaces but without " - " separator should be Normal
+            let line = HighlightedLine::new("  indented text".to_string());
+            assert_eq!(line.line_type, LineType::Normal);
+            assert!(line.tokens.is_some());
+
+            let line = HighlightedLine::new("  normal command with spaces".to_string());
+            assert_eq!(line.line_type, LineType::Normal);
+            assert!(line.tokens.is_some());
         }
 
         #[test]
