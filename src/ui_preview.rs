@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use egui::Context;
 
 // Bring in existing UI modules
-use crate::console::{self, ConsoleState};
+use dungeon_crawler_world::console::{self, ConsoleState};
 use crate::fps::FpsGraph;
 use crate::new_save::{self, NewSaveState};
 use dungeon_crawler_world::logic::skills_logic::SkillsState;
