@@ -10,11 +10,10 @@ use logger::init_logger;
 // Import saves and settings from library modules
 use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings};
 use dungeon_crawler_world::ui::main_menu::MainMenu;
+use dungeon_crawler_world::console::{console_ui, ConsoleState};
 
 mod new_save;
 mod player;
-mod console;
-use console::{console_ui, ConsoleState};
 mod ui_preview;
 use ui_preview::UiPreviewManager;
 mod fps;
