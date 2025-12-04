@@ -33,7 +33,7 @@ Information about Dungeon Crawler Carl can be found on the unofficial [Dungeon C
 Dungeon Crawler World offers a variety of exciting features and objectives for
 players to enjoy:
 
-- **Exploration**: Traverse through procedurally generated dungeons filled with
+- **Exploration**: Traverse through a procedurally generated dungeon filled with
   secrets and surprises.
 - **Combat**: Engage in real-time battles with a wide range of enemies, each with
   unique abilities and behaviors.
