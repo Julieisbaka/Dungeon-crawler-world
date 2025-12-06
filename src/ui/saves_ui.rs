@@ -42,23 +42,32 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
                 // Load and cache icon texture
                 let icon_path = path.join("icon.png");
                 let icon = if icon_path.exists() {
-                    ImageReader::open(&icon_path)
-                        .and_then(|r| r.decode().map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)))
-                        .ok()
-                        .map(|img| {
-                            let size = img.dimensions();
-                            let rgba = img.to_rgba8();
-                            let pixels = rgba.as_flat_samples();
-                            let color_image = ColorImage::from_rgba_unmultiplied(
-                                [size.0 as usize, size.1 as usize],
-                                pixels.as_slice()
-                            );
-                            ui.ctx().load_texture(
-                                format!("{}_icon", folder_name),
-                                color_image,
-                                egui::TextureOptions::default()
-                            )
-                        })
+                    match ImageReader::open(&icon_path) {
+                        Ok(reader) => match reader.decode() {
+                            Ok(img) => {
+                                let size = img.dimensions();
+                                let rgba = img.to_rgba8();
+                                let pixels = rgba.as_flat_samples();
+                                let color_image = ColorImage::from_rgba_unmultiplied(
+                                    [size.0 as usize, size.1 as usize],
+                                    pixels.as_slice()
+                                );
+                                Some(ui.ctx().load_texture(
+                                    format!("{}_icon", folder_name),
+                                    color_image,
+                                    egui::TextureOptions::default()
+                                ))
+                            }
+                            Err(e) => {
+                                log::warn!("Failed to decode icon for save '{}': {}", folder_name, e);
+                                None
+                            }
+                        },
+                        Err(e) => {
+                            log::warn!("Failed to open icon for save '{}': {}", folder_name, e);
+                            None
+                        }
+                    }
                 } else {
                     None
                 };
@@ -162,7 +171,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
     if ui.button("Create New Save").clicked() {
         state.in_new_save_menu = true;
         state.new_save_state.reset();
-        state.invalidate_cache(); // Invalidate cache when creating new save
+        // Note: cache is invalidated after save creation in show_new_save_ui callback, not here
     }
 
     ui.add_space(20.0);

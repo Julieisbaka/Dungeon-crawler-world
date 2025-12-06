@@ -114,23 +114,31 @@ impl DungeonCrawlerworld {
         // Poll logger and write to in-game console if enabled, filter by verbosity
         if (*self).settings.log_to_console {
             if let Some(rx) = &(*self).log_rx {
-                let verbosity = &self.settings.log_verbosity;
+                // Convert verbosity to numeric threshold for efficient comparison
+                // Higher number = more verbose (show more messages)
+                let threshold = match self.settings.log_verbosity {
+                    LogVerbosity::Error => 0,
+                    LogVerbosity::Warn => 1,
+                    LogVerbosity::Info => 2,
+                    LogVerbosity::Debug => 3,
+                    LogVerbosity::Trace => 4,
+                };
                 while let Ok(msg) = rx.try_recv() {
-                    // Efficient filter: check log level and compare against verbosity threshold
-                    // Log levels in order: ERROR < WARN < INFO < DEBUG < TRACE
-                    let show = if msg.contains("[ERROR]") {
-                        true // ERROR always shown
-                    } else if msg.contains("[WARN]") {
-                        !matches!(verbosity, LogVerbosity::Error)
-                    } else if msg.contains("[INFO]") {
-                        matches!(verbosity, LogVerbosity::Info | LogVerbosity::Debug | LogVerbosity::Trace)
-                    } else if msg.contains("[DEBUG]") {
-                        matches!(verbosity, LogVerbosity::Debug | LogVerbosity::Trace)
+                    // Extract log level from message and convert to numeric value
+                    // Lower number = higher priority (ERROR=0, TRACE=4)
+                    let msg_level = if msg.starts_with("[ERROR]") {
+                        0
+                    } else if msg.starts_with("[WARN]") {
+                        1
+                    } else if msg.starts_with("[INFO]") {
+                        2
+                    } else if msg.starts_with("[DEBUG]") {
+                        3
                     } else {
-                        // TRACE or unrecognized - only show at Trace level
-                        matches!(verbosity, LogVerbosity::Trace)
+                        4 // TRACE or unrecognized
                     };
-                    if show {
+                    // Show message if its level is <= threshold
+                    if msg_level <= threshold {
                         self.console_state.log_line(msg);
                     }
                 }
