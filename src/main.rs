@@ -114,30 +114,24 @@ impl DungeonCrawlerworld {
         // Poll logger and write to in-game console if enabled, filter by verbosity
         if (*self).settings.log_to_console {
             if let Some(rx) = &(*self).log_rx {
-                let verbosity: &LogVerbosity = &(*self).settings.log_verbosity;
+                let verbosity = &self.settings.log_verbosity;
                 while let Ok(msg) = rx.try_recv() {
-                    // Simple filter: look for log level prefix in message
-                    // e.g., "[ERROR] ...", "[WARN] ...", "[INFO] ...", "[DEBUG] ...", "[TRACE] ..."
-                    let show: bool = match verbosity {
-                        LogVerbosity::Error => (&*msg).contains("[ERROR]"),
-                        LogVerbosity::Warn => {
-                            (&*msg).contains("[ERROR]") || (&*msg).contains("[WARN]")
-                        }
-                        LogVerbosity::Info => {
-                            (&*msg).contains("[ERROR]")
-                                || (&*msg).contains("[WARN]")
-                                || (&*msg).contains("[INFO]")
-                        }
-                        LogVerbosity::Debug => {
-                            (&*msg).contains("[ERROR]")
-                                || (&*msg).contains("[WARN]")
-                                || (&*msg).contains("[INFO]")
-                                || (&*msg).contains("[DEBUG]")
-                        }
-                        LogVerbosity::Trace => true,
+                    // Efficient filter: check log level and compare against verbosity threshold
+                    // Log levels in order: ERROR < WARN < INFO < DEBUG < TRACE
+                    let show = if msg.contains("[ERROR]") {
+                        true // ERROR always shown
+                    } else if msg.contains("[WARN]") {
+                        !matches!(verbosity, LogVerbosity::Error)
+                    } else if msg.contains("[INFO]") {
+                        matches!(verbosity, LogVerbosity::Info | LogVerbosity::Debug | LogVerbosity::Trace)
+                    } else if msg.contains("[DEBUG]") {
+                        matches!(verbosity, LogVerbosity::Debug | LogVerbosity::Trace)
+                    } else {
+                        // TRACE or unrecognized - only show at Trace level
+                        matches!(verbosity, LogVerbosity::Trace)
                     };
                     if show {
-                        (&mut (*self).console_state).log_line(msg);
+                        self.console_state.log_line(msg);
                     }
                 }
             }
