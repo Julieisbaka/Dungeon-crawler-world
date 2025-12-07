@@ -1,4 +1,4 @@
-use crate::logic::saves_logic::SaveMenuState;
+use crate::logic::saves_logic::{SaveMenuState, SaveEntryCache};
 use crate::logic::settings_logic::Settings;
 use crate::new_save::show_new_save_ui;
 use egui::Ui;
@@ -73,7 +73,7 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
                     None
                 };
 
-                state.save_cache.insert(folder_name.clone(), crate::logic::saves_logic::SaveEntryCache {
+                state.save_cache.insert(folder_name.clone(), SaveEntryCache {
                     folder_name,
                     save_name,
                     difficulty_text,
@@ -187,8 +187,8 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
     if state.save_cache.is_empty() {
         ui.label("No saves found or saves directory doesn't exist yet.");
     } else {
-        // Collect folder_name and save_name for entries that need editing
-        // This avoids borrowing issues when mutating state inside the loop
+        // Collect edit request to apply after iteration
+        // (mutating state.editing_save would conflict with the borrow of state.save_cache)
         let mut edit_request: Option<(String, String)> = None;
         
         // Iterate directly over cache values to avoid cloning
