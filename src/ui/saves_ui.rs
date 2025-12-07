@@ -152,9 +152,10 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                             let old_path = Path::new("saves").join(&folder_name);
                             let new_path = Path::new("saves").join(&new_folder);
                             if !new_path.exists() {
-                                let _ = fs::rename(&old_path, &new_path);
-                                state.editing_save = Some(new_folder);
-                                state.invalidate_cache(); // Invalidate cache after rename
+                                if fs::rename(&old_path, &new_path).is_ok() {
+                                    state.editing_save = Some(new_folder);
+                                    state.invalidate_cache(); // Invalidate cache after rename
+                                }
                             }
                         }
                     }
