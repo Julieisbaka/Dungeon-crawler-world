@@ -1,4 +1,4 @@
-use crate::logic::saves_logic::{SaveMenuState, SaveEntryCache};
+use crate::logic::saves_logic::SaveMenuState;
 use crate::logic::settings_logic::Settings;
 use crate::new_save::show_new_save_ui;
 use egui::Ui;
@@ -73,7 +73,7 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
                     None
                 };
 
-                state.save_cache.insert(folder_name.clone(), SaveEntryCache {
+                state.save_cache.insert(folder_name.clone(), crate::logic::saves_logic::SaveEntryCache {
                     folder_name,
                     save_name,
                     difficulty_text,
@@ -91,7 +91,8 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
 /// # Arguments
 /// * `ui` - The egui UI to render into.
 /// * `state` - The mutable state for the save menu.
-pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
+/// * `settings` - The application settings (passed from parent to avoid disk I/O).
+pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings) {
     use std::fs;
     use std::path::Path;
 
@@ -182,50 +183,51 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState) {
         load_save_cache(ui, state);
     }
 
-    // Cache settings once before the loop to avoid repeated disk reads
-    let settings = Settings::load();
-
     // Render cached save entries
     if state.save_cache.is_empty() {
         ui.label("No saves found or saves directory doesn't exist yet.");
     } else {
-        // Collect keys to iterate over (to avoid borrowing issues)
-        let folder_names: Vec<String> = state.save_cache.keys().cloned().collect();
-        for folder_name in folder_names {
-            // Get cache entry data (cloned to avoid borrow conflicts)
-            let cache_entry = state.save_cache.get(&folder_name).cloned();
-            if let Some(entry) = cache_entry {
-                ui.horizontal(|ui: &mut Ui| {
-                    if let Some(ref texture) = entry.icon {
-                        ui.add(egui::Image::new(texture).fit_to_exact_size(egui::Vec2::splat(64.0)));
-                    } else {
-                        ui.label("[No Icon]");
+        // Collect folder_name and save_name for entries that need editing
+        // This avoids borrowing issues when mutating state inside the loop
+        let mut edit_request: Option<(String, String)> = None;
+        
+        // Iterate directly over cache values to avoid cloning
+        for entry in state.save_cache.values() {
+            ui.horizontal(|ui: &mut Ui| {
+                if let Some(ref texture) = entry.icon {
+                    ui.add(egui::Image::new(texture).fit_to_exact_size(egui::Vec2::splat(64.0)));
+                } else {
+                    ui.label("[No Icon]");
+                }
+                ui.vertical(|ui: &mut Ui| {
+                    ui.label(format!("Save: {}", entry.save_name));
+                    if !entry.difficulty_text.is_empty() {
+                        ui.label(&entry.difficulty_text);
                     }
-                    ui.vertical(|ui: &mut Ui| {
-                        ui.label(format!("Save: {}", entry.save_name));
-                        if !entry.difficulty_text.is_empty() {
-                            ui.label(&entry.difficulty_text);
-                        }
-                        if !entry.created_at_text.is_empty() && settings.show_save_creation_date {
-                            ui.label(&entry.created_at_text);
-                        }
-                        ui.horizontal(|ui: &mut Ui| {
-                            if ui.button("Load Save").clicked() {
-                                // Update the library's current save tracker
-                                if let Ok(mut g) = crate::CURRENT_SAVE.lock() {
-                                    *g = Some(entry.folder_name.clone());
-                                    log::info!("Current save set to: {}", entry.folder_name);
-                                }
+                    if !entry.created_at_text.is_empty() && settings.show_save_creation_date {
+                        ui.label(&entry.created_at_text);
+                    }
+                    ui.horizontal(|ui: &mut Ui| {
+                        if ui.button("Load Save").clicked() {
+                            // Update the library's current save tracker
+                            if let Ok(mut g) = crate::CURRENT_SAVE.lock() {
+                                *g = Some(entry.folder_name.clone());
+                                log::info!("Current save set to: {}", entry.folder_name);
                             }
-                            if ui.button("Edit").clicked() {
-                                state.editing_save = Some(entry.folder_name.clone());
-                                state.edit_save_name = entry.save_name.clone();
-                            }
-                        });
+                        }
+                        if ui.button("Edit").clicked() {
+                            edit_request = Some((entry.folder_name.clone(), entry.save_name.clone()));
+                        }
                     });
                 });
-                ui.add_space(16.0); // Space between saves
-            }
+            });
+            ui.add_space(16.0); // Space between saves
+        }
+        
+        // Apply edit request after iteration to avoid borrow conflicts
+        if let Some((folder_name, save_name)) = edit_request {
+            state.editing_save = Some(folder_name);
+            state.edit_save_name = save_name;
         }
     }
 

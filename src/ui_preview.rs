@@ -44,6 +44,7 @@ enum PreviewWindow {
         open: bool,
         max: bool,
         state: SaveMenuState,
+        settings: Settings,
     },
     Settings {
         open: bool,
@@ -151,6 +152,7 @@ impl UiPreviewManager {
                         open: true,
                         max: false,
                         state: SaveMenuState::default(),
+                        settings: Settings::default(),
                     }
                 }),
             "settings" => (&mut (*self).windows)
@@ -347,7 +349,7 @@ impl UiPreviewManager {
                         *open = false;
                     }
                 }
-                PreviewWindow::Saves { open, max, state } => {
+                PreviewWindow::Saves { open, max, state, settings } => {
                     if !*open {
                         continue;
                     }
@@ -381,7 +383,7 @@ impl UiPreviewManager {
                                     }
                                 },
                             );
-                            saves_ui::show_save_ui(ui, state);
+                            saves_ui::show_save_ui(ui, state, settings);
                         });
                     if !is_open {
                         *open = false;

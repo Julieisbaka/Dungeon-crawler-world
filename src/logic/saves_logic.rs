@@ -1,6 +1,6 @@
 use crate::new_save::NewSaveState;
 use egui::TextureHandle;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 /// Cached data for a single save entry to avoid repeated disk reads.
 #[derive(Clone)]
@@ -24,8 +24,8 @@ pub struct SaveMenuState {
     // Set to true when the top-level Back is clicked; caller can observe and react
     pub back_requested: bool,
     /// Cached save entries to avoid repeated disk reads and image decoding.
-    /// Key is the folder name.
-    pub save_cache: HashMap<String, SaveEntryCache>,
+    /// Key is the folder name. Uses IndexMap to preserve insertion order.
+    pub save_cache: IndexMap<String, SaveEntryCache>,
     /// Whether the save cache has been loaded.
     pub cache_loaded: bool,
 }
@@ -42,7 +42,7 @@ impl Default for SaveMenuState {
             confirm_delete: false,
             delete_target: None,
             back_requested: false,
-            save_cache: HashMap::new(),
+            save_cache: IndexMap::new(),
             cache_loaded: false,
         }
     }
