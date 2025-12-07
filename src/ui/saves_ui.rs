@@ -19,7 +19,8 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
         for entry in entries.flatten() {
             let path = entry.path();
             if path.is_dir() {
-                let folder_name = path.file_name().unwrap().to_string_lossy().to_string();
+                let Some(folder_name_osstr) = path.file_name() else { continue; };
+                let folder_name = folder_name_osstr.to_string_lossy().to_string();
                 let save_name = folder_name.replace('_', " ");
 
                 // Try to read save.json to get additional info
