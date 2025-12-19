@@ -13,6 +13,7 @@ dependencies = [
  "egui_commonmark",
  "env_logger",
  "image",
+ "indexmap",
  "log",
  "once_cell",
  "parry3d",

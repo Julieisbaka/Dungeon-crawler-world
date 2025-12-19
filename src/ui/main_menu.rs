@@ -94,7 +94,7 @@ impl MainMenu {
                                 ui,
                                 |ui: &mut egui::Ui| {
                                     ui.set_max_width(900.0);
-                                    show_save_ui(ui, &mut self.save_menu_state);
+                                    show_save_ui(ui, &mut self.save_menu_state, settings);
                                 },
                             );
                             // Only close saves menu on explicit back, escape, or sub-menu exit

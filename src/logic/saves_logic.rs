@@ -1,4 +1,16 @@
 use crate::new_save::NewSaveState;
+use egui::TextureHandle;
+use indexmap::IndexMap;
+
+/// Cached data for a single save entry to avoid repeated disk reads.
+#[derive(Clone)]
+pub struct SaveEntryCache {
+    pub folder_name: String,
+    pub save_name: String,
+    pub difficulty_text: String,
+    pub created_at_text: String,
+    pub icon: Option<TextureHandle>,
+}
 
 pub struct SaveMenuState {
     #[allow(dead_code)]
@@ -11,6 +23,11 @@ pub struct SaveMenuState {
     pub delete_target: Option<String>,
     // Set to true when the top-level Back is clicked; caller can observe and react
     pub back_requested: bool,
+    /// Cached save entries to avoid repeated disk reads and image decoding.
+    /// Key is the folder name. Uses IndexMap to preserve insertion order.
+    pub save_cache: IndexMap<String, SaveEntryCache>,
+    /// Whether the save cache has been loaded.
+    pub cache_loaded: bool,
 }
 
 impl Default for SaveMenuState {
@@ -25,6 +42,17 @@ impl Default for SaveMenuState {
             confirm_delete: false,
             delete_target: None,
             back_requested: false,
+            save_cache: IndexMap::new(),
+            cache_loaded: false,
         }
+    }
+}
+
+impl SaveMenuState {
+    /// Invalidates the save cache, forcing a reload on next render.
+    /// Call this after creating, renaming, or deleting saves.
+    pub fn invalidate_cache(&mut self) {
+        self.save_cache.clear();
+        self.cache_loaded = false;
     }
 }
