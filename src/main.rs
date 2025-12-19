@@ -463,11 +463,10 @@ impl WinitApp {
         egui_renderer.update_buffers(device, queue, &mut encoder, &paint_jobs, &screen_descriptor);
         
         // Render to texture
-        // SAFETY: Working around egui-wgpu 0.32 API bug where render() requires 'static
-        // but the RenderPass actually only needs to live until it's dropped.
-        // This is safe because we immediately drop rpass before finishing encoder.
+        // Use wgpu's safe forget_lifetime() method to convert the RenderPass lifetime to 'static.
+        // This is safe because CommandEncoder is in a locked state while the pass is active.
         {
-            let mut rpass: egui_wgpu::wgpu::RenderPass<'_> = encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
+            let rpass: egui_wgpu::wgpu::RenderPass<'_> = encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
                 label: Some("egui main render pass"),
                 color_attachments: &[Some(egui_wgpu::wgpu::RenderPassColorAttachment {
                     view: &output_view,
@@ -481,10 +480,8 @@ impl WinitApp {
                 timestamp_writes: None,
                 occlusion_query_set: None,
             });
-            let rpass_static: &mut egui_wgpu::wgpu::RenderPass<'static> = unsafe {
-                std::mem::transmute(&mut rpass)
-            };
-            egui_renderer.render(rpass_static, &paint_jobs, &screen_descriptor);
+            let mut rpass_static: egui_wgpu::wgpu::RenderPass<'static> = rpass.forget_lifetime();
+            egui_renderer.render(&mut rpass_static, &paint_jobs, &screen_descriptor);
         }
         
         queue.submit(Some(encoder.finish()));
