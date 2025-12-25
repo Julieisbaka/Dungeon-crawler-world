@@ -77,6 +77,13 @@ pub fn grid_ui(ui: &mut Ui, state: &mut GridState) {
                 egui::Sense::hover(),
             );
             
+            // Handle mouse wheel for zooming
+            let scroll_delta = ui.input(|i| i.raw_scroll_delta);
+            if response.hovered() && scroll_delta.y != 0.0 {
+                let zoom_factor = if scroll_delta.y > 0.0 { 1.1 } else { 0.9 };
+                state.zoom = (state.zoom * zoom_factor).clamp(0.1, 5.0);
+            }
+            
             let to_screen = |x: f32, y: f32| -> Pos2 {
                 response.rect.min + Vec2::new(
                     (x + state.pan_x) * state.zoom,

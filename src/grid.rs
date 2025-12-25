@@ -50,38 +50,71 @@ impl Neighborhood {
         let mut rng = rand::thread_rng();
         let num_nodes = rng.gen_range(5..=15);
         
-        // Generate random nodes within this neighborhood's bounds
+        // Generate random nodes within this neighborhood's bounds (initially all Normal)
         let mut nodes = Vec::new();
         for i in 0..num_nodes {
             let x = offset_x + rng.gen::<f32>() * size;
             let y = offset_y + rng.gen::<f32>() * size;
             
-            // Randomly assign special room types - each node has independent probability
-            let room_type = if rng.gen_bool(0.3) {
-                RoomType::Bathroom
-            } else if rng.gen_bool(0.1) {
-                RoomType::SafeRoom
-            } else if rng.gen_bool(0.05) {
-                RoomType::Stairwell
-            } else {
-                RoomType::Normal
-            };
-            
             nodes.push(Node {
                 id: i,
                 x,
                 y,
-                room_type,
+                room_type: RoomType::Normal,
             });
         }
         
         // Generate MST using Kruskal's algorithm
         let mst_edges = Self::generate_mst(&nodes);
         
+        // Assign special room types based on distance constraints
+        Self::assign_special_rooms(&mut nodes, &mst_edges);
+        
         Self {
             id,
             nodes,
             mst_edges,
+        }
+    }
+    
+    /// Assign special room types to nodes based on distance constraints
+    fn assign_special_rooms(nodes: &mut [Node], _edges: &[Edge]) {
+        if nodes.is_empty() {
+            return;
+        }
+        
+        let mut rng = rand::thread_rng();
+        
+        // Track bathroom positions to enforce minimum distance
+        let mut bathroom_positions = Vec::new();
+        let bathroom_min_distance = restroom_distance() as f32;
+        
+        // Try to place bathrooms based on distance constraints
+        for i in 0..nodes.len() {
+            let node_pos = (nodes[i].x, nodes[i].y);
+            
+            // Check if this position is far enough from existing bathrooms
+            let too_close = bathroom_positions.iter().any(|(bx, by)| {
+                let dx = node_pos.0 - bx;
+                let dy = node_pos.1 - by;
+                (dx * dx + dy * dy).sqrt() < bathroom_min_distance
+            });
+            
+            if !too_close && rng.gen_bool(0.4) {
+                nodes[i].room_type = RoomType::Bathroom;
+                bathroom_positions.push(node_pos);
+            }
+        }
+        
+        // Assign other special room types with lower probability
+        for node in nodes.iter_mut() {
+            if node.room_type == RoomType::Normal {
+                if rng.gen_bool(0.1) {
+                    node.room_type = RoomType::SafeRoom;
+                } else if rng.gen_bool(0.05) {
+                    node.room_type = RoomType::Stairwell;
+                }
+            }
         }
     }
     
