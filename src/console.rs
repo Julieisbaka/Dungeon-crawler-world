@@ -232,7 +232,7 @@ impl ConsoleState {
                 self.push_line("  help  - show this message");
                 self.push_line("  clear - clear the console output");
                 self.push_line("  log <message> - log a message to the console");
-                self.push_line("  invoke <ui> - open a preview window for a UI (e.g., skills, new_save, saves, settings, console, quit)");
+                self.push_line("  invoke <ui> - open a preview window for a UI (e.g., skills, new_save, saves, settings, console, grid, quit)");
             }
             "clear" => {
                 self.clear();
