@@ -21,11 +21,6 @@ impl Default for GridState {
 }
 
 impl GridState {
-    /// Create a new grid state with default values
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
     /// Regenerate the grid with new random data
     pub fn regenerate(&mut self) {
         self.grid.regenerate();

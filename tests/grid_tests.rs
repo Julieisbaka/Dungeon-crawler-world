@@ -27,8 +27,8 @@ fn test_neighborhood_has_nodes() {
     
     for neighborhood in &cell.neighborhoods {
         assert!(!neighborhood.nodes.is_empty(), "Neighborhood should have nodes");
-        assert!(neighborhood.nodes.len() >= 5 && neighborhood.nodes.len() < 15, 
-                "Neighborhood should have between 5 and 15 nodes");
+        assert!(neighborhood.nodes.len() >= 5 && neighborhood.nodes.len() <= 15, 
+                "Neighborhood should have between 5 and 15 nodes (inclusive)");
     }
 }
 

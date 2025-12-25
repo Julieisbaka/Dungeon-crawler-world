@@ -48,7 +48,7 @@ impl Neighborhood {
     /// Create a new neighborhood with random nodes and MST
     pub fn new(id: usize, offset_x: f32, offset_y: f32, size: f32) -> Self {
         let mut rng = rand::thread_rng();
-        let num_nodes = rng.gen_range(5..15);
+        let num_nodes = rng.gen_range(5..=15);
         
         // Generate random nodes within this neighborhood's bounds
         let mut nodes = Vec::new();
@@ -56,12 +56,12 @@ impl Neighborhood {
             let x = offset_x + rng.gen::<f32>() * size;
             let y = offset_y + rng.gen::<f32>() * size;
             
-            // Randomly assign special room types
-            let room_type = if i == 0 && rng.gen_bool(0.3) {
+            // Randomly assign special room types - each node has independent probability
+            let room_type = if rng.gen_bool(0.3) {
                 RoomType::Bathroom
-            } else if i == 1 && rng.gen_bool(0.1) {
+            } else if rng.gen_bool(0.1) {
                 RoomType::SafeRoom
-            } else if i == 2 && rng.gen_bool(0.05) {
+            } else if rng.gen_bool(0.05) {
                 RoomType::Stairwell
             } else {
                 RoomType::Normal
@@ -107,7 +107,7 @@ impl Neighborhood {
         }
         
         // Sort edges by weight
-        edges.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap());
+        edges.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(std::cmp::Ordering::Equal));
         
         // Union-Find data structure for cycle detection
         let mut parent: Vec<usize> = (0..nodes.len()).collect();
