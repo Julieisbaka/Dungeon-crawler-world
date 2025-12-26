@@ -187,7 +187,7 @@ fn render_neighborhood(
         };
         
         let pos = to_screen(node.x, node.y);
-        let radius = (4.0 * zoom).max(2.0).min(8.0);
+        let radius = (4.0 * zoom).clamp(2.0, 8.0);
         
         painter.circle_filled(pos, radius, color);
         

@@ -61,13 +61,13 @@ impl Default for NewSaveState {
 impl NewSaveState {
     /// Resets the state to its default values, clearing all fields.
     pub fn reset(&mut self) {
-        (&mut (*self).save_name).clear();
-        (*self).selected_difficulty = Difficulty::Medium;
-        (*self).selected_tab = NewSaveTab::Basics;
-        (*self).online_mode = false;
-        (*self).real_time = false;
-        (&mut (*self).error_message).clear();
-        (&mut (*self).success_message).clear();
+        self.save_name.clear();
+        self.selected_difficulty = Difficulty::Medium;
+        self.selected_tab = NewSaveTab::Basics;
+        self.online_mode = false;
+        self.real_time = false;
+        self.error_message.clear();
+        self.success_message.clear();
     }
 }
 
@@ -87,25 +87,25 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
         ui.add_space(20.0);
         // Tabs
         ui.horizontal(|ui: &mut Ui| {
-            let basics_selected: bool = matches!((*state).selected_tab, NewSaveTab::Basics);
-            if (&ui.selectable_label(basics_selected, "Basics")).clicked() {
-                (*state).selected_tab = NewSaveTab::Basics;
+            let basics_selected: bool = matches!(state.selected_tab, NewSaveTab::Basics);
+            if ui.selectable_label(basics_selected, "Basics").clicked() {
+                state.selected_tab = NewSaveTab::Basics;
             }
-            let gamerules_selected: bool = matches!((*state).selected_tab, NewSaveTab::Gamerules);
-            if (&ui.selectable_label(gamerules_selected, "Gamerules")).clicked() {
-                (*state).selected_tab = NewSaveTab::Gamerules;
+            let gamerules_selected: bool = matches!(state.selected_tab, NewSaveTab::Gamerules);
+            if ui.selectable_label(gamerules_selected, "Gamerules").clicked() {
+                state.selected_tab = NewSaveTab::Gamerules;
             }
         });
 
         ui.add_space(10.0);
 
-        match (*state).selected_tab {
+        match state.selected_tab {
             NewSaveTab::Basics => {
                 // Save name input
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Save Name:");
                     ui.add(
-                        TextEdit::singleline(&mut (*state).save_name as &mut dyn TextBuffer)
+                        TextEdit::singleline(&mut state.save_name as &mut dyn TextBuffer)
                             .hint_text("Enter a unique save name..."),
                     );
                 });
@@ -115,54 +115,54 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 // Difficulty selection
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Difficulty:");
-                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Easy, "Easy");
+                    ui.radio_value(&mut state.selected_difficulty, Difficulty::Easy, "Easy");
                     ui.radio_value(
-                        &mut (*state).selected_difficulty,
+                        &mut state.selected_difficulty,
                         Difficulty::Medium,
                         "Medium",
                     );
-                    ui.radio_value(&mut (*state).selected_difficulty, Difficulty::Hard, "Hard");
+                    ui.radio_value(&mut state.selected_difficulty, Difficulty::Hard, "Hard");
                 });
             }
             NewSaveTab::Gamerules => {
-                ui.checkbox(&mut (*state).online_mode, "Online mode");
-                ui.checkbox(&mut (*state).real_time, "Real-time");
+                ui.checkbox(&mut state.online_mode, "Online mode");
+                ui.checkbox(&mut state.real_time, "Real-time");
             }
         }
 
         ui.add_space(20.0);
 
         // Error message
-        if !(&(*state).error_message).is_empty() {
-            ui.colored_label(egui::Color32::RED, &(*state).error_message);
+        if !state.error_message.is_empty() {
+            ui.colored_label(egui::Color32::RED, &state.error_message);
             ui.add_space(10.0);
         }
 
         // Success message
-        if !(&(*state).success_message).is_empty() {
-            ui.colored_label(egui::Color32::GREEN, &(*state).success_message);
+        if !state.success_message.is_empty() {
+            ui.colored_label(egui::Color32::GREEN, &state.success_message);
             ui.add_space(10.0);
         }
 
         // Buttons
         ui.horizontal(|ui: &mut Ui| {
-            if (&ui.button("Create Save")).clicked() {
+            if ui.button("Create Save").clicked() {
                 if let Err(error) = create_new_save(
-                    &**&(*state).save_name,
-                    &(*state).selected_difficulty,
-                    (*state).online_mode,
-                    (*state).real_time,
+                    &state.save_name,
+                    &state.selected_difficulty,
+                    state.online_mode,
+                    state.real_time,
                 ) {
-                    (*state).error_message = error;
-                    (&mut (*state).success_message).clear();
+                    state.error_message = error;
+                    state.success_message.clear();
                 } else {
-                    (&mut (*state).error_message).clear();
+                    state.error_message.clear();
                     // Close the dialog after successful creation
                     should_close = true;
                 }
             }
 
-            if (&ui.button("Cancel")).clicked() {
+            if ui.button("Cancel").clicked() {
                 should_close = true;
             }
         });

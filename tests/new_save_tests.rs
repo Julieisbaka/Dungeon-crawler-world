@@ -15,7 +15,7 @@ fn test_normal_time_generation_range() {
     for _ in 0..100 {
         let time: u32 = generate_floor_one_time(false, &mut rng);
         // 12h = 43200, 20h = 72000
-        assert!(time >= 43_200 && time <= 72_000, "Normal time should be between 12h and 20h in seconds, got {}", time);
+        assert!((43_200..=72_000).contains(&time), "Normal time should be between 12h and 20h in seconds, got {}", time);
     }
 }
 

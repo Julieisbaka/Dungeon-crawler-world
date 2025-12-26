@@ -151,11 +151,9 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                         if !new_folder.is_empty() && new_folder != folder_name {
                             let old_path = Path::new("saves").join(&folder_name);
                             let new_path = Path::new("saves").join(&new_folder);
-                            if !new_path.exists() {
-                                if fs::rename(&old_path, &new_path).is_ok() {
-                                    state.editing_save = Some(new_folder);
-                                    state.invalidate_cache(); // Invalidate cache after rename
-                                }
+                            if !new_path.exists() && fs::rename(&old_path, &new_path).is_ok() {
+                                state.editing_save = Some(new_folder);
+                                state.invalidate_cache(); // Invalidate cache after rename
                             }
                         }
                     }
