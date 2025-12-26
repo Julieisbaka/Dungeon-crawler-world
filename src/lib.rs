@@ -2,6 +2,7 @@ pub mod logic;
 pub mod ui;
 pub mod new_save;
 pub mod console;
+pub mod grid;
 
 pub use new_save::{generate_floor_one_time, generate_stats};
 

@@ -12,6 +12,8 @@ use dungeon_crawler_world::logic::saves_logic::SaveMenuState;
 use dungeon_crawler_world::ui::saves_ui;
 use dungeon_crawler_world::logic::settings_logic::Settings;
 use dungeon_crawler_world::ui::settings_ui;
+use dungeon_crawler_world::logic::grid_logic::GridState;
+use dungeon_crawler_world::ui::grid_ui;
 
 pub struct UiPreviewManager {
     windows: HashMap<String, PreviewWindow>,
@@ -61,6 +63,11 @@ enum PreviewWindow {
         max: bool,
         graph: FpsGraph,
     },
+    Grid {
+        open: bool,
+        max: bool,
+        state: GridState,
+    },
     Quit {
         open: bool,
         max: bool,
@@ -88,6 +95,7 @@ impl UiPreviewManager {
             "settings",
             "console",
             "fps_graph",
+            "grid",
             "quit",
         ]
     }
@@ -173,6 +181,15 @@ impl UiPreviewManager {
                         state: ConsoleState::default(),
                     }
                 }),
+            "grid" => (&mut (*self).windows)
+                .entry(key)
+                .or_insert_with(|| -> PreviewWindow {
+                    PreviewWindow::Grid {
+                        open: true,
+                        max: false,
+                        state: GridState::default(),
+                    }
+                }),
             other => {
                 return Err(format!(
                     "Unknown UI '{}'. Known: {}",
@@ -189,6 +206,7 @@ impl UiPreviewManager {
             | PreviewWindow::Settings { open, .. }
             | PreviewWindow::Console { open, .. }
             | PreviewWindow::FpsGraph { open, .. }
+            | PreviewWindow::Grid { open, .. }
             | PreviewWindow::Quit { open, .. } => {
                 *open = true;
             }
@@ -472,6 +490,46 @@ impl UiPreviewManager {
                         *open = false;
                     }
                 }
+                PreviewWindow::Grid { open, max, state } => {
+                    if !*open {
+                        continue;
+                    }
+                    let mut is_open: bool = true;
+                    let id: egui::Id = egui::Id::new(("preview_grid", *max));
+                    egui::Window::new("Preview: Grid Visualization")
+                        .id(id)
+                        .open(&mut is_open)
+                        .resizable(true)
+                        .vscroll(false)
+                        .default_size(egui::vec2(
+                            if *max {
+                                screen_size.x
+                            } else {
+                                screen_size.x * 0.8
+                            },
+                            if *max {
+                                screen_size.y
+                            } else {
+                                screen_size.y * 0.8
+                            },
+                        ))
+                        .max_size(screen_size)
+                        .show(ctx, |ui: &mut egui::Ui| {
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::TOP),
+                                |ui: &mut egui::Ui| {
+                                    let label: &str = if *max { "Restore" } else { "Maximize" };
+                                    if (&ui.button(label)).clicked() {
+                                        *max = !*max;
+                                    }
+                                },
+                            );
+                            grid_ui::grid_ui(ui, state);
+                        });
+                    if !is_open {
+                        *open = false;
+                    }
+                }
             }
             // Mark for cleanup if fully closed
             match win {
@@ -481,6 +539,7 @@ impl UiPreviewManager {
                 | PreviewWindow::Settings { open, .. }
                 | PreviewWindow::Console { open, .. }
                 | PreviewWindow::FpsGraph { open, .. }
+                | PreviewWindow::Grid { open, .. }
                 | PreviewWindow::Quit { open, .. } => {
                     if !*open {
                         (&mut to_close).push(name.clone());
