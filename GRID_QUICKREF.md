@@ -97,7 +97,7 @@ See GRID_TESTING.md for comprehensive testing procedures.
 - **Nodes per neighborhood**: 5-15 (random)
 - **MST algorithm**: Kruskal's algorithm
 - **Special room spawn rates**:
-  - Bathroom: ~30%
+  - Bathroom: ~40%
   - Safe Room: ~10%
   - Stairwell: ~5%
 

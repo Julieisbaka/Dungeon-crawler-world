@@ -122,3 +122,40 @@ fn test_node_positions_within_bounds() {
         }
     }
 }
+
+#[test]
+fn test_bathroom_distance_constraints() {
+    // Test that bathrooms within a neighborhood respect minimum distance constraints
+    let grid = FloorGrid::new(2, 2, 200.0);
+    
+    for row in &grid.cells {
+        for cell in row {
+            for neighborhood in &cell.neighborhoods {
+                // Collect all bathroom positions
+                let bathrooms: Vec<(f32, f32)> = neighborhood.nodes
+                    .iter()
+                    .filter(|n| n.room_type == RoomType::Bathroom)
+                    .map(|n| (n.x, n.y))
+                    .collect();
+                
+                // If there are multiple bathrooms, verify they respect minimum distance
+                if bathrooms.len() > 1 {
+                    for i in 0..bathrooms.len() {
+                        for j in (i + 1)..bathrooms.len() {
+                            let dx = bathrooms[i].0 - bathrooms[j].0;
+                            let dy = bathrooms[i].1 - bathrooms[j].1;
+                            let distance = (dx * dx + dy * dy).sqrt();
+                            
+                            // restroom_distance returns 300-500, so minimum should be at least 300
+                            assert!(
+                                distance >= 300.0,
+                                "Bathrooms too close: distance = {:.2}m (should be >= 300m)",
+                                distance
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

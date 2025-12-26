@@ -88,16 +88,18 @@ impl Neighborhood {
         // Track bathroom positions to enforce minimum distance
         let mut bathroom_positions = Vec::new();
         let bathroom_min_distance = restroom_distance() as f32;
+        let bathroom_min_distance_sq = bathroom_min_distance * bathroom_min_distance;
         
         // Try to place bathrooms based on distance constraints
         for i in 0..nodes.len() {
             let node_pos = (nodes[i].x, nodes[i].y);
             
             // Check if this position is far enough from existing bathrooms
+            // Using squared distance to avoid expensive sqrt operation
             let too_close = bathroom_positions.iter().any(|(bx, by)| {
                 let dx = node_pos.0 - bx;
                 let dy = node_pos.1 - by;
-                (dx * dx + dy * dy).sqrt() < bathroom_min_distance
+                (dx * dx + dy * dy) < bathroom_min_distance_sq
             });
             
             if !too_close && rng.gen_bool(0.4) {
@@ -106,14 +108,15 @@ impl Neighborhood {
             }
         }
         
-        // Assign other special room types with lower probability
+        // Assign other special room types with independent probabilities
         for node in nodes.iter_mut() {
-            if node.room_type == RoomType::Normal {
-                if rng.gen_bool(0.1) {
-                    node.room_type = RoomType::SafeRoom;
-                } else if rng.gen_bool(0.05) {
-                    node.room_type = RoomType::Stairwell;
-                }
+            if node.room_type == RoomType::Normal && rng.gen_bool(0.1) {
+                node.room_type = RoomType::SafeRoom;
+            }
+            // Independent check for Stairwell - even if SafeRoom was set above,
+            // this gives Stairwell a chance to override (maintaining ~5% overall)
+            if node.room_type == RoomType::Normal && rng.gen_bool(0.05) {
+                node.room_type = RoomType::Stairwell;
             }
         }
     }

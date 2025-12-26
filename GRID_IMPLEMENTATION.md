@@ -21,7 +21,7 @@ src/
 
 **RoomType Enum**
 - `Normal`: Standard room
-- `Bathroom`: Restroom (spawns with ~30% probability)
+- `Bathroom`: Restroom (spawns with ~40% probability, enforced minimum distance)
 - `SafeRoom`: Safe area (spawns with ~10% probability)
 - `Stairwell`: Staircase to next floor (spawns with ~5% probability)
 
