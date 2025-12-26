@@ -1,6 +1,5 @@
 /// Main menu UI module for the Dungeon Crawler World application.
 /// Handles rendering the main menu, settings, saves, and quit confirmation dialogs.
-
 use egui::{Context, RichText};
 use crate::logic::saves_logic::SaveMenuState;
 use crate::ui::saves_ui::show_save_ui;
@@ -55,7 +54,7 @@ impl MainMenu {
 
         egui::CentralPanel::default()
             .frame(
-                egui::Frame::central_panel(&**&ctx.style())
+                egui::Frame::central_panel(&ctx.style())
                     .inner_margin(egui::Margin::same(0))
                     .outer_margin(egui::Margin::same(0)),
             )
@@ -108,18 +107,18 @@ impl MainMenu {
                             ui.add_space(8.0);
                             ui.heading(RichText::new("Game Menu").size(30.0));
                             ui.add_space(24.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Saves"))).clicked()
+                            if ui.add_sized([220.0, 36.0], egui::Button::new("Saves")).clicked()
                             {
                                 self.state = MenuState::Saves;
                             }
                             ui.add_space(8.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Settings")))
+                            if ui.add_sized([220.0, 36.0], egui::Button::new("Settings"))
                                 .clicked()
                             {
                                 self.state = MenuState::Settings;
                             }
                             ui.add_space(8.0);
-                            if (&ui.add_sized([220.0, 36.0], egui::Button::new("Quit"))).clicked() {
+                            if ui.add_sized([220.0, 36.0], egui::Button::new("Quit")).clicked() {
                                 self.quit_confirm = true;
                             }
                         }
@@ -132,11 +131,11 @@ impl MainMenu {
                                 .show(ctx, |ui: &mut egui::Ui| {
                                     ui.label("Are you sure you want to quit?");
                                     ui.horizontal(|ui: &mut egui::Ui| {
-                                        if (&ui.button("Yes")).clicked() {
+                                        if ui.button("Yes").clicked() {
                                             should_quit = true;
                                             self.quit_confirm = false;
                                         }
-                                        if (&ui.button("No")).clicked() {
+                                        if ui.button("No").clicked() {
                                             self.quit_confirm = false;
                                         }
                                     });

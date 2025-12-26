@@ -21,17 +21,17 @@ fn check_dependencies() {
     println!("cargo:warning=Checking for required build dependencies...");
 
     // For packaging, these would be needed but not required for the build itself
-    if (&std::env::var("CARGO_FEATURE_PACKAGE")).is_ok() {
+    if std::env::var("CARGO_FEATURE_PACKAGE").is_ok() {
         // TODO: IDK if this actually works so please check that it does
         if cfg!(target_os = "windows") {
             // Check for WiX Toolset (for MSI creation)
-            let wix: bool = (&(&mut Command::new("where")).arg("candle").output()).is_ok();
+            let wix: bool = Command::new("where").arg("candle").output().is_ok();
             if !wix {
                 println!("cargo:warning=WiX Toolset not found. MSI creation may fail.");
             }
         } else if cfg!(target_os = "macos") {
             // Check for pkgbuild (for DMG creation)
-            let pkgbuild: bool = (&(&mut Command::new("which")).arg("pkgbuild").output()).is_ok();
+            let pkgbuild: bool = Command::new("which").arg("pkgbuild").output().is_ok();
             if !pkgbuild {
                 println!("cargo:warning=pkgbuild not found. DMG creation may fail.");
             }
@@ -48,10 +48,10 @@ fn setup_vulkan() {
         println!("cargo:include={}/Include", vulkan_sdk);
     } else if cfg!(target_os = "linux") {
         // Linux fallback using pkg-config
-        if (&(&mut Command::new("pkg-config"))
+        if Command::new("pkg-config")
             .arg("--exists")
             .arg("vulkan")
-            .status())
+            .status()
             .is_ok()
         {
             println!("cargo:rustc-link-lib=vulkan");
@@ -94,8 +94,8 @@ fn handle_json_data() {
     println!("cargo:rerun-if-changed=achievements/");
 
     // Create resources.rs with embedded files if needed
-    let resources_path: PathBuf = (&*out_dir).join("resources.rs");
-    if !(&*resources_path).exists() {
+    let resources_path: PathBuf = out_dir.join("resources.rs");
+    if !resources_path.exists() {
         std::fs::write(&resources_path, "// Auto-generated resource mappings\n").unwrap();
     }
 }

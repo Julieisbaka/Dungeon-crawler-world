@@ -296,7 +296,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             if dev_show_all_active || player_skills.contains_key(&meta.name) {
                 let level: i8 = player_skills.get(&meta.name).copied().unwrap_or(0);
                 let mut open: bool = true;
-                egui::Window::new(format!("{}", meta.name))
+                egui::Window::new(meta.name.to_string())
                     .open(&mut open)
                     .collapsible(false)
                     .resizable(true)
