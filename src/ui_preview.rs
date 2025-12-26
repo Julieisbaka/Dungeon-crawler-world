@@ -275,7 +275,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -316,7 +316,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -356,7 +356,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -396,7 +396,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -440,7 +440,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -479,7 +479,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
@@ -519,7 +519,7 @@ impl UiPreviewManager {
                                 egui::Layout::right_to_left(egui::Align::TOP),
                                 |ui: &mut egui::Ui| {
                                     let label: &str = if *max { "Restore" } else { "Maximize" };
-                                    if (&ui.button(label)).clicked() {
+                                    if ui.button(label).clicked() {
                                         *max = !*max;
                                     }
                                 },
