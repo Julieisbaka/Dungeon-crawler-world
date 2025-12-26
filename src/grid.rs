@@ -91,8 +91,8 @@ impl Neighborhood {
         let bathroom_min_distance_sq = bathroom_min_distance * bathroom_min_distance;
         
         // Try to place bathrooms based on distance constraints
-        for i in 0..nodes.len() {
-            let node_pos = (nodes[i].x, nodes[i].y);
+        for node in nodes.iter_mut() {
+            let node_pos = (node.x, node.y);
             
             // Check if this position is far enough from existing bathrooms
             // Using squared distance to avoid expensive sqrt operation
@@ -103,7 +103,7 @@ impl Neighborhood {
             });
             
             if !too_close && rng.gen_bool(0.4) {
-                nodes[i].room_type = RoomType::Bathroom;
+                node.room_type = RoomType::Bathroom;
                 bathroom_positions.push(node_pos);
             }
         }
