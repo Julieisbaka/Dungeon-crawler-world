@@ -29,10 +29,10 @@
 - **Thin gray lines**: Neighborhood divisions (4 per cell)
 
 #### Node Colors
-- **Gray ⬤**: Normal room
-- **Blue ⬤**: Bathroom/Restroom
-- **Green ⬤**: Safe Room
-- **Orange ⬤**: Stairwell
+- **Gray**: Normal room
+- **Blue**: Bathroom/Restroom
+- **Green**: Safe Room
+- **Orange**: Stairwell
 
 #### Connections
 - **Light gray lines**: MST connections between nodes
