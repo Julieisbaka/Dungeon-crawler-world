@@ -27,15 +27,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            pkg-config \
+            libvulkan1 \
             libvulkan-dev \
-            vulkan-headers \
             libx11-dev \
-            libxrandr-dev \
             libxcursor-dev \
-            libxi-dev \
-            libxinerama-dev \
-            libwayland-dev \
-            libxkbcommon-dev
+            libxrandr-dev \
+            libxi-dev
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af #@v1
