@@ -22,9 +22,9 @@ impl std::fmt::Display for Difficulty {
     /// Formats the `Difficulty` enum as a user-friendly string.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            &Difficulty::Easy => write!(f, "Easy"),
-            &Difficulty::Medium => write!(f, "Medium"),
-            &Difficulty::Hard => write!(f, "Hard"),
+            Difficulty::Easy => write!(f, "Easy"),
+            Difficulty::Medium => write!(f, "Medium"),
+            Difficulty::Hard => write!(f, "Hard"),
         }
     }
 }
@@ -232,7 +232,7 @@ fn create_new_save(
     let saves_dir: &Path = Path::new("saves");
     let save_path: std::path::PathBuf = saves_dir.join(&folder_name);
     // Check if save already exists
-    if (&*save_path).exists() {
+    if save_path.exists() {
         return Err("A save with this name already exists".to_string());
     }
     // Create saves directory if it doesn't exist
@@ -251,10 +251,10 @@ fn create_new_save(
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();
     if online_mode {
-        (&mut gamerules).push("Online");
+        gamerules.push("Online");
     }
     if real_time {
-        (&mut gamerules).push("Real-time");
+        gamerules.push("Real-time");
     }
 
     let save_data: Value = json!({
@@ -267,7 +267,7 @@ fn create_new_save(
         },
         "gamerules": gamerules
     });
-    let save_file_path: std::path::PathBuf = (&*save_path).join("save.json");
+    let save_file_path: std::path::PathBuf = save_path.join("save.json");
     fs::write(
         &save_file_path,
         serde_json::to_string_pretty(&save_data).unwrap(),
@@ -278,9 +278,9 @@ fn create_new_save(
         generate_stats(&mut rng);
     use std::collections::HashMap;
     let mut skills: HashMap<String, i8> = HashMap::new();
-    (&mut skills).insert("Walking".to_string(), walking);
-    (&mut skills).insert("Swimming".to_string(), swimming);
-    (&mut skills).insert("Breathing".to_string(), breathing);
+    skills.insert("Walking".to_string(), walking);
+    skills.insert("Swimming".to_string(), swimming);
+    skills.insert("Breathing".to_string(), breathing);
     let stats: PlayerStats = PlayerStats {
         strength,
         intelligence,
@@ -302,7 +302,7 @@ fn create_new_save(
         current_floor: 1,
         stats,
     };
-    let player_file_path: std::path::PathBuf = (&*save_path).join("player.json");
+    let player_file_path: std::path::PathBuf = save_path.join("player.json");
     fs::write(
         &player_file_path,
         serde_json::to_string_pretty(&player).unwrap(),

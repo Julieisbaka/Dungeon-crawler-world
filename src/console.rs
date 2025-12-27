@@ -224,8 +224,8 @@ impl ConsoleState {
         let trimmed: &str = cmd.trim();
         // Split command into head and tail for argument parsing
         let mut parts: std::str::SplitN<'_, char> = trimmed.splitn(2, ' ');
-        let head: &str = (&mut parts).next().unwrap_or("");
-        let tail: &str = (&mut parts).next().unwrap_or("");
+        let head: &str = parts.next().unwrap_or("");
+        let tail: &str = parts.next().unwrap_or("");
         match head {
             "help" => {
                 self.push_line("Available commands:");

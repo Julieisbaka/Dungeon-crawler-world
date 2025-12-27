@@ -262,7 +262,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 let dev_show_all_active: bool = cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
                 let treated_owned: bool = dev_show_all_active || owned_real;
                 let mut frame: egui::Frame =
-                    egui::Frame::group(&ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
+                    egui::Frame::group(ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
                 if !treated_owned {
                     frame = frame.fill(egui::Color32::from_gray(30));
                 }
