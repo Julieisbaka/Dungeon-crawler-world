@@ -152,7 +152,7 @@ impl DungeonCrawlerworld {
             let should_redraw: bool = self.console_state.is_dirty()
                 && self
                     .last_console_redraw
-                    .is_none_or(|last: Instant| -> bool {
+                    .map_or(true, |last: Instant| -> bool {
                         now.duration_since(last) >= redraw_interval
                     });
             egui::Window::new("Console")
