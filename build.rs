@@ -40,6 +40,14 @@ fn check_dependencies() {
 }
 
 fn setup_vulkan() {
+    // Skip Vulkan linking when running in CI or for tests
+    let skip_graphics_libs = env::var("CI").is_ok() || env::var("CARGO_CFG_TEST").is_ok();
+    
+    if skip_graphics_libs {
+        println!("cargo:warning=Skipping Vulkan linking (CI or test mode)");
+        return;
+    }
+    
     // Find Vulkan SDK
     if let Ok(vulkan_sdk) = env::var("VULKAN_SDK") {
         // Standard Vulkan setup
@@ -101,27 +109,38 @@ fn handle_json_data() {
 }
 
 fn setup_linking() {
+    // Skip graphics library linking when running in CI or for tests
+    // This allows library tests and checks to run without system graphics libraries
+    let skip_graphics_libs = env::var("CI").is_ok() || env::var("CARGO_CFG_TEST").is_ok();
+    
     // Link additional system libraries as needed
     if cfg!(target_os = "windows") {
-        println!("cargo:rustc-link-lib=user32");
-        println!("cargo:rustc-link-lib=kernel32");
-        println!("cargo:rustc-link-lib=gdi32");
-        println!("cargo:rustc-link-lib=shell32"); // For file dialogs
-        println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
+        if !skip_graphics_libs {
+            println!("cargo:rustc-link-lib=user32");
+            println!("cargo:rustc-link-lib=kernel32");
+            println!("cargo:rustc-link-lib=gdi32");
+            println!("cargo:rustc-link-lib=shell32"); // For file dialogs
+            println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
+        }
     } else if cfg!(target_os = "linux") {
-        println!("cargo:rustc-link-lib=X11");
-        println!("cargo:rustc-link-lib=Xrandr");
-        println!("cargo:rustc-link-lib=Xcursor");
-        println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
+        if !skip_graphics_libs {
+            println!("cargo:rustc-link-lib=X11");
+            println!("cargo:rustc-link-lib=Xrandr");
+            println!("cargo:rustc-link-lib=Xcursor");
+            println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
+        }
+        // These are always needed even for tests
         println!("cargo:rustc-link-lib=pthread");
         println!("cargo:rustc-link-lib=dl");
         println!("cargo:rustc-link-lib=m");
         println!("cargo:rustc-link-lib=stdc++"); // Required for C++ libraries
     } else if cfg!(target_os = "macos") {
-        println!("cargo:rustc-link-lib=framework=Cocoa");
-        println!("cargo:rustc-link-lib=framework=IOKit");
-        println!("cargo:rustc-link-lib=framework=CoreVideo");
-        println!("cargo:rustc-link-lib=framework=CoreFoundation");
+        if !skip_graphics_libs {
+            println!("cargo:rustc-link-lib=framework=Cocoa");
+            println!("cargo:rustc-link-lib=framework=IOKit");
+            println!("cargo:rustc-link-lib=framework=CoreVideo");
+            println!("cargo:rustc-link-lib=framework=CoreFoundation");
+        }
         println!("cargo:rustc-link-lib=c++"); // Required for C++ libraries on macOS
     }
 }
