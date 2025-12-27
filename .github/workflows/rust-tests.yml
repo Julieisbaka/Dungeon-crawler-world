@@ -1,0 +1,65 @@
+# This workflow runs Rust unit tests and integration tests to ensure code quality
+# and catch regressions early in the development process.
+
+name: Rust Tests
+
+on:
+  push:
+    branches: [ "Main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "Main" ]
+  schedule:
+    - cron: '30 12 * * 3'  # Run weekly on Wednesday at 12:30 UTC
+
+jobs:
+  test:
+    name: Run Rust tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af #@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-target-test-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-target-test-
+
+      - name: Run tests
+        run: cargo test --all-features --verbose
+        continue-on-error: false
+
+      - name: Run doc tests
+        run: cargo test --doc --all-features --verbose
+        continue-on-error: false
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
