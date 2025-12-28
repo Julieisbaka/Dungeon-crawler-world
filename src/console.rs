@@ -115,6 +115,21 @@ impl HighlightedLine {
                         kind: TokenKind::Space,
                     });
                 }
+                // Flush any accumulated text before starting a quote
+                if !in_quotes && !current.is_empty() {
+                    let kind = if is_first_word {
+                        is_first_word = false;
+                        TokenKind::Command
+                    } else if looks_like_number(&current) {
+                        TokenKind::Number
+                    } else {
+                        TokenKind::Word
+                    };
+                    tokens.push(Token {
+                        text: std::mem::take(&mut current),
+                        kind,
+                    });
+                }
                 in_quotes = !in_quotes;
                 current.push(c);
                 if !in_quotes {
