@@ -342,10 +342,8 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
                             ui.horizontal(|ui: &mut Ui| {
                                 for token in tokens {
                                     let text = match token.kind {
-                                        TokenKind::Quote => {
-                                            egui::RichText::new(&token.text)
-                                                .color(egui::Color32::GREEN)
-                                        }
+                                        TokenKind::Quote => egui::RichText::new(&token.text)
+                                            .color(egui::Color32::GREEN),
                                         TokenKind::Command => egui::RichText::new(&token.text)
                                             .color(egui::Color32::from_rgb(0, 200, 255))
                                             .strong(),
@@ -380,10 +378,13 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
     );
     // Ensure the widget has a reasonable fixed height so the window doesn't flicker/resize
     ui.add_space(4.0);
-    let pressed_enter =
-        input_resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+    let pressed_enter = input_resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
     ui.horizontal(|ui: &mut Ui| {
-        if ui.add_sized([64.0, 24.0], egui::Button::new("Run")).clicked() || pressed_enter {
+        if ui
+            .add_sized([64.0, 24.0], egui::Button::new("Run"))
+            .clicked()
+            || pressed_enter
+        {
             let cmd = state.input.clone();
             if !cmd.trim().is_empty() {
                 state.last_command = Some(cmd.clone());
@@ -392,7 +393,10 @@ pub fn console_ui(ui: &mut Ui, state: &mut ConsoleState, max_lines: usize) {
             state.pending.push(cmd);
             state.input.clear();
         }
-        if ui.add_sized([64.0, 24.0], egui::Button::new("Clear")).clicked() {
+        if ui
+            .add_sized([64.0, 24.0], egui::Button::new("Clear"))
+            .clicked()
+        {
             state.clear();
         }
     });

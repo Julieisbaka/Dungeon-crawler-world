@@ -25,7 +25,7 @@ impl GridState {
     pub fn regenerate(&mut self) {
         self.grid.regenerate();
     }
-    
+
     /// Reset zoom and pan to default
     pub fn reset_view(&mut self) {
         self.zoom = 1.0;

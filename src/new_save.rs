@@ -92,7 +92,10 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 state.selected_tab = NewSaveTab::Basics;
             }
             let gamerules_selected: bool = matches!(state.selected_tab, NewSaveTab::Gamerules);
-            if ui.selectable_label(gamerules_selected, "Gamerules").clicked() {
+            if ui
+                .selectable_label(gamerules_selected, "Gamerules")
+                .clicked()
+            {
                 state.selected_tab = NewSaveTab::Gamerules;
             }
         });
@@ -116,11 +119,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Difficulty:");
                     ui.radio_value(&mut state.selected_difficulty, Difficulty::Easy, "Easy");
-                    ui.radio_value(
-                        &mut state.selected_difficulty,
-                        Difficulty::Medium,
-                        "Medium",
-                    );
+                    ui.radio_value(&mut state.selected_difficulty, Difficulty::Medium, "Medium");
                     ui.radio_value(&mut state.selected_difficulty, Difficulty::Hard, "Hard");
                 });
             }

@@ -49,13 +49,13 @@ impl Neighborhood {
     pub fn new(id: usize, offset_x: f32, offset_y: f32, size: f32) -> Self {
         let mut rng = rand::thread_rng();
         let num_nodes = rng.gen_range(5..=15);
-        
+
         // Generate random nodes within this neighborhood's bounds (initially all Normal)
         let mut nodes = Vec::new();
         for i in 0..num_nodes {
             let x = offset_x + rng.gen::<f32>() * size;
             let y = offset_y + rng.gen::<f32>() * size;
-            
+
             nodes.push(Node {
                 id: i,
                 x,
@@ -63,37 +63,37 @@ impl Neighborhood {
                 room_type: RoomType::Normal,
             });
         }
-        
+
         // Generate MST using Kruskal's algorithm
         let mst_edges = Self::generate_mst(&nodes);
-        
+
         // Assign special room types based on distance constraints
         Self::assign_special_rooms(&mut nodes, &mst_edges);
-        
+
         Self {
             id,
             nodes,
             mst_edges,
         }
     }
-    
+
     /// Assign special room types to nodes based on distance constraints
     fn assign_special_rooms(nodes: &mut [Node], _edges: &[Edge]) {
         if nodes.is_empty() {
             return;
         }
-        
+
         let mut rng = rand::thread_rng();
-        
+
         // Track bathroom positions to enforce minimum distance
         let mut bathroom_positions = Vec::new();
         let bathroom_min_distance = restroom_distance() as f32;
         let bathroom_min_distance_sq = bathroom_min_distance * bathroom_min_distance;
-        
+
         // Try to place bathrooms based on distance constraints
         for node in nodes.iter_mut() {
             let node_pos = (node.x, node.y);
-            
+
             // Check if this position is far enough from existing bathrooms
             // Using squared distance to avoid expensive sqrt operation
             let too_close = bathroom_positions.iter().any(|(bx, by)| {
@@ -101,13 +101,13 @@ impl Neighborhood {
                 let dy = node_pos.1 - by;
                 (dx * dx + dy * dy) < bathroom_min_distance_sq
             });
-            
+
             if !too_close && rng.gen_bool(0.4) {
                 node.room_type = RoomType::Bathroom;
                 bathroom_positions.push(node_pos);
             }
         }
-        
+
         // Assign other special room types with independent probabilities
         for node in nodes.iter_mut() {
             if node.room_type == RoomType::Normal && rng.gen_bool(0.1) {
@@ -120,13 +120,13 @@ impl Neighborhood {
             }
         }
     }
-    
+
     /// Generate a Minimum Spanning Tree using Kruskal's algorithm
     fn generate_mst(nodes: &[Node]) -> Vec<Edge> {
         if nodes.len() < 2 {
             return Vec::new();
         }
-        
+
         // Generate all possible edges with weights (distances)
         let mut edges = Vec::new();
         for i in 0..nodes.len() {
@@ -141,20 +141,24 @@ impl Neighborhood {
                 });
             }
         }
-        
+
         // Sort edges by weight
-        edges.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(std::cmp::Ordering::Equal));
-        
+        edges.sort_by(|a, b| {
+            a.weight
+                .partial_cmp(&b.weight)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
         // Union-Find data structure for cycle detection
         let mut parent: Vec<usize> = (0..nodes.len()).collect();
-        
+
         fn find(parent: &mut Vec<usize>, x: usize) -> usize {
             if parent[x] != x {
                 parent[x] = find(parent, parent[x]);
             }
             parent[x]
         }
-        
+
         fn union(parent: &mut Vec<usize>, x: usize, y: usize) {
             let root_x = find(parent, x);
             let root_y = find(parent, y);
@@ -162,7 +166,7 @@ impl Neighborhood {
                 parent[root_x] = root_y;
             }
         }
-        
+
         // Kruskal's algorithm: add edges that don't form cycles
         let mut mst = Vec::new();
         for edge in edges {
@@ -174,7 +178,7 @@ impl Neighborhood {
                 }
             }
         }
-        
+
         mst
     }
 }
@@ -193,7 +197,7 @@ impl Cell {
         let half_size = cell_size / 2.0;
         let base_x = x as f32 * cell_size;
         let base_y = y as f32 * cell_size;
-        
+
         // Create 4 neighborhoods (top-left, top-right, bottom-left, bottom-right)
         let neighborhoods = vec![
             Neighborhood::new(0, base_x, base_y, half_size),
@@ -201,7 +205,7 @@ impl Cell {
             Neighborhood::new(2, base_x, base_y + half_size, half_size),
             Neighborhood::new(3, base_x + half_size, base_y + half_size, half_size),
         ];
-        
+
         Self {
             x,
             y,
@@ -230,7 +234,7 @@ impl FloorGrid {
             }
             cells.push(row);
         }
-        
+
         Self {
             cells,
             width,
@@ -238,7 +242,7 @@ impl FloorGrid {
             cell_size,
         }
     }
-    
+
     /// Regenerate the grid with new random data
     pub fn regenerate(&mut self) {
         for y in 0..self.height {

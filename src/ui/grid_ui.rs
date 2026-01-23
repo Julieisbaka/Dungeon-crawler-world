@@ -1,6 +1,6 @@
-use egui::{Color32, Painter, Pos2, Rect, Stroke, Ui, Vec2};
-use crate::grid::{RoomType, Cell, Neighborhood};
+use crate::grid::{Cell, Neighborhood, RoomType};
 use crate::logic::grid_logic::GridState;
+use egui::{Color32, Painter, Pos2, Rect, Stroke, Ui, Vec2};
 
 /// Color scheme for different room types
 const COLOR_NORMAL: Color32 = Color32::from_rgb(100, 100, 100);
@@ -14,7 +14,7 @@ const COLOR_MST_EDGE: Color32 = Color32::from_rgb(200, 200, 200);
 /// Render the grid visualization UI
 pub fn grid_ui(ui: &mut Ui, state: &mut GridState) {
     ui.heading("Floor Grid Visualization");
-    
+
     // Control panel
     ui.horizontal(|ui| {
         if ui.button("Regenerate").clicked() {
@@ -24,7 +24,7 @@ pub fn grid_ui(ui: &mut Ui, state: &mut GridState) {
             state.reset_view();
         }
     });
-    
+
     // Zoom controls
     ui.horizontal(|ui| {
         ui.label("Zoom:");
@@ -36,34 +36,37 @@ pub fn grid_ui(ui: &mut Ui, state: &mut GridState) {
             state.zoom = (state.zoom * 1.25).min(5.0);
         }
     });
-    
+
     ui.separator();
-    
+
     // Legend
     ui.horizontal(|ui| {
         ui.label("Legend:");
-        
+
         let size = Vec2::new(12.0, 12.0);
-        
+
         let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
         ui.painter().circle_filled(rect.center(), 5.0, COLOR_NORMAL);
         ui.label("Normal");
-        
+
         let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
-        ui.painter().circle_filled(rect.center(), 5.0, COLOR_BATHROOM);
+        ui.painter()
+            .circle_filled(rect.center(), 5.0, COLOR_BATHROOM);
         ui.label("Bathroom");
-        
+
         let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
-        ui.painter().circle_filled(rect.center(), 5.0, COLOR_SAFE_ROOM);
+        ui.painter()
+            .circle_filled(rect.center(), 5.0, COLOR_SAFE_ROOM);
         ui.label("Safe Room");
-        
+
         let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
-        ui.painter().circle_filled(rect.center(), 5.0, COLOR_STAIRWELL);
+        ui.painter()
+            .circle_filled(rect.center(), 5.0, COLOR_STAIRWELL);
         ui.label("Stairwell");
     });
-    
+
     ui.separator();
-    
+
     // Main grid rendering area
     egui::ScrollArea::both()
         .auto_shrink([false; 2])
@@ -71,26 +74,27 @@ pub fn grid_ui(ui: &mut Ui, state: &mut GridState) {
             let grid = &state.grid;
             let total_width = grid.width as f32 * grid.cell_size * state.zoom;
             let total_height = grid.height as f32 * grid.cell_size * state.zoom;
-            
+
             let (response, painter) = ui.allocate_painter(
                 Vec2::new(total_width.max(600.0), total_height.max(400.0)),
                 egui::Sense::hover(),
             );
-            
+
             // Handle mouse wheel for zooming
             let scroll_delta = ui.input(|i| i.raw_scroll_delta);
             if response.hovered() && scroll_delta.y != 0.0 {
                 let zoom_factor = if scroll_delta.y > 0.0 { 1.1 } else { 0.9 };
                 state.zoom = (state.zoom * zoom_factor).clamp(0.1, 5.0);
             }
-            
+
             let to_screen = |x: f32, y: f32| -> Pos2 {
-                response.rect.min + Vec2::new(
-                    (x + state.pan_x) * state.zoom,
-                    (y + state.pan_y) * state.zoom,
-                )
+                response.rect.min
+                    + Vec2::new(
+                        (x + state.pan_x) * state.zoom,
+                        (y + state.pan_y) * state.zoom,
+                    )
             };
-            
+
             // Render each cell
             for cell_row in &grid.cells {
                 for cell in cell_row {
@@ -98,7 +102,7 @@ pub fn grid_ui(ui: &mut Ui, state: &mut GridState) {
                 }
             }
         });
-    
+
     ui.separator();
     ui.label(format!(
         "Grid: {}x{} cells | Cell size: {:.0} units",
@@ -116,7 +120,7 @@ fn render_cell(
 ) {
     let base_x = cell.x as f32 * cell_size;
     let base_y = cell.y as f32 * cell_size;
-    
+
     // Draw cell border
     let cell_rect = Rect::from_min_max(
         to_screen(base_x, base_y),
@@ -128,10 +132,10 @@ fn render_cell(
         Stroke::new(2.0, COLOR_CELL_BORDER),
         egui::epaint::StrokeKind::Outside,
     );
-    
+
     // Draw neighborhood boundaries
     let half = cell_size / 2.0;
-    
+
     // Vertical divider
     painter.line_segment(
         [
@@ -140,7 +144,7 @@ fn render_cell(
         ],
         Stroke::new(1.0, COLOR_NEIGHBORHOOD_BORDER),
     );
-    
+
     // Horizontal divider
     painter.line_segment(
         [
@@ -149,7 +153,7 @@ fn render_cell(
         ],
         Stroke::new(1.0, COLOR_NEIGHBORHOOD_BORDER),
     );
-    
+
     // Render each neighborhood
     for neighborhood in &cell.neighborhoods {
         render_neighborhood(painter, neighborhood, zoom, to_screen);
@@ -167,16 +171,13 @@ fn render_neighborhood(
     for edge in &neighborhood.mst_edges {
         let from = &neighborhood.nodes[edge.from];
         let to = &neighborhood.nodes[edge.to];
-        
+
         painter.line_segment(
-            [
-                to_screen(from.x, from.y),
-                to_screen(to.x, to.y),
-            ],
+            [to_screen(from.x, from.y), to_screen(to.x, to.y)],
             Stroke::new((1.5 * zoom).max(0.5), COLOR_MST_EDGE),
         );
     }
-    
+
     // Draw nodes
     for node in &neighborhood.nodes {
         let color = match node.room_type {
@@ -185,19 +186,15 @@ fn render_neighborhood(
             RoomType::SafeRoom => COLOR_SAFE_ROOM,
             RoomType::Stairwell => COLOR_STAIRWELL,
         };
-        
+
         let pos = to_screen(node.x, node.y);
         let radius = (4.0 * zoom).clamp(2.0, 8.0);
-        
+
         painter.circle_filled(pos, radius, color);
-        
+
         // Draw outline for special rooms
         if node.room_type != RoomType::Normal {
-            painter.circle_stroke(
-                pos,
-                radius + 1.0,
-                Stroke::new(1.0, Color32::WHITE),
-            );
+            painter.circle_stroke(pos, radius + 1.0, Stroke::new(1.0, Color32::WHITE));
         }
     }
 }

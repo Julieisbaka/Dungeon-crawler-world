@@ -42,12 +42,12 @@ fn check_dependencies() {
 fn setup_vulkan() {
     // Skip Vulkan linking when running in CI or for tests
     let skip_graphics_libs = env::var("CI").is_ok() || env::var("CARGO_CFG_TEST").is_ok();
-    
+
     if skip_graphics_libs {
         println!("cargo:warning=Skipping Vulkan linking (CI or test mode)");
         return;
     }
-    
+
     // Find Vulkan SDK
     if let Ok(vulkan_sdk) = env::var("VULKAN_SDK") {
         // Standard Vulkan setup
@@ -112,7 +112,7 @@ fn setup_linking() {
     // Skip graphics library linking when running in CI or for tests
     // This allows library tests and checks to run without system graphics libraries
     let skip_graphics_libs = env::var("CI").is_ok() || env::var("CARGO_CFG_TEST").is_ok();
-    
+
     // Link additional system libraries as needed
     if cfg!(target_os = "windows") {
         if !skip_graphics_libs {

@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use egui::{ColorImage, ComboBox, Context, TextureHandle, Ui, Vec2};
-use egui_commonmark::{CommonMarkViewer};
+use egui_commonmark::CommonMarkViewer;
 use image::{GenericImageView, ImageReader};
 
 use crate::logic::skills_logic::{find_skills_root, read_player_skills, SkillMeta, SkillsState};
@@ -22,10 +22,8 @@ fn load_icon_texture(ctx: &Context, key: &str, icon_path: &Path) -> Option<Textu
     let size: (u32, u32) = img.dimensions();
     let rgba: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = img.to_rgba8();
     let pixels: image::FlatSamples<&[u8]> = rgba.as_flat_samples();
-    let color_image: ColorImage = ColorImage::from_rgba_unmultiplied(
-        [size.0 as usize, size.1 as usize],
-        pixels.as_slice(),
-    );
+    let color_image: ColorImage =
+        ColorImage::from_rgba_unmultiplied([size.0 as usize, size.1 as usize], pixels.as_slice());
     Some(ctx.load_texture(
         key.to_string(),
         color_image,
@@ -63,8 +61,7 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                 for f in files.flatten() {
                     let p: PathBuf = f.path();
                     if p.is_file()
-                        && p
-                            .extension()
+                        && p.extension()
                             .and_then(|e| e.to_str())
                             .map(|e| e.eq_ignore_ascii_case("json"))
                             .unwrap_or(false)
@@ -74,7 +71,8 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                                 if let Some(n) = val.get("name").and_then(|v| v.as_str()) {
                                     name = n.to_string();
                                 }
-                                if let Some(desc) = val.get("description").and_then(|v| v.as_str()) {
+                                if let Some(desc) = val.get("description").and_then(|v| v.as_str())
+                                {
                                     description = desc.to_string();
                                 }
                             }
@@ -123,7 +121,8 @@ fn discover_skills(ctx: &Context) -> Vec<SkillMeta> {
                     }
                 }
             }
-            if !loaded_md && (description.trim().ends_with(".md") || description.trim().is_empty()) {
+            if !loaded_md && (description.trim().ends_with(".md") || description.trim().is_empty())
+            {
                 description = "No description available.".to_string();
             }
             // Attempt icon load (icon.png/jpg/jpeg)
@@ -207,7 +206,10 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 let treated_owned: bool = dev_show_all_active || owned_real;
                 (!state.only_owned || treated_owned)
                     && (state.search.is_empty()
-                        || meta.name.to_lowercase().contains(&state.search.to_lowercase()))
+                        || meta
+                            .name
+                            .to_lowercase()
+                            .contains(&state.search.to_lowercase()))
             })
             .count();
         if (state.page + 1) * PAGE_SIZE < filtered_count && ui.button("Next >").clicked() {
@@ -223,10 +225,15 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         .enumerate()
         .filter(|(_, meta)| {
             let owned_real: bool = player_skills.contains_key(&meta.name);
-            let dev_show_all_active: bool = cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
+            let dev_show_all_active: bool =
+                cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
             let treated_owned: bool = dev_show_all_active || owned_real;
             (!state.only_owned || treated_owned)
-                && (state.search.is_empty() || meta.name.to_lowercase().contains(&state.search.to_lowercase()))
+                && (state.search.is_empty()
+                    || meta
+                        .name
+                        .to_lowercase()
+                        .contains(&state.search.to_lowercase()))
         })
         .collect();
     match state.sort_mode {
@@ -235,18 +242,21 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         2 => filtered.sort_by(|a, b| {
             let la: i8 = player_skills.get(&a.1.name).copied().unwrap_or(0);
             let lb: i8 = player_skills.get(&b.1.name).copied().unwrap_or(0);
-            lb.cmp(&la).then_with(|| a.1.name.to_lowercase().cmp(&b.1.name.to_lowercase()))
+            lb.cmp(&la)
+                .then_with(|| a.1.name.to_lowercase().cmp(&b.1.name.to_lowercase()))
         }),
         3 => filtered.sort_by(|a, b| {
             let la: i8 = player_skills.get(&a.1.name).copied().unwrap_or(0);
             let lb: i8 = player_skills.get(&b.1.name).copied().unwrap_or(0);
-            la.cmp(&lb).then_with(|| a.1.name.to_lowercase().cmp(&b.1.name.to_lowercase()))
+            la.cmp(&lb)
+                .then_with(|| a.1.name.to_lowercase().cmp(&b.1.name.to_lowercase()))
         }),
         _ => {}
     }
     let start: usize = state.page * PAGE_SIZE;
     let end: usize = ((state.page + 1) * PAGE_SIZE).min(filtered.len());
-    let page_items: &[(usize, &SkillMeta)] = &filtered[start.min(filtered.len())..end.min(filtered.len())];
+    let page_items: &[(usize, &SkillMeta)] =
+        &filtered[start.min(filtered.len())..end.min(filtered.len())];
 
     if page_items.is_empty() {
         ui.label("No skills found. Try adjusting your search or filters.");
@@ -259,7 +269,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
         .show(ui, |ui: &mut Ui| {
             for (i, (idx, meta)) in page_items.iter().enumerate() {
                 let owned_real: bool = player_skills.contains_key(&meta.name);
-                let dev_show_all_active: bool = cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
+                let dev_show_all_active: bool =
+                    cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
                 let treated_owned: bool = dev_show_all_active || owned_real;
                 let mut frame: egui::Frame =
                     egui::Frame::group(ui.style()).inner_margin(egui::Margin::symmetric(8, 8));
@@ -292,7 +303,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     // Detail view in a floating window for owned skills or all in preview
     if let Some(idx) = state.selected {
         if let Some(meta) = state.catalog.get(idx) {
-            let dev_show_all_active: bool = cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
+            let dev_show_all_active: bool =
+                cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
             if dev_show_all_active || player_skills.contains_key(&meta.name) {
                 let level: i8 = player_skills.get(&meta.name).copied().unwrap_or(0);
                 let mut open: bool = true;
@@ -316,10 +328,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                             ui.style_mut().url_in_tooltip = true;
                             // Build a file:// base for relative images using the skill directory
                             let base_uri: String = {
-                                let abs: PathBuf = meta
-                                    .dir
-                                    .canonicalize()
-                                    .unwrap_or(meta.dir.clone());
+                                let abs: PathBuf =
+                                    meta.dir.canonicalize().unwrap_or(meta.dir.clone());
                                 let s: String = abs.to_string_lossy().replace('\\', "/");
                                 format!("file:///{}/", s.trim_start_matches('/'))
                             };
@@ -329,11 +339,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                                 .explicit_image_uri_scheme(false)
                                 .default_implicit_uri_scheme(base_uri);
 
-                            let _resp: egui::InnerResponse<()> = viewer.show(
-                                ui,
-                                &mut state.md_cache,
-                                meta.description.as_str(),
-                            );
+                            let _resp: egui::InnerResponse<()> =
+                                viewer.show(ui, &mut state.md_cache, meta.description.as_str());
                         } else {
                             ui.label("No description available.");
                         }
