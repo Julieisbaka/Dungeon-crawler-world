@@ -1,6 +1,7 @@
 # Dungeon Crawler World
 
 [![CodeQL](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/github-code-scanning/codeql)
+[![Rust Tests](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/Julieisbaka/Dungeon-crawler-world/actions/workflows/rust-tests.yml)
 
 ## Table of Contents
 
