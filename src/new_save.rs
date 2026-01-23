@@ -60,6 +60,7 @@ impl Default for NewSaveState {
 
 impl NewSaveState {
     /// Resets the state to its default values, clearing all fields.
+    #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.save_name.clear();
         self.selected_difficulty = Difficulty::Medium;
