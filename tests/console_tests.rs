@@ -1,6 +1,4 @@
-use dungeon_crawler_world::console::{
-    looks_like_number, HighlightedLine, LineType, Token, TokenKind,
-};
+use dungeon_crawler_world::console::{looks_like_number, HighlightedLine, LineType, TokenKind};
 
 // Tests for looks_like_number()
 mod looks_like_number_tests {
