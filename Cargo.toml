@@ -3,7 +3,7 @@ name = "dungeon_crawler_world"
 path = "src/lib.rs"
 [package]
 edition = "2021"
-rust-version = "1.70"
+rust-version = "1.77"
 
 name = "Dungeon-Crawler-World"
 version = "0.0.7"
