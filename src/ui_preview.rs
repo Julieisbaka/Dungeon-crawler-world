@@ -110,70 +110,11 @@ impl UiPreviewManager {
     /// * `Err(String)` if the name is not recognized.
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
-        let window: &mut PreviewWindow = match key.as_str() {
-            "quit" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::Quit {
-                    open: true,
-                    max: false,
-                }
-            }),
-            "fps_graph" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::FpsGraph {
-                    open: true,
-                    max: false,
-                    graph: FpsGraph::default(),
-                }
-            }),
-            "skills" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                let mut st: SkillsState = SkillsState::default();
-                // In preview, show all discovered skills only when dev-mode is enabled
-                // and enable developer controls conditionally.
-                if cfg!(feature = "dev-mode") {
-                    st.enable_preview();
-                    st.enable_dev_controls();
-                }
-                PreviewWindow::Skills {
-                    open: true,
-                    max: false,
-                    state: st,
-                }
-            }),
-            "new_save" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::NewSave {
-                    open: true,
-                    max: false,
-                    state: NewSaveState::default(),
-                }
-            }),
-            "saves" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::Saves {
-                    open: true,
-                    max: false,
-                    state: SaveMenuState::default(),
-                    settings: Settings::default(),
-                }
-            }),
-            "settings" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::Settings {
-                    open: true,
-                    max: false,
-                    settings: Settings::default(),
-                }
-            }),
-            "console" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::Console {
-                    open: true,
-                    max: false,
-                    state: ConsoleState::default(),
-                }
-            }),
-            "grid" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
-                PreviewWindow::Grid {
-                    open: true,
-                    max: false,
-                    state: GridState::default(),
-                }
-            }),
+        
+        // First validate the key is known
+        match key.as_str() {
+            "quit" | "fps_graph" | "skills" | "new_save" | "saves" | "settings" | "console"
+            | "grid" => {}
             other => {
                 return Err(format!(
                     "Unknown UI '{}'. Known: {}",
@@ -181,7 +122,63 @@ impl UiPreviewManager {
                     Self::known_names().join(", ")
                 ))
             }
-        };
+        }
+        
+        // Now use entry API to insert or get the window (key can be moved here)
+        let window: &mut PreviewWindow = self.windows.entry(key.clone()).or_insert_with(|| {
+            match key.as_str() {
+                "quit" => PreviewWindow::Quit {
+                    open: true,
+                    max: false,
+                },
+                "fps_graph" => PreviewWindow::FpsGraph {
+                    open: true,
+                    max: false,
+                    graph: FpsGraph::default(),
+                },
+                "skills" => {
+                    let mut st: SkillsState = SkillsState::default();
+                    // In preview, show all discovered skills only when dev-mode is enabled
+                    // and enable developer controls conditionally.
+                    if cfg!(feature = "dev-mode") {
+                        st.enable_preview();
+                        st.enable_dev_controls();
+                    }
+                    PreviewWindow::Skills {
+                        open: true,
+                        max: false,
+                        state: st,
+                    }
+                }
+                "new_save" => PreviewWindow::NewSave {
+                    open: true,
+                    max: false,
+                    state: NewSaveState::default(),
+                },
+                "saves" => PreviewWindow::Saves {
+                    open: true,
+                    max: false,
+                    state: SaveMenuState::default(),
+                    settings: Settings::default(),
+                },
+                "settings" => PreviewWindow::Settings {
+                    open: true,
+                    max: false,
+                    settings: Settings::default(),
+                },
+                "console" => PreviewWindow::Console {
+                    open: true,
+                    max: false,
+                    state: ConsoleState::default(),
+                },
+                "grid" => PreviewWindow::Grid {
+                    open: true,
+                    max: false,
+                    state: GridState::default(),
+                },
+                _ => unreachable!("Already validated key"),
+            }
+        });
         // Ensure it's marked open if it already existed
         match window {
             PreviewWindow::Skills { open, .. }
