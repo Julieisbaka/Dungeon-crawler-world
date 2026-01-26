@@ -25,13 +25,21 @@ fn check_dependencies() {
         // TODO: IDK if this actually works so please check that it does
         if cfg!(target_os = "windows") {
             // Check for WiX Toolset (for MSI creation)
-            let wix: bool = Command::new("where").arg("candle").output().is_ok();
+            let wix: bool = Command::new("where")
+                .arg("candle")
+                .status()
+                .map(|status| status.success())
+                .unwrap_or(false);
             if !wix {
                 println!("cargo:warning=WiX Toolset not found. MSI creation may fail.");
             }
         } else if cfg!(target_os = "macos") {
             // Check for pkgbuild (for DMG creation)
-            let pkgbuild: bool = Command::new("which").arg("pkgbuild").output().is_ok();
+            let pkgbuild: bool = Command::new("which")
+                .arg("pkgbuild")
+                .status()
+                .map(|status| status.success())
+                .unwrap_or(false);
             if !pkgbuild {
                 println!("cargo:warning=pkgbuild not found. DMG creation may fail.");
             }
