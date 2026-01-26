@@ -89,24 +89,15 @@ fn test_room_types_exist() {
 fn test_grid_regeneration() {
     let mut grid = FloorGrid::new(2, 2, 150.0);
 
-    // Store initial node positions
-    let _initial_x = grid.cells[0][0].neighborhoods[0].nodes[0].x;
-    let _initial_y = grid.cells[0][0].neighborhoods[0].nodes[0].y;
-
-    // Regenerate
+    // Regenerate the grid
     grid.regenerate();
 
-    // After regeneration, positions should likely be different
-    // (could theoretically be same by chance, but extremely unlikely)
-    let _new_x = grid.cells[0][0].neighborhoods[0].nodes[0].x;
-    let _new_y = grid.cells[0][0].neighborhoods[0].nodes[0].y;
-
-    // Grid should maintain same structure
+    // Grid should maintain same structure after regeneration
     assert_eq!(grid.width, 2);
     assert_eq!(grid.height, 2);
     assert_eq!(grid.cell_size, 150.0);
 
-    // Just verify regeneration completed successfully
+    // Verify regeneration completed successfully - nodes should exist
     assert!(!grid.cells[0][0].neighborhoods[0].nodes.is_empty());
 }
 

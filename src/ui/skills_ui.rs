@@ -196,6 +196,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
             state.page -= 1;
         }
         ui.label(format!("Page {}", state.page + 1));
+        // Precompute lowercased search string once to avoid repeated allocations
+        let search_lower = state.search.to_lowercase();
         let filtered_count: usize = state
             .catalog
             .iter()
@@ -206,10 +208,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 let treated_owned: bool = dev_show_all_active || owned_real;
                 (!state.only_owned || treated_owned)
                     && (state.search.is_empty()
-                        || meta
-                            .name
-                            .to_lowercase()
-                            .contains(&state.search.to_lowercase()))
+                        || meta.name.to_lowercase().contains(&search_lower))
             })
             .count();
         if (state.page + 1) * PAGE_SIZE < filtered_count && ui.button("Next >").clicked() {
@@ -219,6 +218,8 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
     ui.add_space(6.0);
 
     // --- Gallery Grid ---
+    // Precompute lowercased search string once to avoid repeated allocations
+    let search_lower = state.search.to_lowercase();
     let mut filtered: Vec<_> = state
         .catalog
         .iter()
@@ -229,11 +230,7 @@ pub fn skills_ui(ui: &mut Ui, state: &mut SkillsState) {
                 cfg!(feature = "dev-mode") && state.dev_controls && state.show_all;
             let treated_owned: bool = dev_show_all_active || owned_real;
             (!state.only_owned || treated_owned)
-                && (state.search.is_empty()
-                    || meta
-                        .name
-                        .to_lowercase()
-                        .contains(&state.search.to_lowercase()))
+                && (state.search.is_empty() || meta.name.to_lowercase().contains(&search_lower))
         })
         .collect();
     match state.sort_mode {
