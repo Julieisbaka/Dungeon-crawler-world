@@ -16,10 +16,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [ "1.70.0", "stable" ]
 
     steps:
     - uses: actions/checkout@v4
     - uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c
+      with:
+        toolchain: ${{ matrix.rust }}
     - name: Check compilation
       run: cargo check --verbose
     - name: Run library tests

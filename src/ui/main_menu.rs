@@ -1,9 +1,10 @@
+//! Main menu UI module for the Dungeon Crawler World application.
+//! Handles rendering the main menu, settings, saves, and quit confirmation dialogs.
+
 use crate::logic::saves_logic::SaveMenuState;
 use crate::logic::settings_logic::{Settings, SettingsResult};
 use crate::ui::saves_ui::show_save_ui;
 use crate::ui::settings_ui::settings_ui;
-/// Main menu UI module for the Dungeon Crawler World application.
-/// Handles rendering the main menu, settings, saves, and quit confirmation dialogs.
 use egui::{Context, RichText};
 
 /// Represents the current state of the main menu.
