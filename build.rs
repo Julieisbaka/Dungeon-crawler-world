@@ -60,7 +60,8 @@ fn setup_vulkan() {
             .arg("--exists")
             .arg("vulkan")
             .status()
-            .is_ok()
+            .map(|status| status.success())
+            .unwrap_or(false)
         {
             println!("cargo:rustc-link-lib=vulkan");
         } else {
