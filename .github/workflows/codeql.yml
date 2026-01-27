@@ -34,7 +34,7 @@ jobs:
           queries: security-extended,security-and-quality
 
       - name: Build project
-        run: cargo build --locked --no-default-features
+        run: cargo build --locked
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
