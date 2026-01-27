@@ -3,7 +3,7 @@ use egui::{TextBuffer, TextEdit, Ui};
 use rand::Rng;
 use serde_json::{json, Value};
 use std::fs;
-use std::path::Path;
+use std::path::{Component, Path};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum NewSaveTab {
@@ -223,12 +223,15 @@ fn create_new_save(
     if save_name.trim().is_empty() {
         return Err("Save name cannot be empty".to_string());
     }
-    // Check for invalid characters in save name
-    if save_name.contains(&(&['/', '\\', ':', '*', '?', '"', '<', '>', '|'])[..]) {
-        return Err("Save name contains invalid characters".to_string());
-    }
     // Store folder name with underscores instead of spaces
     let folder_name: String = save_name.trim().replace(' ', "_");
+    // Check for invalid characters in save name
+    if has_invalid_save_characters(&folder_name) {
+        return Err("Save name contains invalid characters".to_string());
+    }
+    if !is_safe_folder_name(&folder_name) {
+        return Err("Save name must not reference relative paths".to_string());
+    }
     let saves_dir: &Path = Path::new("saves");
     let save_path: std::path::PathBuf = saves_dir.join(&folder_name);
     // Check if save already exists
@@ -309,4 +312,46 @@ fn create_new_save(
     )
     .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
     Ok(())
+}
+
+pub(crate) fn is_safe_folder_name(folder_name: &str) -> bool {
+    if folder_name.is_empty() {
+        return false;
+    }
+    Path::new(folder_name)
+        .components()
+        .all(|component| matches!(component, Component::Normal(_)))
+}
+
+pub(crate) fn has_invalid_save_characters(folder_name: &str) -> bool {
+    folder_name
+        .chars()
+        .any(|c| ['/', '\\', ':', '*', '?', '"', '<', '>', '|'].contains(&c))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_relative_paths_in_save_name() {
+        assert!(!is_safe_folder_name("."));
+        assert!(!is_safe_folder_name(".."));
+        assert!(!is_safe_folder_name("../foo"));
+        assert!(!is_safe_folder_name("foo/../bar"));
+    }
+
+    #[test]
+    fn accepts_simple_folder_names() {
+        assert!(is_safe_folder_name("Test_Save"));
+        assert!(is_safe_folder_name("save1"));
+    }
+
+    #[test]
+    fn rejects_invalid_characters() {
+        assert!(has_invalid_save_characters("bad/name"));
+        assert!(has_invalid_save_characters("bad:name"));
+        assert!(has_invalid_save_characters("bad*name"));
+        assert!(!has_invalid_save_characters("Good_Name"));
+    }
 }

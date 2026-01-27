@@ -1,6 +1,6 @@
 use crate::logic::saves_logic::{SaveMenuState, SaveEntryCache};
 use crate::logic::settings_logic::Settings;
-use crate::new_save::show_new_save_ui;
+use crate::new_save::{has_invalid_save_characters, is_safe_folder_name, show_new_save_ui};
 use egui::Ui;
 
 /// Loads save entries from disk and caches them in the state.
@@ -149,12 +149,16 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                     if ui.button("Rename").clicked() {
                         let new_folder: String = state.edit_save_name.trim().replace(' ', "_");
                         if !new_folder.is_empty() && new_folder != folder_name {
-                            let old_path = Path::new("saves").join(&folder_name);
-                            let new_path = Path::new("saves").join(&new_folder);
-                            if !new_path.exists() {
-                                if fs::rename(&old_path, &new_path).is_ok() {
-                                    state.editing_save = Some(new_folder);
-                                    state.invalidate_cache(); // Invalidate cache after rename
+                            if !has_invalid_save_characters(&new_folder)
+                                && is_safe_folder_name(&new_folder)
+                            {
+                                let old_path = Path::new("saves").join(&folder_name);
+                                let new_path = Path::new("saves").join(&new_folder);
+                                if !new_path.exists() {
+                                    if fs::rename(&old_path, &new_path).is_ok() {
+                                        state.editing_save = Some(new_folder);
+                                        state.invalidate_cache(); // Invalidate cache after rename
+                                    }
                                 }
                             }
                         }
