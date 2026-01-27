@@ -314,7 +314,7 @@ fn create_new_save(
     Ok(())
 }
 
-pub(crate) fn is_safe_folder_name(folder_name: &str) -> bool {
+pub fn is_safe_folder_name(folder_name: &str) -> bool {
     if folder_name.is_empty() {
         return false;
     }
@@ -323,7 +323,7 @@ pub(crate) fn is_safe_folder_name(folder_name: &str) -> bool {
         .all(|component| matches!(component, Component::Normal(_)))
 }
 
-pub(crate) fn has_invalid_save_characters(folder_name: &str) -> bool {
+pub fn has_invalid_save_characters(folder_name: &str) -> bool {
     folder_name
         .chars()
         .any(|c| ['/', '\\', ':', '*', '?', '"', '<', '>', '|'].contains(&c))
