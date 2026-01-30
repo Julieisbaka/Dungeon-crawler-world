@@ -1,0 +1,9 @@
+It is said that the long-forgotten goddess Nekhebit is both jealous and terrible.
+
+When the elf mothers chose to abandon Nekhebit and instead worship Apito, the Oak Goddess, it is written Nekhebit grew enraged.
+
+The mighty vulture goddess blamed the male-dominated high elf court for causing her worshippers to stray.
+
+As a result, she cursed their seed, thus creating what is today known as the Fae Diaspora.
+
+There are dozens of elf and fairy breeds, all of whom may trace their lineage back to the early high elf court, whose cursed offspring sowed the universe.
