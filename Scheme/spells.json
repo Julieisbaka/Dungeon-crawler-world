@@ -4,7 +4,7 @@
         "mana": {
             "type": "integer",
             "minimum": 0,
-            "$comment": "Item based spells do not require mana to cast but the the main spell does."
+            "$comment": "Item based spells do not require mana to cast."
         }
     },
     "additionalProperties": {
