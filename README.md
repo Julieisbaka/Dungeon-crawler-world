@@ -12,6 +12,7 @@
   - [AI](#ai)
   - [Credits](#credits)
   - [Contributing](#contributing)
+  - [Repository Standards](#repository-standards)
   - [License](#license)
   - [Issues and Feedback](#issues-and-feedback)
 
@@ -89,6 +90,10 @@ We welcome contributions from the community! To contribute, please follow these 
 5. Open a pull request to the main repository.
 
 Please see the [code of conduct](CODE_OF_CONDUCT.md) for our guidelines on the expected conduct of contributors and non-contributors alike.
+
+## Repository Standards
+
+Formatting, styling, and repository standards are documented in [REPO_STANDARDS.md](REPO_STANDARDS.md).
 
 ## License
 
