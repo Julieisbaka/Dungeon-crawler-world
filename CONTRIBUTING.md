@@ -8,6 +8,7 @@ document provides guidelines and instructions for contributing to the project.
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [How to Contribute](#how-to-contribute)
+- [Testing](#testing)
 - [Pull Request Process](#pull-request-process)
 - [Coding Standards](#coding-standards)
 - [Schema Guidelines](#schema-guidelines)
@@ -39,6 +40,39 @@ There are many ways to contribute to Dungeon Crawler World:
 - **Feature requests** - Suggest new features or improvements
 - **Game content** - Contribute new items, abilities, or game world elements
 - **Playtesting** - Test gameplay and provide feedback
+
+## Testing
+
+The project includes comprehensive unit and integration tests. Tests can be run without graphics dependencies installed, making them suitable for CI/CD environments.
+
+### Running Tests
+
+```bash
+# Run all critical tests (recommended for CI)
+make test-critical
+
+# Run all tests (includes some with known issues)
+make test
+
+# Run specific test suites
+SKIP_GRAPHICS=1 cargo test --test player_tests
+SKIP_GRAPHICS=1 cargo test --test grid_tests
+SKIP_GRAPHICS=1 cargo test --test new_save_tests
+
+# Check code without building the full application
+make check
+```
+
+### Test Organization
+
+- **`tests/player_tests.rs`** - Player data structure and JSON serialization tests
+- **`tests/grid_tests.rs`** - Floor grid generation and validation tests
+- **`tests/new_save_tests.rs`** - Save game generation and statistics tests
+- **`tests/console_tests.rs`** - Console parsing and highlighting tests (has 1 known failure)
+
+### CI/CD Testing
+
+Tests in CI use the `SKIP_GRAPHICS=1` environment variable to bypass Vulkan/X11 linking requirements. This allows tests to run in headless environments without graphics libraries installed.
 
 ## Pull Request Process
 
