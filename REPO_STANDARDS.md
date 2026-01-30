@@ -7,8 +7,8 @@ This document summarizes formatting, styling, and repository standards for Dunge
 - **EditorConfig**: Follow `.editorconfig` (UTF-8, CRLF line endings, 2-space indentation, final newline, trim trailing whitespace except in Markdown).
 - **Markdown**: Markdown lint rules are relaxed in `.markdownlint.json`, but keep formatting consistent and readable.
 - **Naming conventions** (from CONTRIBUTING):
-  - **PascalCase**: classes and methods
-  - **camelCase**: variables and properties
+  - **PascalCase**: Rust types (e.g., structs, enums, traits)
+  - **snake_case**: Rust functions/methods, variables, and struct fields
   - **snake_case**: JSON properties
 - **Comments**: Keep comments clear and descriptive; avoid unnecessary commentary.
 
