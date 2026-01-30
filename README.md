@@ -12,8 +12,8 @@
   - [AI](#ai)
   - [Credits](#credits)
   - [Contributing](#contributing)
-  - [License](#license)
   - [Repository Standards](#repository-standards)
+  - [License](#license)
   - [Issues and Feedback](#issues-and-feedback)
 
 ## Warning: **Spoilers Ahead**
