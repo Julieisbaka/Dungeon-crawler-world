@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build project
-        run: make all
+        run: cargo build
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
