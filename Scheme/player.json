@@ -5,19 +5,21 @@
             "type": "string"
         },
         "level": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0
         },
         "spells": {
             "type": "object"
         },
         "inventory": {
-            "type": "object"
+            "type": "object" // Item: number
         },
         "skills": {
-            "type": "object"
+            "type": "object" // Skill: Level
         },
         "coins": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
         },
         "sub_classes": {
             "type": "array",
