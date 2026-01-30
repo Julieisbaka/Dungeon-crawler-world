@@ -1,6 +1,6 @@
 use crate::logic::saves_logic::{SaveMenuState, SaveEntryCache};
 use crate::logic::settings_logic::Settings;
-use crate::new_save::show_new_save_ui;
+use crate::new_save::{has_invalid_save_characters, is_safe_folder_name, show_new_save_ui};
 use egui::Ui;
 
 /// Loads save entries from disk and caches them in the state.
@@ -144,18 +144,34 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                     ui.label("New name:");
                     ui.text_edit_singleline(&mut state.edit_save_name);
                 });
+                if let Some(error) = state.rename_error.as_ref() {
+                    ui.colored_label(egui::Color32::RED, error);
+                }
                 ui.add_space(10.0);
                 ui.horizontal(|ui: &mut Ui| {
                     if ui.button("Rename").clicked() {
                         let new_folder: String = state.edit_save_name.trim().replace(' ', "_");
-                        if !new_folder.is_empty() && new_folder != folder_name {
+                        if new_folder.is_empty() {
+                            state.rename_error = Some("Save name cannot be empty.".to_string());
+                        } else if new_folder == folder_name {
+                            state.rename_error = Some("Save name is unchanged.".to_string());
+                        } else if has_invalid_save_characters(&new_folder) {
+                            state.rename_error =
+                                Some("Save name contains invalid characters.".to_string());
+                        } else if !is_safe_folder_name(&new_folder) {
+                            state.rename_error =
+                                Some("Save name must not reference relative paths.".to_string());
+                        } else {
                             let old_path = Path::new("saves").join(&folder_name);
                             let new_path = Path::new("saves").join(&new_folder);
-                            if !new_path.exists() {
-                                if fs::rename(&old_path, &new_path).is_ok() {
-                                    state.editing_save = Some(new_folder);
-                                    state.invalidate_cache(); // Invalidate cache after rename
-                                }
+                            if new_path.exists() {
+                                state.rename_error = Some("Save name already exists.".to_string());
+                            } else if fs::rename(&old_path, &new_path).is_ok() {
+                                state.editing_save = Some(new_folder);
+                                state.rename_error = None;
+                                state.invalidate_cache(); // Invalidate cache after rename
+                            } else {
+                                state.rename_error = Some("Failed to rename save.".to_string());
                             }
                         }
                     }
@@ -165,6 +181,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                     }
                     if ui.button("Done").clicked() {
                         state.editing_save = None;
+                        state.rename_error = None;
                     }
                 });
             });
@@ -229,6 +246,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
         if let Some((folder_name, save_name)) = edit_request {
             state.editing_save = Some(folder_name);
             state.edit_save_name = save_name;
+            state.rename_error = None;
         }
     }
 
