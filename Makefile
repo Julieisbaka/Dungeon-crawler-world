@@ -1,7 +1,7 @@
 # Makefile for Dungeon Crawler World
 # Provides build targets for CI/CD workflows
 
-.PHONY: all test test-critical build clean check
+.PHONY: all test test-critical build clean check help
 
 # Default target - build everything
 # Note: Some tests may fail in CI due to pre-existing issues unrelated to graphics
