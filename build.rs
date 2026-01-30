@@ -16,6 +16,15 @@ fn main() {
     print_build_info();
 }
 
+fn pkg_config_available(lib: &str) -> bool {
+    Command::new("pkg-config")
+        .arg("--exists")
+        .arg(lib)
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
 fn check_dependencies() {
     // Check for required tools
     println!("cargo:warning=Checking for required build dependencies...");
@@ -48,12 +57,7 @@ fn setup_vulkan() {
         println!("cargo:include={}/Include", vulkan_sdk);
     } else if cfg!(target_os = "linux") {
         // Linux fallback using pkg-config
-        if (&(&mut Command::new("pkg-config"))
-            .arg("--exists")
-            .arg("vulkan")
-            .status())
-            .is_ok()
-        {
+        if pkg_config_available("vulkan") {
             println!("cargo:rustc-link-lib=vulkan");
         } else {
             println!("cargo:warning=Vulkan SDK not found. Install vulkan-headers and vulkan-loader packages.");
@@ -109,10 +113,26 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=shell32"); // For file dialogs
         println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
     } else if cfg!(target_os = "linux") {
-        println!("cargo:rustc-link-lib=X11");
-        println!("cargo:rustc-link-lib=Xrandr");
-        println!("cargo:rustc-link-lib=Xcursor");
-        println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
+        if pkg_config_available("x11") {
+            println!("cargo:rustc-link-lib=X11");
+        } else {
+            println!("cargo:warning=X11 library not found; skipping link.");
+        }
+        if pkg_config_available("xrandr") {
+            println!("cargo:rustc-link-lib=Xrandr");
+        } else {
+            println!("cargo:warning=Xrandr library not found; skipping link.");
+        }
+        if pkg_config_available("xcursor") {
+            println!("cargo:rustc-link-lib=Xcursor");
+        } else {
+            println!("cargo:warning=Xcursor library not found; skipping link.");
+        }
+        if pkg_config_available("xi") {
+            println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
+        } else {
+            println!("cargo:warning=Xi library not found; skipping link.");
+        }
         println!("cargo:rustc-link-lib=pthread");
         println!("cargo:rustc-link-lib=dl");
         println!("cargo:rustc-link-lib=m");
