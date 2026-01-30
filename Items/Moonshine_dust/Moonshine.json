@@ -1,4 +1,5 @@
 {
   "name": "Moonshine Dust",
-  "description": ""
+  "description": "",
+  "equippable": false
 }
