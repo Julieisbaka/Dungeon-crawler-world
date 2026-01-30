@@ -7,11 +7,24 @@ fn main() {
 
     check_dependencies();
 
-    setup_vulkan();
+    // Skip graphics setup in test/doc builds or when explicitly disabled
+    let skip_graphics = env::var("SKIP_GRAPHICS").is_ok() 
+        || env::var("CARGO_CFG_TEST").is_ok()
+        || env::var("CARGO_CFG_DOC").is_ok();
+    
+    if !skip_graphics {
+        setup_vulkan();
+    } else {
+        println!("cargo:warning=Skipping Vulkan/graphics library setup (test/doc build or SKIP_GRAPHICS set)");
+    }
 
     handle_json_data();
 
-    setup_linking();
+    if !skip_graphics {
+        setup_linking();
+    } else {
+        println!("cargo:warning=Skipping graphics library linking (test/doc build or SKIP_GRAPHICS set)");
+    }
 
     print_build_info();
 }
