@@ -19,6 +19,7 @@ pub struct SaveMenuState {
     pub in_new_save_menu: bool,
     pub editing_save: Option<String>,
     pub edit_save_name: String,
+    pub rename_error: Option<String>,
     pub confirm_delete: bool,
     pub delete_target: Option<String>,
     // Set to true when the top-level Back is clicked; caller can observe and react
@@ -39,6 +40,7 @@ impl Default for SaveMenuState {
             in_new_save_menu: false,
             editing_save: None,
             edit_save_name: String::new(),
+            rename_error: None,
             confirm_delete: false,
             delete_target: None,
             back_requested: false,
