@@ -16,9 +16,12 @@ fn main() {
     print_build_info();
 }
 
-fn probe_pkg_config(lib: &str, warning: &str) -> bool {
+fn probe_pkg_config(lib: &str, link_lib: &str, warning: &str) -> bool {
     match pkg_config::Config::new().probe(lib) {
-        Ok(_) => true,
+        Ok(_) => {
+            println!("cargo:rustc-link-lib={}", link_lib);
+            true
+        }
         Err(_) => {
             println!("cargo:warning={}", warning);
             false
@@ -59,6 +62,7 @@ fn setup_vulkan() {
     } else if cfg!(target_os = "linux") {
         // Linux fallback using pkg-config
         probe_pkg_config(
+            "vulkan",
             "vulkan",
             "Vulkan SDK not found. Install vulkan-headers and vulkan-loader packages.",
         );
@@ -113,10 +117,12 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=shell32"); // For file dialogs
         println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
     } else if cfg!(target_os = "linux") {
-        let x11_available = probe_pkg_config("x11", "X11 library not found; skipping link.");
-        probe_pkg_config("xrandr", "Xrandr library not found; skipping link.");
-        probe_pkg_config("xcursor", "Xcursor library not found; skipping link.");
-        if probe_pkg_config("xi", "Xi library not found; skipping link.") || x11_available {
+        let x11_available =
+            probe_pkg_config("x11", "X11", "X11 library not found; skipping link.");
+        probe_pkg_config("xrandr", "Xrandr", "Xrandr library not found; skipping link.");
+        probe_pkg_config("xcursor", "Xcursor", "Xcursor library not found; skipping link.");
+        let xi_available = probe_pkg_config("xi", "Xi", "Xi library not found; skipping link.");
+        if !xi_available && x11_available {
             println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
         }
         println!("cargo:rustc-link-lib=pthread");
