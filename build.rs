@@ -113,7 +113,8 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=shell32"); // For file dialogs
         println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
     } else if cfg!(target_os = "linux") {
-        if pkg_config_available("x11") {
+        let x11_available: bool = pkg_config_available("x11");
+        if x11_available {
             println!("cargo:rustc-link-lib=X11");
         } else {
             println!("cargo:warning=X11 library not found; skipping link.");
@@ -128,7 +129,7 @@ fn setup_linking() {
         } else {
             println!("cargo:warning=Xcursor library not found; skipping link.");
         }
-        if pkg_config_available("xi") {
+        if pkg_config_available("xi") || x11_available {
             println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
         } else {
             println!("cargo:warning=Xi library not found; skipping link.");
