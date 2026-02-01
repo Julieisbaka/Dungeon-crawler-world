@@ -113,7 +113,7 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=shell32"); // For file dialogs
         println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
     } else if cfg!(target_os = "linux") {
-        let x11_available: bool = pkg_config_available("x11");
+        let x11_available = pkg_config_available("x11");
         if x11_available {
             println!("cargo:rustc-link-lib=X11");
         } else {
