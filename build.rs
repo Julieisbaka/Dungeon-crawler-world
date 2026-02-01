@@ -16,13 +16,14 @@ fn main() {
     print_build_info();
 }
 
-fn pkg_config_available(lib: &str) -> bool {
-    Command::new("pkg-config")
-        .arg("--exists")
-        .arg(lib)
-        .status()
-        .map(|status| status.success())
-        .unwrap_or(false)
+fn probe_pkg_config(lib: &str, warning: &str) -> bool {
+    match pkg_config::Config::new().probe(lib) {
+        Ok(_) => true,
+        Err(_) => {
+            println!("cargo:warning={}", warning);
+            false
+        }
+    }
 }
 
 fn check_dependencies() {
@@ -57,11 +58,10 @@ fn setup_vulkan() {
         println!("cargo:include={}/Include", vulkan_sdk);
     } else if cfg!(target_os = "linux") {
         // Linux fallback using pkg-config
-        if pkg_config_available("vulkan") {
-            println!("cargo:rustc-link-lib=vulkan");
-        } else {
-            println!("cargo:warning=Vulkan SDK not found. Install vulkan-headers and vulkan-loader packages.");
-        }
+        probe_pkg_config(
+            "vulkan",
+            "Vulkan SDK not found. Install vulkan-headers and vulkan-loader packages.",
+        );
     } else if cfg!(target_os = "macos") {
         // macOS uses Metal via MoltenVK
         println!("cargo:rustc-link-lib=framework=Metal");
@@ -113,26 +113,11 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=shell32"); // For file dialogs
         println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
     } else if cfg!(target_os = "linux") {
-        let x11_available = pkg_config_available("x11");
-        if x11_available {
-            println!("cargo:rustc-link-lib=X11");
-        } else {
-            println!("cargo:warning=X11 library not found; skipping link.");
-        }
-        if pkg_config_available("xrandr") {
-            println!("cargo:rustc-link-lib=Xrandr");
-        } else {
-            println!("cargo:warning=Xrandr library not found; skipping link.");
-        }
-        if pkg_config_available("xcursor") {
-            println!("cargo:rustc-link-lib=Xcursor");
-        } else {
-            println!("cargo:warning=Xcursor library not found; skipping link.");
-        }
-        if pkg_config_available("xi") || x11_available {
+        let x11_available = probe_pkg_config("x11", "X11 library not found; skipping link.");
+        probe_pkg_config("xrandr", "Xrandr library not found; skipping link.");
+        probe_pkg_config("xcursor", "Xcursor library not found; skipping link.");
+        if probe_pkg_config("xi", "Xi library not found; skipping link.") || x11_available {
             println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
-        } else {
-            println!("cargo:warning=Xi library not found; skipping link.");
         }
         println!("cargo:rustc-link-lib=pthread");
         println!("cargo:rustc-link-lib=dl");
