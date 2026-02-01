@@ -123,6 +123,9 @@ fn setup_linking() {
         probe_pkg_config("xcursor", "Xcursor", "Xcursor library not found; skipping link.");
         let xi_available = probe_pkg_config("xi", "Xi", "Xi library not found; skipping link.");
         if !xi_available && x11_available {
+            println!(
+                "cargo:warning=Xi pkg-config file not found; linking Xi based on X11 availability."
+            );
             println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
         }
         println!("cargo:rustc-link-lib=pthread");
