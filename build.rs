@@ -64,7 +64,7 @@ fn setup_vulkan() {
         probe_pkg_config(
             "vulkan",
             "vulkan",
-            "Vulkan SDK not found. Install vulkan-headers and vulkan-loader packages.",
+            "Failed to find 'pkg-config vulkan' module (or pkg-config itself). Install pkg-config and the Vulkan loader/dev packages (e.g. vulkan-headers, vulkan-loader).",
         );
     } else if cfg!(target_os = "macos") {
         // macOS uses Metal via MoltenVK
