@@ -50,9 +50,10 @@ players to enjoy:
 ## Linux Build Requirements
 
 On Linux, building and running the game requires the Vulkan loader and X11 development
-libraries (including Xrandr, Xcursor, and Xi). In minimal CI environments, the build
-may skip linking these system libraries and emit warnings, but the resulting binary
-will not run correctly without them installed.
+libraries (including Xrandr, Xcursor, and Xi). For non-`VULKAN_SDK` builds, the build
+script uses `pkg-config` to detect and link these libraries; if `pkg-config` is not
+installed, linking will be skipped even if the libraries are present, and the resulting
+binary will emit warnings during build and will not run correctly at runtime.
 
 <details>
   <summary>Note</summary>
