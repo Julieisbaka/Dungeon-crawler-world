@@ -19,7 +19,10 @@ fn main() {
 fn probe_pkg_config(lib: &str, link_lib: &str, warning: &str) -> bool {
     match pkg_config::Config::new().probe(lib) {
         Ok(_) => {
-            println!("cargo:rustc-link-lib={}", link_lib);
+            // pkg_config::Config::probe() already emits appropriate cargo:rustc-link-*
+            // metadata, including link kind. Avoid printing an extra rustc-link-lib
+            // here to prevent overriding its behavior.
+            let _ = link_lib; // keep parameter for compatibility
             true
         }
         Err(_) => {
