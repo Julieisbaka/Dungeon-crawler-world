@@ -25,8 +25,9 @@ fn probe_pkg_config(lib: &str, link_lib: &str, warning: &str) -> bool {
             let _ = link_lib; // keep parameter for compatibility
             true
         }
-        Err(_) => {
-            println!("cargo:warning={}", warning);
+        Err(err) => {
+            let err_message = err.to_string().replace('\n', " ");
+            println!("cargo:warning={} ({})", warning, err_message.trim());
             false
         }
     }
