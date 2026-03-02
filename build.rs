@@ -48,12 +48,13 @@ fn setup_vulkan() {
         println!("cargo:include={}/Include", vulkan_sdk);
     } else if cfg!(target_os = "linux") {
         // Linux fallback using pkg-config
-        if (&(&mut Command::new("pkg-config"))
+        let vulkan_found = Command::new("pkg-config")
             .arg("--exists")
             .arg("vulkan")
-            .status())
-            .is_ok()
-        {
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false);
+        if vulkan_found {
             println!("cargo:rustc-link-lib=vulkan");
         } else {
             println!("cargo:warning=Vulkan SDK not found. Install vulkan-headers and vulkan-loader packages.");
@@ -109,10 +110,26 @@ fn setup_linking() {
         println!("cargo:rustc-link-lib=shell32"); // For file dialogs
         println!("cargo:rustc-link-lib=ole32"); // For COM interfaces
     } else if cfg!(target_os = "linux") {
-        println!("cargo:rustc-link-lib=X11");
-        println!("cargo:rustc-link-lib=Xrandr");
-        println!("cargo:rustc-link-lib=Xcursor");
-        println!("cargo:rustc-link-lib=Xi"); // XInput for better input support
+        // Use pkg-config to check for X11 libraries before linking
+        let x11_libs = [
+            ("x11", "X11"),
+            ("xrandr", "Xrandr"),
+            ("xcursor", "Xcursor"),
+            ("xi", "Xi"), // XInput for better input support
+        ];
+        for (pkg, lib) in &x11_libs {
+            let found = Command::new("pkg-config")
+                .arg("--exists")
+                .arg(pkg)
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            if found {
+                println!("cargo:rustc-link-lib={}", lib);
+            } else {
+                println!("cargo:warning={} not found. Install lib{}-dev.", lib, pkg);
+            }
+        }
         println!("cargo:rustc-link-lib=pthread");
         println!("cargo:rustc-link-lib=dl");
         println!("cargo:rustc-link-lib=m");
