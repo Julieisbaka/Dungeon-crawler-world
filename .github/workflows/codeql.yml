@@ -33,14 +33,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libvulkan-dev libx11-dev libxrandr-dev libxcursor-dev libxi-dev
 
-      - name: Build project
-        run: cargo build
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
+
+      - name: Build project
+        run: cargo build
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
