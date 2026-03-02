@@ -11,9 +11,6 @@
         "spells": {
             "type": "object"
         },
-        "inventory": {
-            "type": "object" // Item: number
-        },
         "skills": {
             "type": "object" // Skill: Level
         },
