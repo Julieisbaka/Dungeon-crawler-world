@@ -3,7 +3,7 @@ name: Update Cargo.lock on Cargo.toml Change
 on:
   push:
     branches:
-      - main
+      - Main
     paths:
       - 'Cargo.toml'
 
