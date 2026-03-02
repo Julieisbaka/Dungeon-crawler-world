@@ -1,1 +1,2 @@
-Blend into the Crowd is a Benefit that causes City Guards to forget who you are after you are out their sight for a while.
+This benefit makes it easier to hide your ugly face.
+I should have give you this from the get go.
