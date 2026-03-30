@@ -83,9 +83,9 @@ impl DungeonCrawlerworld {
     /// * `window` - The winit window for viewport commands.
     fn update(&mut self, ctx: &Context, window: &Window) {
         // Apply fullscreen setting when it changes
-        if (*self).last_fullscreen != Some((*self).settings.fullscreen) {
-            (*self).last_fullscreen = Some((*self).settings.fullscreen);
-            window.set_fullscreen(if (*self).settings.fullscreen {
+        if self.last_fullscreen != Some(self.settings.fullscreen) {
+            self.last_fullscreen = Some(self.settings.fullscreen);
+            window.set_fullscreen(if self.settings.fullscreen {
                 Some(winit::window::Fullscreen::Borderless(None))
             } else {
                 None
@@ -93,27 +93,27 @@ impl DungeonCrawlerworld {
         }
 
         // Update FPS graph with delta time in ms
-        let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { (*i).stable_dt }) * 1000.0;
-        (&mut (*self).fps).push_frame_time(dt_ms);
+        let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { i.stable_dt }) * 1000.0;
+        self.fps.push_frame_time(dt_ms);
 
         // Render the main menu UI and check if user wants to quit
-        if (*self).menu.show(ctx, &mut (*self).settings, DEV_MODE_ENABLED) {
-            (*self).should_quit = true;
+        if self.menu.show(ctx, &mut self.settings, DEV_MODE_ENABLED) {
+            self.should_quit = true;
         }
 
 
         // Developer Console window: only when enabled and explicitly opened this session
         // Detect setting edge to open on user toggle (not on startup load)
-        if (*self).settings.show_console != (*self).last_show_console {
-            if (*self).settings.show_console {
-                (*self).console_open = true;
+        if self.settings.show_console != self.last_show_console {
+            if self.settings.show_console {
+                self.console_open = true;
             }
-            (*self).last_show_console = (*self).settings.show_console;
+            self.last_show_console = self.settings.show_console;
         }
 
         // Poll logger and write to in-game console if enabled, filter by verbosity
-        if (*self).settings.log_to_console {
-            if let Some(rx) = &(*self).log_rx {
+        if self.settings.log_to_console {
+            if let Some(rx) = &self.log_rx {
                 // Convert verbosity to numeric threshold for efficient comparison
                 // Higher number = more verbose (show more messages)
                 let threshold = match self.settings.log_verbosity {
@@ -145,15 +145,15 @@ impl DungeonCrawlerworld {
             }
         }
 
-        if DEV_MODE_ENABLED && (*self).settings.developer_mode && (*self).console_open {
+        if DEV_MODE_ENABLED && self.settings.developer_mode && self.console_open {
             let mut open: bool = true;
             let now: Instant = Instant::now();
             let redraw_interval: Duration = Duration::from_millis(33); // ~30 FPS max
-            let should_redraw: bool = (&(*self).console_state).is_dirty()
-                && (*self)
+            let should_redraw: bool = self.console_state.is_dirty()
+                && self
                     .last_console_redraw
-                    .map_or(true, |last: Instant| -> bool {
-                        (&now).duration_since(last) >= redraw_interval
+                    .is_none_or(|last: Instant| -> bool {
+                        now.duration_since(last) >= redraw_interval
                     });
             egui::Window::new("Console")
                 .open(&mut open)
@@ -165,59 +165,59 @@ impl DungeonCrawlerworld {
                     // Always render the console UI so input is processed
                     console_ui(
                         ui,
-                        &mut (*self).console_state,
-                        (*self).settings.console_max_lines,
+                        &mut self.console_state,
+                        self.settings.console_max_lines,
                     );
                     // Only clear dirty and update redraw time if log area changed
                     if should_redraw {
-                        (&mut (*self).console_state).clear_dirty();
-                        (*self).last_console_redraw = Some(now);
+                        self.console_state.clear_dirty();
+                        self.last_console_redraw = Some(now);
                     }
                 });
             if !open {
                 // Closing the window hides the console until re-enabled in settings
-                (*self).settings.show_console = false;
-                (*self).console_open = false;
-                (&(*self).settings).save();
+                self.settings.show_console = false;
+                self.console_open = false;
+                self.settings.save();
             }
             // After UI event handling, process any queued commands
-            for cmd in (&mut (*self).console_state).take_pending() {
-                let trimmed: &str = (&*cmd).trim();
+            for cmd in self.console_state.take_pending() {
+                let trimmed: &str = cmd.trim();
                 if trimmed.is_empty() {
                     continue;
                 }
                 let mut parts: std::str::SplitWhitespace<'_> = trimmed.split_whitespace();
-                let head: &str = (&mut parts).next().unwrap_or("");
+                let head: &str = parts.next().unwrap_or("");
                 match head {
                     "invoke" => {
-                        let name: String = (&*parts.collect::<Vec<_>>()).join(" ");
-                        if (&name).is_empty() {
-                            (&mut (*self).console_state).log_line("Usage: invoke <ui>");
+                        let name: String = parts.collect::<Vec<_>>().join(" ");
+                        if name.is_empty() {
+                            self.console_state.log_line("Usage: invoke <ui>");
                         } else {
-                            if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-                                match (&mut (*self).ui_preview).open_preview(&**&name) {
-                                    Ok(()) => (&mut (*self).console_state)
+                            if DEV_MODE_ENABLED && self.settings.developer_mode {
+                                match self.ui_preview.open_preview(&name) {
+                                    Ok(()) => self.console_state
                                         .log_line(format!("Invoked UI preview: {}", name)),
-                                    Err(e) => (&mut (*self).console_state).log_line(e),
+                                    Err(e) => self.console_state.log_line(e),
                                 }
                             } else {
-                                (&mut (*self).console_state)
+                                self.console_state
                                     .log_line("UI previews are only available in Developer Mode.");
                             }
                         }
                     }
                     // Fallback to built-in commands
-                    _ => (&mut (*self).console_state).run_command(trimmed),
+                    _ => self.console_state.run_command(trimmed),
                 }
             }
         }
 
         // Render any active preview windows (gated by dev mode so previews are a dev tool)
-        if DEV_MODE_ENABLED && (*self).settings.developer_mode {
-            (&mut (*self).ui_preview).render(ctx, DEV_MODE_ENABLED);
+        if DEV_MODE_ENABLED && self.settings.developer_mode {
+            self.ui_preview.render(ctx, DEV_MODE_ENABLED);
 
             // FPS graph overlay in the bottom-right corner when enabled
-            if (*self).settings.show_fps_graph {
+            if self.settings.show_fps_graph {
                 egui::TopBottomPanel::bottom("fps_graph_panel")
                     .resizable(false)
                     .min_height(90.0)
@@ -226,7 +226,7 @@ impl DungeonCrawlerworld {
                         ui.with_layout(
                             egui::Layout::right_to_left(egui::Align::Min),
                             |ui: &mut egui::Ui| {
-                                (&(*self).fps).ui(ui);
+                                self.fps.ui(ui);
                             },
                         );
                     });

@@ -118,7 +118,7 @@ fn render_cell(
     let base_y = cell.y as f32 * cell_size;
     
     // Draw cell border
-    let cell_rect = Rect::from_min_max(
+    let cell_rect: Rect = Rect::from_min_max(
         to_screen(base_x, base_y),
         to_screen(base_x + cell_size, base_y + cell_size),
     );

@@ -7,7 +7,7 @@ pub const NEIGHBORHOOD_SIZE: u16 = 1609;
 /// Returns a random value between 300 and 500 (inclusive).
 pub fn restroom_distance() -> u16 {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    (&mut rng).gen_range(300..=500)
+    rng.gen_range(300..=500)
 }
 
 /// Types of special rooms in the dungeon
