@@ -63,17 +63,23 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
+          # Capture clippy JSON to a file first, then convert in a separate step.
+          # This avoids partial SARIF output from a broken pipe.
           cargo clippy \
             --all-features \
             --message-format=json \
-            | tee /tmp/rust-clippy-output.jsonl \
-            | clippy-sarif > /tmp/rust-clippy-results.raw.sarif
+            > /tmp/rust-clippy-output.jsonl
+
+          clippy-sarif < /tmp/rust-clippy-output.jsonl > /tmp/rust-clippy-results.raw.sarif
 
       - name: Format SARIF
         shell: bash
         run: |
           set -euo pipefail
-          sarif-fmt < /tmp/rust-clippy-results.raw.sarif > rust-clippy-results.sarif
+          sarif-fmt < /tmp/rust-clippy-results.raw.sarif > /tmp/rust-clippy-results.sarif
+
+
+          mv /tmp/rust-clippy-results.sarif rust-clippy-results.sarif
 
       - name: Validate SARIF JSON
         shell: bash
