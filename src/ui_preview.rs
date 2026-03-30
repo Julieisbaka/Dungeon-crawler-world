@@ -3,17 +3,17 @@ use std::collections::HashMap;
 use egui::Context;
 
 // Bring in existing UI modules
-use dungeon_crawler_world::console::{self, ConsoleState};
 use crate::fps::FpsGraph;
 use crate::new_save::{self, NewSaveState};
-use dungeon_crawler_world::logic::skills_logic::SkillsState;
-use dungeon_crawler_world::ui::skills_ui;
-use dungeon_crawler_world::logic::saves_logic::SaveMenuState;
-use dungeon_crawler_world::ui::saves_ui;
-use dungeon_crawler_world::logic::settings_logic::Settings;
-use dungeon_crawler_world::ui::settings_ui;
+use dungeon_crawler_world::console::{self, ConsoleState};
 use dungeon_crawler_world::logic::grid_logic::GridState;
+use dungeon_crawler_world::logic::saves_logic::SaveMenuState;
+use dungeon_crawler_world::logic::settings_logic::Settings;
+use dungeon_crawler_world::logic::skills_logic::SkillsState;
 use dungeon_crawler_world::ui::grid_ui;
+use dungeon_crawler_world::ui::saves_ui;
+use dungeon_crawler_world::ui::settings_ui;
+use dungeon_crawler_world::ui::skills_ui;
 
 pub struct UiPreviewManager {
     windows: HashMap<String, PreviewWindow>,
@@ -111,85 +111,69 @@ impl UiPreviewManager {
     pub fn open_preview(&mut self, name: &str) -> Result<(), String> {
         let key: String = name.trim().to_lowercase();
         let window: &mut PreviewWindow = match key.as_str() {
-            "quit" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::Quit {
-                        open: true,
-                        max: false,
-                    }
-                }),
-            "fps_graph" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::FpsGraph {
-                        open: true,
-                        max: false,
-                        graph: FpsGraph::default(),
-                    }
-                }),
-            "skills" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    let mut st: SkillsState = SkillsState::default();
-                    // In preview, show all discovered skills only when dev-mode is enabled
-                    // and enable developer controls conditionally.
-                    if cfg!(feature = "dev-mode") {
-                        st.enable_preview();
-                        st.enable_dev_controls();
-                    }
-                    PreviewWindow::Skills {
-                        open: true,
-                        max: false,
-                        state: st,
-                    }
-                }),
-            "new_save" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::NewSave {
-                        open: true,
-                        max: false,
-                        state: NewSaveState::default(),
-                    }
-                }),
-            "saves" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::Saves {
-                        open: true,
-                        max: false,
-                        state: SaveMenuState::default(),
-                        settings: Settings::default(),
-                    }
-                }),
-            "settings" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::Settings {
-                        open: true,
-                        max: false,
-                        settings: Settings::default(),
-                    }
-                }),
-            "console" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::Console {
-                        open: true,
-                        max: false,
-                        state: ConsoleState::default(),
-                    }
-                }),
-            "grid" => self.windows
-                .entry(key)
-                .or_insert_with(|| -> PreviewWindow {
-                    PreviewWindow::Grid {
-                        open: true,
-                        max: false,
-                        state: GridState::default(),
-                    }
-                }),
+            "quit" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::Quit {
+                    open: true,
+                    max: false,
+                }
+            }),
+            "fps_graph" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::FpsGraph {
+                    open: true,
+                    max: false,
+                    graph: FpsGraph::default(),
+                }
+            }),
+            "skills" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                let mut st: SkillsState = SkillsState::default();
+                // In preview, show all discovered skills only when dev-mode is enabled
+                // and enable developer controls conditionally.
+                if cfg!(feature = "dev-mode") {
+                    st.enable_preview();
+                    st.enable_dev_controls();
+                }
+                PreviewWindow::Skills {
+                    open: true,
+                    max: false,
+                    state: st,
+                }
+            }),
+            "new_save" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::NewSave {
+                    open: true,
+                    max: false,
+                    state: NewSaveState::default(),
+                }
+            }),
+            "saves" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::Saves {
+                    open: true,
+                    max: false,
+                    state: SaveMenuState::default(),
+                    settings: Settings::default(),
+                }
+            }),
+            "settings" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::Settings {
+                    open: true,
+                    max: false,
+                    settings: Settings::default(),
+                }
+            }),
+            "console" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::Console {
+                    open: true,
+                    max: false,
+                    state: ConsoleState::default(),
+                }
+            }),
+            "grid" => self.windows.entry(key).or_insert_with(|| -> PreviewWindow {
+                PreviewWindow::Grid {
+                    open: true,
+                    max: false,
+                    state: GridState::default(),
+                }
+            }),
             other => {
                 return Err(format!(
                     "Unknown UI '{}'. Known: {}",
@@ -212,6 +196,35 @@ impl UiPreviewManager {
             }
         }
         Ok(())
+    }
+
+    pub fn list_preview_names(&self) -> Vec<String> {
+        Self::known_names()
+            .iter()
+            .map(|name| (*name).to_string())
+            .collect()
+    }
+
+    pub fn regenerate_grid_preview(&mut self) -> Result<(), String> {
+        match self.windows.get_mut("grid") {
+            Some(PreviewWindow::Grid { state, .. }) => {
+                state.regenerate();
+                Ok(())
+            }
+            Some(_) => Err("Grid preview is in an invalid state.".to_string()),
+            None => Err("Grid preview is not open. Run 'invoke grid' first.".to_string()),
+        }
+    }
+
+    pub fn reset_grid_preview_view(&mut self) -> Result<(), String> {
+        match self.windows.get_mut("grid") {
+            Some(PreviewWindow::Grid { state, .. }) => {
+                state.reset_view();
+                Ok(())
+            }
+            Some(_) => Err("Grid preview is in an invalid state.".to_string()),
+            None => Err("Grid preview is not open. Run 'invoke grid' first.".to_string()),
+        }
     }
 
     /// Renders all open preview windows and removes any that are closed.
@@ -367,7 +380,12 @@ impl UiPreviewManager {
                         *open = false;
                     }
                 }
-                PreviewWindow::Saves { open, max, state, settings } => {
+                PreviewWindow::Saves {
+                    open,
+                    max,
+                    state,
+                    settings,
+                } => {
                     if !*open {
                         continue;
                     }

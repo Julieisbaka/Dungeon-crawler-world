@@ -92,7 +92,10 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 state.selected_tab = NewSaveTab::Basics;
             }
             let gamerules_selected: bool = matches!(state.selected_tab, NewSaveTab::Gamerules);
-            if ui.selectable_label(gamerules_selected, "Gamerules").clicked() {
+            if ui
+                .selectable_label(gamerules_selected, "Gamerules")
+                .clicked()
+            {
                 state.selected_tab = NewSaveTab::Gamerules;
             }
         });
@@ -116,11 +119,7 @@ pub fn show_new_save_ui(ui: &mut Ui, state: &mut NewSaveState) -> bool {
                 ui.horizontal(|ui: &mut Ui| {
                     ui.label("Difficulty:");
                     ui.radio_value(&mut state.selected_difficulty, Difficulty::Easy, "Easy");
-                    ui.radio_value(
-                        &mut state.selected_difficulty,
-                        Difficulty::Medium,
-                        "Medium",
-                    );
+                    ui.radio_value(&mut state.selected_difficulty, Difficulty::Medium, "Medium");
                     ui.radio_value(&mut state.selected_difficulty, Difficulty::Hard, "Hard");
                 });
             }
@@ -315,12 +314,11 @@ fn create_new_save(
 }
 
 pub fn is_safe_folder_name(folder_name: &str) -> bool {
-    if folder_name.is_empty() {
+    if folder_name.is_empty() || folder_name == "." || folder_name == ".." {
         return false;
     }
-    Path::new(folder_name)
-        .components()
-        .all(|component| matches!(component, Component::Normal(_)))
+    let mut components = Path::new(folder_name).components();
+    matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none()
 }
 
 pub fn has_invalid_save_characters(folder_name: &str) -> bool {

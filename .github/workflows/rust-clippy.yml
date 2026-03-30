@@ -53,14 +53,37 @@ jobs:
       - name: Install required cargo tools (pre-built binaries)
         run: cargo binstall --no-confirm clippy-sarif sarif-fmt
 
-      - name: Run rust-clippy
-        run:
-          cargo clippy
-          --all-features
-          --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
+      - name: Run rust-clippy and generate raw SARIF
+        # continue-on-error allows the SARIF upload to proceed even when clippy
+        # finds issues. set -euo pipefail is intentionally omitted here: combining
+        # it with continue-on-error would abort the shell script early (before the
+        # SARIF file is written) while still marking the step as tolerated by
+        # GitHub Actions, making failure handling ambiguous. Downstream steps that
+        # require the SARIF file keep their own set -euo pipefail.
         continue-on-error: true
+        shell: bash
+        run: |
+          cargo clippy \
+            --all-features \
+            --message-format=json \
+            | tee /tmp/rust-clippy-output.jsonl \
+            | clippy-sarif > /tmp/rust-clippy-results.raw.sarif
+
+      - name: Format SARIF
+        shell: bash
+        run: |
+          set -euo pipefail
+          sarif-fmt < /tmp/rust-clippy-results.raw.sarif > rust-clippy-results.sarif
+
+      - name: Validate SARIF JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s rust-clippy-results.sarif
+          python -c "import json, pathlib; json.loads(pathlib.Path('rust-clippy-results.sarif').read_text(encoding='utf-8'))"
 
       - name: Upload analysis results to GitHub
+        if: success()
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: rust-clippy-results.sarif

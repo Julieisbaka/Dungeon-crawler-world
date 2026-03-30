@@ -1,16 +1,20 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 // Import necessary crates and modules
 mod logger;
-use egui::{Context, Style, Visuals, ViewportId};
+use egui::{Context, Style, ViewportId, Visuals};
 use logger::init_logger;
 
 // Import saves and settings from library modules
+use dungeon_crawler_world::console::{
+    console_ui, read_player_skills_from_path, ConsoleCommandContext, ConsoleRegistry, ConsoleState,
+};
 use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings};
+use dungeon_crawler_world::logic::skills_logic::read_player_skills_for_save;
 use dungeon_crawler_world::ui::main_menu::MainMenu;
-use dungeon_crawler_world::console::{console_ui, ConsoleState};
 
 mod new_save;
 mod player;
@@ -19,9 +23,9 @@ use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
 
+use winit::event::WindowEvent;
 use winit::event_loop::EventLoop;
 use winit::window::Window;
-use winit::event::WindowEvent;
 
 /// Developer mode flag is controlled via Cargo feature `dev-mode`.
 /// Enabled in debug builds by default via `Cargo.toml` [features].
@@ -39,6 +43,8 @@ struct DungeonCrawlerworld {
     settings: Settings,
     /// State for the developer console.
     console_state: ConsoleState,
+    /// Immutable command registry for the developer console.
+    console_registry: ConsoleRegistry,
     /// Manager for UI previews (dev mode only).
     ui_preview: UiPreviewManager,
     /// Last known fullscreen state (for toggling fullscreen mode).
@@ -57,6 +63,161 @@ struct DungeonCrawlerworld {
     should_quit: bool,
 }
 
+struct AppConsoleContext<'a> {
+    console_state: &'a mut ConsoleState,
+    settings: &'a mut Settings,
+    ui_preview: &'a mut UiPreviewManager,
+    saves_root: PathBuf,
+}
+
+impl ConsoleCommandContext for AppConsoleContext<'_> {
+    fn clear_console(&mut self) {
+        self.console_state.clear();
+    }
+
+    fn open_preview(&mut self, name: &str) -> Result<(), String> {
+        self.ui_preview.open_preview(name)
+    }
+
+    fn list_previews(&self) -> Vec<String> {
+        self.ui_preview.list_preview_names()
+    }
+
+    fn current_save(&self) -> Option<String> {
+        dungeon_crawler_world::CURRENT_SAVE
+            .lock()
+            .ok()
+            .and_then(|guard| guard.clone())
+    }
+
+    fn saves_root(&self) -> &Path {
+        &self.saves_root
+    }
+
+    fn read_owned_skills(&self) -> Result<Vec<(String, i8)>, String> {
+        let current_save = self.current_save();
+        if let Some(save) = current_save.as_deref() {
+            let skills = read_player_skills_for_save(self.saves_root(), save);
+            if skills.is_empty() {
+                return read_player_skills_from_path(self.saves_root(), current_save);
+            }
+            let mut skills: Vec<(String, i8)> = skills.into_iter().collect();
+            skills.sort_by(|left, right| left.0.cmp(&right.0));
+            return Ok(skills);
+        }
+        Err("No current save selected.".to_string())
+    }
+
+    fn get_setting_value(&self, key: &str) -> Result<String, String> {
+        match key.to_ascii_lowercase().as_str() {
+            "show_console" => Ok(self.settings.show_console.to_string()),
+            "log_to_console" => Ok(self.settings.log_to_console.to_string()),
+            "log_verbosity" => Ok(log_verbosity_name(self.settings.log_verbosity).to_string()),
+            "console_max_lines" => Ok(self.settings.console_max_lines.to_string()),
+            "show_fps_graph" => Ok(self.settings.show_fps_graph.to_string()),
+            "developer_mode" => Ok(self.settings.developer_mode.to_string()),
+            other => Err(format!("Unknown setting: {}", other)),
+        }
+    }
+
+    fn list_setting_values(&self) -> Vec<(String, String)> {
+        vec![
+            (
+                "show_console".to_string(),
+                self.settings.show_console.to_string(),
+            ),
+            (
+                "log_to_console".to_string(),
+                self.settings.log_to_console.to_string(),
+            ),
+            (
+                "log_verbosity".to_string(),
+                log_verbosity_name(self.settings.log_verbosity).to_string(),
+            ),
+            (
+                "console_max_lines".to_string(),
+                self.settings.console_max_lines.to_string(),
+            ),
+            (
+                "show_fps_graph".to_string(),
+                self.settings.show_fps_graph.to_string(),
+            ),
+            (
+                "developer_mode".to_string(),
+                self.settings.developer_mode.to_string(),
+            ),
+        ]
+    }
+
+    fn set_setting_value(&mut self, key: &str, value: &str) -> Result<String, String> {
+        let key = key.to_ascii_lowercase();
+        match key.as_str() {
+            "show_console" => {
+                self.settings.show_console = parse_bool_setting(value)?;
+            }
+            "log_to_console" => {
+                self.settings.log_to_console = parse_bool_setting(value)?;
+            }
+            "log_verbosity" => {
+                self.settings.log_verbosity = parse_log_verbosity(value)?;
+            }
+            "console_max_lines" => {
+                self.settings.console_max_lines = value
+                    .parse::<usize>()
+                    .map_err(|_| format!("Invalid usize value: {}", value))?;
+            }
+            "show_fps_graph" => {
+                self.settings.show_fps_graph = parse_bool_setting(value)?;
+            }
+            "developer_mode" => {
+                self.settings.developer_mode = parse_bool_setting(value)?;
+            }
+            _ => return Err(format!("Unknown setting: {}", key)),
+        }
+        self.settings.save();
+        Ok(format!("Set {} = {}", key, self.get_setting_value(&key)?))
+    }
+
+    fn regenerate_grid_preview(&mut self) -> Result<String, String> {
+        self.ui_preview.regenerate_grid_preview()?;
+        Ok("Regenerated grid preview.".to_string())
+    }
+
+    fn reset_grid_preview(&mut self) -> Result<String, String> {
+        self.ui_preview.reset_grid_preview_view()?;
+        Ok("Reset grid preview view.".to_string())
+    }
+}
+
+fn parse_bool_setting(value: &str) -> Result<bool, String> {
+    match value.to_ascii_lowercase().as_str() {
+        "true" | "1" | "yes" | "on" => Ok(true),
+        "false" | "0" | "no" | "off" => Ok(false),
+        _ => Err(format!("Invalid boolean value: {}", value)),
+    }
+}
+
+fn parse_log_verbosity(value: &str) -> Result<LogVerbosity, String> {
+    match value.to_ascii_lowercase().as_str() {
+        "error" => Ok(LogVerbosity::Error),
+        "warn" | "warning" => Ok(LogVerbosity::Warn),
+        "info" => Ok(LogVerbosity::Info),
+        "debug" => Ok(LogVerbosity::Debug),
+        "trace" => Ok(LogVerbosity::Trace),
+        _ => Err(format!("Invalid log verbosity: {}", value)),
+    }
+}
+
+fn log_verbosity_name(value: LogVerbosity) -> &'static str {
+    match value {
+        LogVerbosity::Error => "error",
+        LogVerbosity::Warn => "warn",
+        LogVerbosity::Info => "info",
+        LogVerbosity::Debug => "debug",
+        LogVerbosity::Trace => "trace",
+    }
+}
+
 impl DungeonCrawlerworld {
     /// Creates a new default instance of the main application struct, initializing all state.
     fn new() -> Self {
@@ -65,6 +226,7 @@ impl DungeonCrawlerworld {
             menu: MainMenu::new(),
             settings: Settings::default(),
             console_state: ConsoleState::default(),
+            console_registry: ConsoleRegistry::new(),
             ui_preview: UiPreviewManager::new(),
             last_fullscreen: None,
             fps: FpsGraph::default(),
@@ -75,7 +237,7 @@ impl DungeonCrawlerworld {
             should_quit: false,
         }
     }
-    
+
     /// Updates the application state and renders the UI for each frame.
     ///
     /// # Arguments
@@ -101,13 +263,11 @@ impl DungeonCrawlerworld {
             self.should_quit = true;
         }
 
-
-        // Developer Console window: only when enabled and explicitly opened this session
-        // Detect setting edge to open on user toggle (not on startup load)
+        // Developer Console window: follow the setting on both rising and falling edges.
+        // Only react when the setting value actually changes (edge detection), so we avoid
+        // unnecessary updates every frame and preserve the prior bidirectional behavior.
         if self.settings.show_console != self.last_show_console {
-            if self.settings.show_console {
-                self.console_open = true;
-            }
+            self.console_open = self.settings.show_console;
             self.last_show_console = self.settings.show_console;
         }
 
@@ -163,11 +323,7 @@ impl DungeonCrawlerworld {
                 .default_size(egui::vec2(500.0, 250.0))
                 .show(ctx, |ui: &mut egui::Ui| {
                     // Always render the console UI so input is processed
-                    console_ui(
-                        ui,
-                        &mut self.console_state,
-                        self.settings.console_max_lines,
-                    );
+                    console_ui(ui, &mut self.console_state, self.settings.console_max_lines);
                     // Only clear dirty and update redraw time if log area changed
                     if should_redraw {
                         self.console_state.clear_dirty();
@@ -181,35 +337,21 @@ impl DungeonCrawlerworld {
                 self.settings.save();
             }
             // After UI event handling, process any queued commands
-            for cmd in self.console_state.take_pending() {
-                let trimmed: &str = cmd.trim();
-                if trimmed.is_empty() {
-                    continue;
-                }
-                let mut parts: std::str::SplitWhitespace<'_> = trimmed.split_whitespace();
-                let head: &str = parts.next().unwrap_or("");
-                match head {
-                    "invoke" => {
-                        let name: String = parts.collect::<Vec<_>>().join(" ");
-                        if name.is_empty() {
-                            self.console_state.log_line("Usage: invoke <ui>");
-                        } else {
-                            if DEV_MODE_ENABLED && self.settings.developer_mode {
-                                match self.ui_preview.open_preview(&name) {
-                                    Ok(()) => self.console_state
-                                        .log_line(format!("Invoked UI preview: {}", name)),
-                                    Err(e) => self.console_state.log_line(e),
-                                }
-                            } else {
-                                self.console_state
-                                    .log_line("UI previews are only available in Developer Mode.");
-                            }
-                        }
-                    }
-                    // Fallback to built-in commands
-                    _ => self.console_state.run_command(trimmed),
+            let pending_commands = self.console_state.take_pending();
+            let mut all_lines: Vec<String> = Vec::new();
+            if !pending_commands.is_empty() {
+                let saves_root = PathBuf::from("saves");
+                let mut context = AppConsoleContext {
+                    console_state: &mut self.console_state,
+                    settings: &mut self.settings,
+                    ui_preview: &mut self.ui_preview,
+                    saves_root,
+                };
+                for cmd in &pending_commands {
+                    all_lines.extend(self.console_registry.execute(cmd, &mut context));
                 }
             }
+            self.console_state.log_lines(all_lines);
         }
 
         // Render any active preview windows (gated by dev mode so previews are a dev tool)
@@ -233,7 +375,7 @@ impl DungeonCrawlerworld {
             }
         }
     }
-    
+
     /// Check if the app should quit
     fn should_quit(&self) -> bool {
         self.should_quit
@@ -271,58 +413,58 @@ impl WinitApp {
 impl winit::application::ApplicationHandler for WinitApp {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
         use egui_wgpu::wgpu;
-        
+
         if self.window.is_some() {
             return;
         }
-        
+
         // Create window
-        let window_attrs: winit::window::WindowAttributes = winit::window::WindowAttributes::default()
-            .with_title("Dungeon crawler world")
-            .with_inner_size(winit::dpi::PhysicalSize::new(400, 300))
-            .with_min_inner_size(winit::dpi::PhysicalSize::new(300, 200));
-        
+        let window_attrs: winit::window::WindowAttributes =
+            winit::window::WindowAttributes::default()
+                .with_title("Dungeon crawler world")
+                .with_inner_size(winit::dpi::PhysicalSize::new(400, 300))
+                .with_min_inner_size(winit::dpi::PhysicalSize::new(300, 200));
+
         let window: Arc<Window> = Arc::new(event_loop.create_window(window_attrs).unwrap());
-        
+
         // Initialize wgpu
         let instance: wgpu::Instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             ..Default::default()
         });
-        
+
         let surface: wgpu::Surface<'_> = instance.create_surface(window.clone()).unwrap();
-        
-        let adapter: wgpu::Adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::default(),
-            compatible_surface: Some(&surface),
-            force_fallback_adapter: false,
+
+        let adapter: wgpu::Adapter =
+            pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::default(),
+                compatible_surface: Some(&surface),
+                force_fallback_adapter: false,
+            }))
+            .unwrap();
+
+        let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor {
+            label: None,
+            required_features: wgpu::Features::default(),
+            required_limits: wgpu::Limits::default(),
+            memory_hints: wgpu::MemoryHints::default(),
+            trace: Default::default(),
         }))
         .unwrap();
-        
-        let (device, queue) = pollster::block_on(adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                label: None,
-                required_features: wgpu::Features::default(),
-                required_limits: wgpu::Limits::default(),
-                memory_hints: wgpu::MemoryHints::default(),
-                trace: Default::default(),
-            },
-        ))
-        .unwrap();
-        
+
         let size: winit::dpi::PhysicalSize<u32> = window.inner_size();
         let surface_config: wgpu::wgt::SurfaceConfiguration<Vec<wgpu::TextureFormat>> = surface
             .get_default_config(&adapter, size.width, size.height)
             .unwrap();
         surface.configure(&device, &surface_config);
-        
+
         // Initialize egui
         let egui_ctx: Context = egui::Context::default();
         egui_ctx.set_style(Style {
             visuals: Visuals::dark(),
             ..Default::default()
         });
-        
+
         let egui_winit_state: egui_winit::State = egui_winit::State::new(
             egui_ctx.clone(),
             ViewportId::ROOT,
@@ -331,18 +473,13 @@ impl winit::application::ApplicationHandler for WinitApp {
             None,
             Some(wgpu::Limits::default().max_texture_dimension_2d as usize),
         );
-        
-        let egui_renderer: egui_wgpu::Renderer = egui_wgpu::Renderer::new(
-            &device,
-            surface_config.format,
-            None,
-            1,
-            true,
-        );
-        
+
+        let egui_renderer: egui_wgpu::Renderer =
+            egui_wgpu::Renderer::new(&device, surface_config.format, None, 1, true);
+
         // Create app
         let app: DungeonCrawlerworld = DungeonCrawlerworld::new();
-        
+
         self.window = Some(window);
         self.device = Some(device);
         self.queue = Some(queue);
@@ -353,7 +490,7 @@ impl winit::application::ApplicationHandler for WinitApp {
         self.egui_renderer = Some(egui_renderer);
         self.app = Some(app);
     }
-    
+
     fn window_event(
         &mut self,
         event_loop: &winit::event_loop::ActiveEventLoop,
@@ -362,12 +499,12 @@ impl winit::application::ApplicationHandler for WinitApp {
     ) {
         let window: &Arc<Window> = self.window.as_ref().unwrap();
         let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
-        
+
         let response: egui_winit::EventResponse = egui_winit_state.on_window_event(window, &event);
         if response.consumed {
             return;
         }
-        
+
         match event {
             WindowEvent::CloseRequested => {
                 event_loop.exit();
@@ -386,13 +523,13 @@ impl winit::application::ApplicationHandler for WinitApp {
             }
             WindowEvent::RedrawRequested => {
                 self.render();
-                
+
                 // Check if app wants to quit
                 if self.app.as_ref().unwrap().should_quit() {
                     event_loop.exit();
                     return;
                 }
-                
+
                 // Request continuous repaints
                 if let Some(win) = &self.window {
                     win.request_redraw();
@@ -401,7 +538,7 @@ impl winit::application::ApplicationHandler for WinitApp {
             _ => {}
         }
     }
-    
+
     fn about_to_wait(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop) {
         if let Some(window) = &self.window {
             window.request_redraw();
@@ -415,12 +552,14 @@ impl WinitApp {
         let device: &egui_wgpu::wgpu::Device = self.device.as_ref().unwrap();
         let queue: &egui_wgpu::wgpu::Queue = self.queue.as_ref().unwrap();
         let surface: &egui_wgpu::wgpu::Surface<'_> = self.surface.as_ref().unwrap();
-        let surface_config: &egui_wgpu::wgpu::wgt::SurfaceConfiguration<Vec<egui_wgpu::wgpu::TextureFormat>> = self.surface_config.as_ref().unwrap();
+        let surface_config: &egui_wgpu::wgpu::wgt::SurfaceConfiguration<
+            Vec<egui_wgpu::wgpu::TextureFormat>,
+        > = self.surface_config.as_ref().unwrap();
         let egui_ctx: &Context = self.egui_ctx.as_ref().unwrap();
         let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
         let egui_renderer: &mut egui_wgpu::Renderer = self.egui_renderer.as_mut().unwrap();
         let app: &mut DungeonCrawlerworld = self.app.as_mut().unwrap();
-        
+
         let output_frame: egui_wgpu::wgpu::SurfaceTexture = match surface.get_current_texture() {
             Ok(frame) => frame,
             Err(e) => {
@@ -428,65 +567,68 @@ impl WinitApp {
                 return;
             }
         };
-        
+
         let output_view: egui_wgpu::wgpu::TextureView = output_frame
             .texture
             .create_view(&egui_wgpu::wgpu::TextureViewDescriptor::default());
-        
+
         // Begin egui frame
         let raw_input: egui::RawInput = egui_winit_state.take_egui_input(window);
         let full_output: egui::FullOutput = egui_ctx.run(raw_input, |ctx: &Context| {
             app.update(ctx, window);
         });
-        
+
         // Handle platform output
         egui_winit_state.handle_platform_output(window, full_output.platform_output);
-        
+
         // Render egui
-        let paint_jobs: Vec<egui::ClippedPrimitive> = egui_ctx.tessellate(full_output.shapes, full_output.pixels_per_point);
-        
+        let paint_jobs: Vec<egui::ClippedPrimitive> =
+            egui_ctx.tessellate(full_output.shapes, full_output.pixels_per_point);
+
         let screen_descriptor: egui_wgpu::ScreenDescriptor = egui_wgpu::ScreenDescriptor {
             size_in_pixels: [surface_config.width, surface_config.height],
             pixels_per_point: window.scale_factor() as f32,
         };
-        
-        let mut encoder: egui_wgpu::wgpu::CommandEncoder = device.create_command_encoder(&egui_wgpu::wgpu::CommandEncoderDescriptor {
-            label: Some("egui encoder"),
-        });
-        
+
+        let mut encoder: egui_wgpu::wgpu::CommandEncoder =
+            device.create_command_encoder(&egui_wgpu::wgpu::CommandEncoderDescriptor {
+                label: Some("egui encoder"),
+            });
+
         // Upload egui textures
         for (id, image_delta) in &full_output.textures_delta.set {
             egui_renderer.update_texture(device, queue, *id, image_delta);
         }
-        
+
         // Update buffers
         egui_renderer.update_buffers(device, queue, &mut encoder, &paint_jobs, &screen_descriptor);
-        
+
         // Render to texture
         // Use wgpu's safe forget_lifetime() method to convert the RenderPass lifetime to 'static.
         // This is safe because CommandEncoder is in a locked state while the pass is active.
         {
-            let rpass: egui_wgpu::wgpu::RenderPass<'_> = encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
-                label: Some("egui main render pass"),
-                color_attachments: &[Some(egui_wgpu::wgpu::RenderPassColorAttachment {
-                    view: &output_view,
-                    resolve_target: None,
-                    ops: egui_wgpu::wgpu::Operations {
-                        load: egui_wgpu::wgpu::LoadOp::Clear(egui_wgpu::wgpu::Color::BLACK),
-                        store: egui_wgpu::wgpu::StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: None,
-                timestamp_writes: None,
-                occlusion_query_set: None,
-            });
+            let rpass: egui_wgpu::wgpu::RenderPass<'_> =
+                encoder.begin_render_pass(&egui_wgpu::wgpu::RenderPassDescriptor {
+                    label: Some("egui main render pass"),
+                    color_attachments: &[Some(egui_wgpu::wgpu::RenderPassColorAttachment {
+                        view: &output_view,
+                        resolve_target: None,
+                        ops: egui_wgpu::wgpu::Operations {
+                            load: egui_wgpu::wgpu::LoadOp::Clear(egui_wgpu::wgpu::Color::BLACK),
+                            store: egui_wgpu::wgpu::StoreOp::Store,
+                        },
+                    })],
+                    depth_stencil_attachment: None,
+                    timestamp_writes: None,
+                    occlusion_query_set: None,
+                });
             let mut rpass_static: egui_wgpu::wgpu::RenderPass<'static> = rpass.forget_lifetime();
             egui_renderer.render(&mut rpass_static, &paint_jobs, &screen_descriptor);
         }
-        
+
         queue.submit(Some(encoder.finish()));
         output_frame.present();
-        
+
         // Free textures
         for id in &full_output.textures_delta.free {
             egui_renderer.free_texture(id);

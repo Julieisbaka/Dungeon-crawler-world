@@ -82,14 +82,15 @@ pub fn find_skills_root() -> Option<PathBuf> {
 /// * `HashMap<String, i8>` - A map of skill names to their levels.
 pub fn read_player_skills() -> HashMap<String, i8> {
     // Attempt to read current save context (if available)
-    let current: Option<String> = crate::CURRENT_SAVE
-        .lock()
-        .ok()
-        .and_then(|g| g.clone());
+    let current: Option<String> = crate::CURRENT_SAVE.lock().ok().and_then(|g| g.clone());
     let Some(save) = current else {
         return HashMap::new();
     };
-    let path: PathBuf = Path::new("saves").join(save).join("player.json");
+    read_player_skills_for_save(Path::new("saves"), &save)
+}
+
+pub fn read_player_skills_for_save(root: &Path, save: &str) -> HashMap<String, i8> {
+    let path: PathBuf = root.join(save).join("player.json");
     let Ok(content) = fs::read_to_string(path) else {
         return HashMap::new();
     };
