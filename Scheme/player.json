@@ -12,7 +12,12 @@
             "type": "object"
         },
         "skills": {
-            "type": "object" // Skill: Level
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 20
+            }
         },
         "coins": {
             "type": "integer",
@@ -26,7 +31,7 @@
         },
         "class": {
             "type": "string"
-        },        
+        },
         "race": {
             "type": "string"
         },
@@ -36,7 +41,9 @@
         },
         "current_floor": {
             "type": "integer",
-            "description": "The current floor the player is on"
+            "description": "The current floor the player is on",
+            "minimum": 0,
+            "maximum": 18
         },
         "stats": {
             "type": "object",

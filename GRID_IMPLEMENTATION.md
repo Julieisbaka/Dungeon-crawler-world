@@ -1,12 +1,14 @@
 # Grid Visualization Feature - Implementation Summary
 
 ## Overview
+
 This feature adds procedural generation and visualization capabilities for the dungeon floor grid system, accessible through the developer console.
 
 ## Architecture
 
 ### Module Structure
-```
+
+```tree
 src/
 ├── grid.rs                      # Core data structures and generation logic
 ├── logic/
@@ -20,30 +22,36 @@ src/
 #### 1. Data Structures (`src/grid.rs`)
 
 **RoomType Enum**
+
 - `Normal`: Standard room
 - `Bathroom`: Restroom (spawns with ~40% probability, enforced minimum distance)
 - `SafeRoom`: Safe area (spawns with ~10% probability)
 - `Stairwell`: Staircase to next floor (spawns with ~5% probability)
 
 **Node**
+
 - Represents a room or intersection point
 - Contains position (x, y) and room type
 - Used as vertices in the MST
 
 **Edge**
+
 - Connects two nodes in the MST
 - Stores weight (distance) for Kruskal's algorithm
 
 **Neighborhood**
+
 - Contains 5-15 randomly positioned nodes
 - Has pre-computed MST edges connecting all nodes
 - Represents one quadrant of a cell
 
 **Cell**
+
 - Contains exactly 4 neighborhoods (top-left, top-right, bottom-left, bottom-right)
 - Positioned on a grid with (x, y) coordinates
 
 **FloorGrid**
+
 - 3x3 grid of cells by default
 - Each cell is 200 units in size
 - Provides regeneration functionality
@@ -51,6 +59,7 @@ src/
 #### 2. State Management (`src/logic/grid_logic.rs`)
 
 **GridState**
+
 - Manages the active FloorGrid instance
 - Tracks zoom level (0.1x - 5.0x)
 - Tracks pan offset for navigation
@@ -59,6 +68,7 @@ src/
 #### 3. UI Rendering (`src/ui/grid_ui.rs`)
 
 **Rendering Pipeline**
+
 1. Control panel (buttons and zoom controls)
 2. Legend showing room type colors
 3. Main grid canvas with scroll support
@@ -67,6 +77,7 @@ src/
 6. Node rendering with color-coded room types
 
 **Color Scheme**
+
 - Normal nodes: Gray (RGB 100, 100, 100)
 - Bathrooms: Blue (RGB 100, 150, 255)
 - Safe Rooms: Green (RGB 100, 255, 100)
@@ -76,6 +87,7 @@ src/
 - MST edges: Light gray (RGB 200, 200, 200)
 
 **Interaction Features**
+
 - Regenerate button: Creates new random grid
 - Reset View button: Resets zoom and pan
 - Zoom controls: +/- buttons for scaling
@@ -84,6 +96,7 @@ src/
 ### Algorithm Implementation
 
 #### Kruskal's MST Algorithm
+
 1. Generate all possible edges between nodes with distance weights
 2. Sort edges by weight (shortest first)
 3. Use Union-Find data structure to detect cycles
@@ -95,24 +108,30 @@ src/
 ## Integration
 
 ### Console Command
-```
+
+```console
 invoke grid
 ```
+
 Opens the grid visualization preview window in developer mode.
 
 ### Preview System Integration
+
 - Added `Grid` variant to `PreviewWindow` enum
 - Registered "grid" in `known_names()` list
 - Implemented window rendering in `UiPreviewManager::render()`
 
 ### Dev-Mode Gating
+
 The grid visualization is conditionally compiled:
+
 - **Debug builds**: Included by default (dev-mode feature enabled)
 - **Release builds**: Excluded with `--no-default-features` flag
 
 ## Code Quality
 
 ### Testing
+
 - 8 comprehensive unit tests in `tests/grid_tests.rs`
 - Tests cover:
   - Grid creation and structure
@@ -123,11 +142,13 @@ The grid visualization is conditionally compiled:
   - Node position bounds checking
 
 ### Documentation
+
 - Inline code documentation with rustdoc comments
 - Comprehensive testing guide (GRID_TESTING.md)
 - Architecture overview (this document)
 
 ### Code Patterns
+
 - Follows existing project patterns for state management
 - Uses egui immediate-mode UI patterns consistently
 - Implements dev-mode gating like other preview features
@@ -136,6 +157,7 @@ The grid visualization is conditionally compiled:
 ## Performance Considerations
 
 ### Generation
+
 - Grid generation is O(N²) where N is nodes per neighborhood
 - Typical grid (3x3 cells, 4 neighborhoods per cell, ~10 nodes each):
   - Total nodes: ~360
@@ -143,6 +165,7 @@ The grid visualization is conditionally compiled:
   - Generation time: < 1ms on modern hardware
 
 ### Rendering
+
 - Cached texture handles avoided (pure vector graphics)
 - Efficient painter API usage
 - Minimal per-frame allocations
@@ -151,6 +174,7 @@ The grid visualization is conditionally compiled:
 ## Future Enhancements
 
 ### Potential Additions
+
 1. **Interactive Navigation**: Click-and-drag pan, mouse wheel zoom
 2. **Node Selection**: Click nodes to see details
 3. **Path Highlighting**: Show paths between selected nodes
@@ -159,6 +183,7 @@ The grid visualization is conditionally compiled:
 6. **Configurable Parameters**: Adjustable grid size, node count, room probabilities
 
 ### API Extensions
+
 ```rust
 // Example future API
 impl FloorGrid {
@@ -172,19 +197,23 @@ impl FloorGrid {
 ## Verification
 
 ### Build Verification
+
 ```bash
 cargo check --lib                    # ✓ Passes
 cargo check --no-default-features    # ✓ Grid feature excluded
 ```
 
 ### Test Coverage
+
 - Grid structure tests: ✓
 - MST generation tests: ✓
 - Boundary validation tests: ✓
 - Regeneration tests: ✓
 
 ### Manual Testing Required
+
 Due to graphics library requirements, full UI testing must be performed locally:
+
 - See GRID_TESTING.md for detailed procedures
 - Requires system with Vulkan/X11 support
 - All interaction features should be validated manually
