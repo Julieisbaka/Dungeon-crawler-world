@@ -47,11 +47,8 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@main
-
-      - name: Install required cargo tools (pre-built binaries)
-        run: cargo binstall --no-confirm clippy-sarif sarif-fmt
+      - name: Install required cargo tools
+        run: cargo install clippy-sarif sarif-fmt
 
       - name: Run rust-clippy and generate raw SARIF
         # continue-on-error allows the SARIF upload to proceed even when clippy
