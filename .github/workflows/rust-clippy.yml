@@ -48,7 +48,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Install required cargo tools
-        run: cargo install clippy-sarif sarif-fmt
+        run: |
+          cargo install --locked clippy-sarif --version 0.7.0
+          cargo install --locked sarif-fmt --version 0.7.0
 
       - name: Run rust-clippy and generate raw SARIF
         # continue-on-error allows the SARIF upload to proceed even when clippy
