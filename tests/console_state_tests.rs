@@ -103,8 +103,10 @@ fn test_set_input_does_not_mark_dirty_when_same_value() {
 
 #[test]
 fn test_read_save_list_returns_empty_for_missing_root() {
-    let root = std::env::temp_dir().join("__nonexistent_saves_root__");
-    let _ = fs::remove_dir_all(&root);
+    // Create a unique path and then immediately remove it so the root
+    // is guaranteed not to exist, avoiding races with fixed path names.
+    let root = unique_temp_dir("console_extra_missing_root");
+    fs::remove_dir_all(&root).unwrap();
 
     let result = read_save_list(&root).unwrap();
     assert!(result.is_empty());
