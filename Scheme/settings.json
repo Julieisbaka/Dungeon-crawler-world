@@ -70,6 +70,29 @@
       "default": 3,
       "minimum": 1,
       "maximum": 5
+    },
+    "target_fps": {
+      "type": "integer",
+      "description": "Target FPS cap. 0 means unlimited. Supported presets: 0 (unlimited), 15, 20, 24, 30, 45, 60, 75, 90, 100, 120, 144, 165, 200, 240, 360.",
+      "default": 0,
+      "minimum": 0
+    },
+    "vsync_mode": {
+      "type": "string",
+      "description": "Vertical synchronisation mode.\n  Off      – frames presented immediately; may exhibit screen tearing.\n  On       – frames synchronised to the display refresh rate (no tearing).\n  Adaptive – syncs when possible; allows tearing when FPS drops below the refresh rate to avoid stutter (FifoRelaxed).",
+      "default": "On",
+      "enum": ["Off", "On", "Adaptive"]
+    },
+    "show_fps_counter": {
+      "type": "boolean",
+      "description": "Show a lightweight FPS counter overlay in the top-right corner. Available without developer mode.",
+      "default": false
+    },
+    "power_preference": {
+      "type": "string",
+      "description": "GPU power preference used when selecting a graphics adapter. Takes effect on the next application start.\n  Default          – let the driver or OS decide.\n  LowPower         – prefer the integrated / low-power GPU.\n  HighPerformance  – prefer the discrete / high-performance GPU.",
+      "default": "Default",
+      "enum": ["Default", "LowPower", "HighPerformance"]
     }
   },
   "additionalItems": false,

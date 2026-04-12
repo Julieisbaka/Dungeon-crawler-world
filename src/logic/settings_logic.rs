@@ -19,12 +19,30 @@ pub struct Settings {
     pub show_save_creation_date: bool,
     /// Target FPS cap (0 = unlimited).
     pub target_fps: u32,
-    /// Enable VSync (maps to wgpu PresentMode::Fifo when true).
-    pub vsync: bool,
+    /// VSync mode (Off, On, or Adaptive).
+    pub vsync_mode: VsyncMode,
     /// Show a simple FPS counter overlay for all users.
     pub show_fps_counter: bool,
     /// GPU power preference. Takes effect on next application start.
     pub power_preference: PowerPreference,
+}
+
+/// Controls vertical synchronisation behaviour.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum VsyncMode {
+    /// No VSync — frames are presented as fast as possible; may exhibit tearing.
+    Off = 0,
+    /// Standard VSync — frames are synchronised to the display refresh rate (no tearing).
+    On = 1,
+    /// Adaptive VSync — syncs to the display when possible; allows tearing when the
+    /// frame rate falls below the refresh rate to avoid stutter (FifoRelaxed).
+    Adaptive = 2,
+}
+
+impl Default for VsyncMode {
+    fn default() -> Self {
+        VsyncMode::On
+    }
 }
 
 /// GPU power preference used when selecting a graphics adapter.
@@ -102,7 +120,7 @@ impl Settings {
             console_max_lines: 300,
             show_save_creation_date: true,
             target_fps: 0,
-            vsync: true,
+            vsync_mode: VsyncMode::On,
             show_fps_counter: false,
             power_preference: PowerPreference::Default,
         }

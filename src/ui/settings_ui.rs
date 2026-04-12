@@ -1,4 +1,4 @@
-use crate::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, SettingsResult};
+use crate::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, SettingsResult, VsyncMode};
 use egui::Ui;
 
 /// Renders the settings UI, allowing the user to modify and save settings.
@@ -98,9 +98,42 @@ pub fn settings_ui(
     ui.add_space(4.0);
 
     ui.horizontal(|ui: &mut Ui| {
-        if ui.checkbox(&mut settings.vsync, "VSync").changed() {
-            settings.save();
-        }
+        ui.label("VSync:");
+        egui::ComboBox::from_id_salt("vsync_mode_combo")
+            .selected_text(match settings.vsync_mode {
+                VsyncMode::Off => "Off",
+                VsyncMode::On => "On",
+                VsyncMode::Adaptive => "Adaptive",
+            })
+            .show_ui(ui, |ui: &mut Ui| {
+                if ui
+                    .selectable_value(&mut settings.vsync_mode, VsyncMode::Off, "Off")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(&mut settings.vsync_mode, VsyncMode::On, "On")
+                    .changed()
+                {
+                    settings.save();
+                }
+                if ui
+                    .selectable_value(
+                        &mut settings.vsync_mode,
+                        VsyncMode::Adaptive,
+                        "Adaptive",
+                    )
+                    .changed()
+                {
+                    settings.save();
+                }
+            });
+        ui.label(
+            egui::RichText::new("Adaptive allows tearing below the display refresh rate to reduce stutter")
+                .small()
+                .color(egui::Color32::GRAY),
+        );
     });
 
     ui.horizontal(|ui: &mut Ui| {
@@ -111,7 +144,7 @@ pub fn settings_ui(
                 n => format!("{} FPS", n),
             })
             .show_ui(ui, |ui: &mut Ui| {
-                for &fps in &[0u32, 30, 60, 120, 144, 240] {
+                for &fps in &[0u32, 15, 20, 24, 30, 45, 60, 75, 90, 100, 120, 144, 165, 200, 240, 360] {
                     let label = if fps == 0 {
                         "Unlimited".to_string()
                     } else {
