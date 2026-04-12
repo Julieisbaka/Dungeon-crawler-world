@@ -22,6 +22,16 @@ impl FpsGraph {
         self.times_ms.push_back(dt_ms);
     }
 
+    /// Returns a smoothed current FPS value (average of last 10 frames).
+    pub fn current_fps(&self) -> f32 {
+        if self.times_ms.is_empty() {
+            return 0.0;
+        }
+        let n = self.times_ms.len().min(10);
+        let avg_ms: f32 = self.times_ms.iter().rev().take(n).sum::<f32>() / n as f32;
+        if avg_ms > 0.0 { 1000.0 / avg_ms } else { 0.0 }
+    }
+
     pub fn ui(&self, ui: &mut Ui) {
         let desired: Vec2 = Vec2::new(260.0, 80.0);
         let (rect, _resp) = ui.allocate_at_least(desired, egui::Sense::hover());

@@ -1,6 +1,6 @@
 mod common;
 
-use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings, SettingsResult};
+use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, SettingsResult};
 use std::fs;
 use std::sync::Mutex;
 
@@ -80,6 +80,10 @@ fn test_settings_serialize_deserialize_round_trip() {
         fullscreen: true,
         console_max_lines: 500,
         show_save_creation_date: false,
+        target_fps: 60,
+        vsync: false,
+        show_fps_counter: true,
+        power_preference: PowerPreference::HighPerformance,
     };
 
     let json = serde_json::to_string(&original).unwrap();
@@ -112,6 +116,10 @@ fn test_settings_save_and_load_round_trip() {
         fullscreen: false,
         console_max_lines: 100,
         show_save_creation_date: false,
+        target_fps: 0,
+        vsync: true,
+        show_fps_counter: false,
+        power_preference: PowerPreference::Default,
     };
 
     original.save();
@@ -199,5 +207,9 @@ fn build_default_settings() -> Settings {
         fullscreen: false,
         console_max_lines: 300,
         show_save_creation_date: true,
+        target_fps: 0,
+        vsync: true,
+        show_fps_counter: false,
+        power_preference: PowerPreference::Default,
     }
 }

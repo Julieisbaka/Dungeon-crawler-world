@@ -17,6 +17,31 @@ pub struct Settings {
     pub console_max_lines: usize,
     /// Show save creation date in saves menu
     pub show_save_creation_date: bool,
+    /// Target FPS cap (0 = unlimited).
+    pub target_fps: u32,
+    /// Enable VSync (maps to wgpu PresentMode::Fifo when true).
+    pub vsync: bool,
+    /// Show a simple FPS counter overlay for all users.
+    pub show_fps_counter: bool,
+    /// GPU power preference. Takes effect on next application start.
+    pub power_preference: PowerPreference,
+}
+
+/// GPU power preference used when selecting a graphics adapter.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum PowerPreference {
+    /// Let the driver/OS decide.
+    Default = 0,
+    /// Prefer the integrated / low-power GPU.
+    LowPower = 1,
+    /// Prefer the discrete / high-performance GPU.
+    HighPerformance = 2,
+}
+
+impl Default for PowerPreference {
+    fn default() -> Self {
+        PowerPreference::Default
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -76,6 +101,10 @@ impl Settings {
             log_verbosity: LogVerbosity::Info,
             console_max_lines: 300,
             show_save_creation_date: true,
+            target_fps: 0,
+            vsync: true,
+            show_fps_counter: false,
+            power_preference: PowerPreference::Default,
         }
     }
 }
