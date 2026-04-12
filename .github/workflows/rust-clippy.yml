@@ -74,10 +74,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sarif-fmt < /tmp/rust-clippy-results.raw.sarif > /tmp/rust-clippy-results.sarif
-
-
-          mv /tmp/rust-clippy-results.sarif rust-clippy-results.sarif
+          # Display human-readable results in the action log.
+          sarif-fmt < /tmp/rust-clippy-results.raw.sarif || true
+          # Use the raw SARIF JSON (not the human-readable sarif-fmt output) for upload.
+          cp /tmp/rust-clippy-results.raw.sarif rust-clippy-results.sarif
 
       - name: Validate SARIF JSON
         shell: bash
