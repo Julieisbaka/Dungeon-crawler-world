@@ -480,6 +480,14 @@ impl WinitApp {
             last_vsync: None,
         }
     }
+
+    /// Returns the configured FPS cap (0 = unlimited).
+    fn target_fps(&self) -> u32 {
+        self.app
+            .as_ref()
+            .map(|a| a.settings.target_fps)
+            .unwrap_or(0)
+    }
 }
 
 impl winit::application::ApplicationHandler for WinitApp {
@@ -622,12 +630,7 @@ impl winit::application::ApplicationHandler for WinitApp {
                 // When no FPS cap is active, keep requesting redraws immediately for
                 // maximum throughput.  When a cap is set, about_to_wait() handles the
                 // timing and requests the next redraw once the deadline has passed.
-                let target_fps = self
-                    .app
-                    .as_ref()
-                    .map(|a| a.settings.target_fps)
-                    .unwrap_or(0);
-                if target_fps == 0 {
+                if self.target_fps() == 0 {
                     if let Some(win) = &self.window {
                         win.request_redraw();
                     }
@@ -638,11 +641,7 @@ impl winit::application::ApplicationHandler for WinitApp {
     }
 
     fn about_to_wait(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        let target_fps = self
-            .app
-            .as_ref()
-            .map(|a| a.settings.target_fps)
-            .unwrap_or(0);
+        let target_fps = self.target_fps();
 
         if target_fps > 0 {
             let frame_duration = Duration::from_secs_f64(1.0 / target_fps as f64);
