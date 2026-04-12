@@ -33,9 +33,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        run: |
-          rustup toolchain install stable --component clippy
-          rustup default stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache apt packages
+        if: runner.os == 'Linux'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-vulkan-x11-v1
+          restore-keys: ${{ runner.os }}-apt-
 
       - name: Install system dependencies (Linux)
         if: runner.os == 'Linux'
@@ -46,7 +54,17 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
+      - name: Cache cargo tools (clippy-sarif, sarif-fmt)
+        id: cache-cargo-tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/clippy-sarif
+            ~/.cargo/bin/sarif-fmt
+          key: cargo-tools-clippy-sarif-0.7.0-sarif-fmt-0.7.0
+
       - name: Install required cargo tools
+        if: steps.cache-cargo-tools.outputs.cache-hit != 'true'
         run: |
           cargo install --locked clippy-sarif --version 0.7.0
           cargo install --locked sarif-fmt --version 0.7.0

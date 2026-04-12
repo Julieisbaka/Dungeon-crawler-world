@@ -29,12 +29,16 @@ permissions:
   contents: write
 
 jobs:
-  build-windows:
+  # ── Windows ────────────────────────────────────────────────────────────────
+
+  build-windows-dev:
     if: ${{ inputs.os == 'windows' }}
-    name: Build Windows dev and release executables
+    name: Build Windows dev executable
     runs-on: windows-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: sccache
     defaults:
       run:
         shell: pwsh
@@ -46,49 +50,93 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          shared-key: windows-dev
 
-      - name: Cache build target
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
-
-  # No source edits required; dev mode controlled via cargo feature
-
+      # No source edits required; dev mode controlled via cargo feature
       - name: Build (dev profile, dev-mode feature enabled)
         run: |
           cargo build --features dev-mode
 
-      - name: Prepare artifacts folder
-        run: |
-          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+      - name: Upload dev executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-dev-exe
+          path: target\debug\Dungeon-Crawler-World.exe
+          if-no-files-found: error
 
-      - name: Copy dev executable
-        run: |
-          $devExe = "target\debug\Dungeon-Crawler-World.exe"
-          if (-not (Test-Path $devExe)) {
-            Write-Error "Dev executable not found: $devExe"
-          }
-          Copy-Item -Path $devExe -Destination "artifacts\Dungeon-Crawler-World-dev.exe" -Force
+  build-windows-release:
+    if: ${{ inputs.os == 'windows' }}
+    name: Build Windows release executable
+    runs-on: windows-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: sccache
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: windows-release
 
       - name: Build (release profile, dev-mode disabled)
         run: |
           cargo build --release --no-default-features
 
-      - name: Copy release executable
+      - name: Upload release executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-exe
+          path: target\release\Dungeon-Crawler-World.exe
+          if-no-files-found: error
+
+  release-windows:
+    if: ${{ inputs.os == 'windows' }}
+    name: Create Windows GitHub Release
+    needs: [build-windows-dev, build-windows-release]
+    runs-on: windows-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Download dev executable
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-dev-exe
+          path: artifacts\dev
+
+      - name: Download release executable
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release-exe
+          path: artifacts\release
+
+      - name: Prepare final artifacts
         run: |
-          $relExe = "target\release\Dungeon-Crawler-World.exe"
-          if (-not (Test-Path $relExe)) {
-            Write-Error "Release executable not found: $relExe"
-          }
-          Copy-Item -Path $relExe -Destination "artifacts\Dungeon-Crawler-World-release.exe" -Force
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Copy-Item "artifacts\dev\Dungeon-Crawler-World.exe" "artifacts\Dungeon-Crawler-World-dev.exe"
+          Copy-Item "artifacts\release\Dungeon-Crawler-World.exe" "artifacts\Dungeon-Crawler-World-release.exe"
 
       - name: Create or update GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
@@ -103,10 +151,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-macos:
+  # ── macOS ──────────────────────────────────────────────────────────────────
+
+  build-macos-dev:
     if: ${{ inputs.os == 'macos' }}
-    name: Build macOS dev and release executables
+    name: Build macOS dev executable
     runs-on: macos-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: sccache
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -114,40 +168,25 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          shared-key: macos-dev
 
-      - name: Cache build target
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
-
-  # No source edits required; dev mode controlled via cargo feature
-
+      # No source edits required; dev mode controlled via cargo feature
       - name: Build (dev profile, dev-mode feature enabled)
         run: |
           cargo build --features dev-mode
 
-      - name: Prepare artifacts folder
-        run: |
-          mkdir -p artifacts
-
-      - name: Copy dev executable
+      - name: Create .app bundle (dev)
         run: |
           DEV_BIN="target/debug/Dungeon-Crawler-World"
           test -f "$DEV_BIN" || { echo "Dev executable not found: $DEV_BIN"; exit 1; }
-          cp "$DEV_BIN" "artifacts/Dungeon-Crawler-World-dev-macos"
-
-      - name: Create .app bundle (dev)
-        run: |
           APP_DIR="artifacts/Dungeon-Crawler-World-dev.app"
-          mkdir -p "$APP_DIR/Contents/MacOS"
+          mkdir -p artifacts "$APP_DIR/Contents/MacOS"
           cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -172,26 +211,52 @@ jobs:
           </dict>
           </plist>
           EOF
-          install -m 755 "artifacts/Dungeon-Crawler-World-dev-macos" "$APP_DIR/Contents/MacOS/Dungeon-Crawler-World"
+          install -m 755 "$DEV_BIN" "$APP_DIR/Contents/MacOS/Dungeon-Crawler-World"
 
       - name: Create DMG (dev)
         run: |
           hdiutil create -volname "Dungeon-Crawler-World-dev" -srcfolder "artifacts/Dungeon-Crawler-World-dev.app" -ov -format UDZO "artifacts/Dungeon-Crawler-World-dev-macos.dmg"
 
+      - name: Upload dev DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dev-dmg
+          path: artifacts/Dungeon-Crawler-World-dev-macos.dmg
+          if-no-files-found: error
+
+  build-macos-release:
+    if: ${{ inputs.os == 'macos' }}
+    name: Build macOS release executable
+    runs-on: macos-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: sccache
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: macos-release
+
       - name: Build (release profile, dev-mode disabled)
         run: |
           cargo build --release --no-default-features
 
-      - name: Copy release executable
+      - name: Create .app bundle (release)
         run: |
           REL_BIN="target/release/Dungeon-Crawler-World"
           test -f "$REL_BIN" || { echo "Release executable not found: $REL_BIN"; exit 1; }
-          cp "$REL_BIN" "artifacts/Dungeon-Crawler-World-release-macos"
-
-      - name: Create .app bundle (release)
-        run: |
           APP_DIR="artifacts/Dungeon-Crawler-World-release.app"
-          mkdir -p "$APP_DIR/Contents/MacOS"
+          mkdir -p artifacts "$APP_DIR/Contents/MacOS"
           cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -216,11 +281,37 @@ jobs:
           </dict>
           </plist>
           EOF
-          install -m 755 "artifacts/Dungeon-Crawler-World-release-macos" "$APP_DIR/Contents/MacOS/Dungeon-Crawler-World"
+          install -m 755 "$REL_BIN" "$APP_DIR/Contents/MacOS/Dungeon-Crawler-World"
 
       - name: Create DMG (release)
         run: |
           hdiutil create -volname "Dungeon-Crawler-World-release" -srcfolder "artifacts/Dungeon-Crawler-World-release.app" -ov -format UDZO "artifacts/Dungeon-Crawler-World-release-macos.dmg"
+
+      - name: Upload release DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-dmg
+          path: artifacts/Dungeon-Crawler-World-release-macos.dmg
+          if-no-files-found: error
+
+  release-macos:
+    if: ${{ inputs.os == 'macos' }}
+    name: Create macOS GitHub Release
+    needs: [build-macos-dev, build-macos-release]
+    runs-on: macos-latest
+
+    steps:
+      - name: Download dev DMG
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dev-dmg
+          path: artifacts
+
+      - name: Download release DMG
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-release-dmg
+          path: artifacts
 
       - name: Create or update GitHub Release and upload assets
         uses: softprops/action-gh-release@v2

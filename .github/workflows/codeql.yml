@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: ["Main"]
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * 1"
 
 jobs:
   analyze:
@@ -28,6 +28,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache apt packages
+        if: runner.os == 'Linux'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-vulkan-x11-v1
+          restore-keys: ${{ runner.os }}-apt-
 
       - name: Install system dependencies (Linux)
         if: runner.os == 'Linux'
