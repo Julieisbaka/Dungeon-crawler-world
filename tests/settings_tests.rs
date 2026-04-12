@@ -1,3 +1,5 @@
+mod common;
+
 use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings, SettingsResult};
 use std::fs;
 use std::sync::Mutex;
@@ -6,15 +8,13 @@ use std::sync::Mutex;
 /// Only tests that touch `Settings::save()` / `Settings::load()` acquire this lock.
 static SETTINGS_CWD_LOCK: Mutex<()> = Mutex::new(());
 
-/// Creates a uniquely-named temp directory for settings tests.
-fn settings_temp_dir(suffix: &str) -> std::path::PathBuf {
-    use std::sync::atomic::{AtomicU64, Ordering};
-    static ID: AtomicU64 = AtomicU64::new(1);
-    let id = ID.fetch_add(1, Ordering::Relaxed);
-    let path = std::env::temp_dir().join(format!("settings_test_{}_{}", suffix, id));
-    let _ = fs::remove_dir_all(&path);
-    fs::create_dir_all(&path).unwrap();
-    path
+/// RAII guard that restores the process working directory when dropped, even on panic.
+struct RestoreCwd(std::path::PathBuf);
+
+impl Drop for RestoreCwd {
+    fn drop(&mut self) {
+        let _ = std::env::set_current_dir(&self.0);
+    }
 }
 
 // ── LogVerbosity ───────────────────────────────────────────────────────────────
@@ -94,11 +94,9 @@ fn test_settings_serialize_deserialize_round_trip() {
 /// verifies the loaded value is identical to the saved one.
 #[test]
 fn test_settings_save_and_load_round_trip() {
-    let temp_dir = settings_temp_dir("save_load");
-    let original_cwd = std::env::current_dir().unwrap();
-
-    // Serialize CWD-sensitive test access so parallel tests don't interfere.
+    let temp_dir = common::unique_temp_dir("settings_save_load");
     let _guard = SETTINGS_CWD_LOCK.lock().unwrap();
+    let _restore = RestoreCwd(std::env::current_dir().unwrap());
     std::env::set_current_dir(&temp_dir).unwrap();
 
     let original = Settings {
@@ -119,8 +117,7 @@ fn test_settings_save_and_load_round_trip() {
     original.save();
     let loaded = Settings::load();
 
-    // Restore before asserting so cleanup always runs.
-    std::env::set_current_dir(&original_cwd).unwrap();
+    drop(_restore);
     let _ = fs::remove_dir_all(&temp_dir);
 
     assert_eq!(original, loaded);
@@ -130,16 +127,15 @@ fn test_settings_save_and_load_round_trip() {
 /// `settings.json` does not exist in the working directory.
 #[test]
 fn test_settings_load_returns_defaults_for_missing_file() {
-    let temp_dir = settings_temp_dir("missing");
-    let original_cwd = std::env::current_dir().unwrap();
-
+    let temp_dir = common::unique_temp_dir("settings_missing");
     let _guard = SETTINGS_CWD_LOCK.lock().unwrap();
+    let _restore = RestoreCwd(std::env::current_dir().unwrap());
     std::env::set_current_dir(&temp_dir).unwrap();
 
     // No settings.json in temp_dir → load() must return defaults.
     let defaults = Settings::load();
 
-    std::env::set_current_dir(&original_cwd).unwrap();
+    drop(_restore);
     let _ = fs::remove_dir_all(&temp_dir);
 
     assert_eq!(defaults.fog, 2);
@@ -153,17 +149,16 @@ fn test_settings_load_returns_defaults_for_missing_file() {
 /// `settings.json` contains invalid JSON.
 #[test]
 fn test_settings_load_returns_defaults_for_malformed_json() {
-    let temp_dir = settings_temp_dir("malformed");
-    let original_cwd = std::env::current_dir().unwrap();
-
+    let temp_dir = common::unique_temp_dir("settings_malformed");
     let _guard = SETTINGS_CWD_LOCK.lock().unwrap();
+    let _restore = RestoreCwd(std::env::current_dir().unwrap());
     std::env::set_current_dir(&temp_dir).unwrap();
 
     // Write garbage so the file exists but cannot be parsed.
     fs::write("settings.json", "{ bad json {{{{").unwrap();
     let defaults = Settings::load();
 
-    std::env::set_current_dir(&original_cwd).unwrap();
+    drop(_restore);
     let _ = fs::remove_dir_all(&temp_dir);
 
     assert_eq!(defaults.fog, 2);
