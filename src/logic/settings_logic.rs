@@ -28,27 +28,23 @@ pub struct Settings {
 }
 
 /// Controls vertical synchronisation behaviour.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
 pub enum VsyncMode {
     /// No VSync — frames are presented as fast as possible; may exhibit tearing.
     Off = 0,
     /// Standard VSync — frames are synchronised to the display refresh rate (no tearing).
+    #[default]
     On = 1,
     /// Adaptive VSync — syncs to the display when possible; allows tearing when the
     /// frame rate falls below the refresh rate to avoid stutter (FifoRelaxed).
     Adaptive = 2,
 }
 
-impl Default for VsyncMode {
-    fn default() -> Self {
-        VsyncMode::On
-    }
-}
-
 /// GPU power preference used when selecting a graphics adapter.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
 pub enum PowerPreference {
     /// Let the driver/OS decide.
+    #[default]
     Default = 0,
     /// Prefer the integrated / low-power GPU.
     LowPower = 1,
@@ -56,25 +52,14 @@ pub enum PowerPreference {
     HighPerformance = 2,
 }
 
-impl Default for PowerPreference {
-    fn default() -> Self {
-        PowerPreference::Default
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
 pub enum LogVerbosity {
     Error = 0,
     Warn = 1,
+    #[default]
     Info = 2,
     Debug = 3,
     Trace = 4,
-}
-
-impl Default for LogVerbosity {
-    fn default() -> Self {
-        LogVerbosity::Info
-    }
 }
 
 const SETTINGS_FILE: &str = "settings.json";
