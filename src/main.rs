@@ -477,6 +477,8 @@ struct WinitApp {
     app: Option<DungeonCrawlerworld>,
     /// Time the most recent frame was rendered (for FPS-cap frame pacing).
     last_frame_time: Option<Instant>,
+    /// wgpu adapter — kept alive so live VSync reconfiguration can query surface capabilities.
+    adapter: Option<egui_wgpu::wgpu::Adapter>,
     /// Last applied VSync setting (to detect changes and reconfigure the surface).
     last_vsync: Option<VsyncMode>,
 }
@@ -494,6 +496,7 @@ impl WinitApp {
             egui_renderer: None,
             app: None,
             last_frame_time: None,
+            adapter: None,
             last_vsync: None,
         }
     }
@@ -560,11 +563,36 @@ impl winit::application::ApplicationHandler for WinitApp {
         let mut surface_config: wgpu::wgt::SurfaceConfiguration<Vec<wgpu::TextureFormat>> = surface
             .get_default_config(&adapter, size.width, size.height)
             .unwrap();
-        // Apply VSync setting from the loaded settings.
-        surface_config.present_mode = match startup_settings.vsync_mode {
+        // Apply VSync setting from the loaded settings, gated against surface capabilities.
+        // In developer mode all present modes are allowed even if unsupported, for testing.
+        let surface_caps = surface.get_capabilities(&adapter);
+        let requested_present_mode = match startup_settings.vsync_mode {
             VsyncMode::On => wgpu::PresentMode::Fifo,
             VsyncMode::Adaptive => wgpu::PresentMode::FifoRelaxed,
             VsyncMode::Off => wgpu::PresentMode::AutoNoVsync,
+        };
+        let dev_mode = DEV_MODE_ENABLED && startup_settings.developer_mode;
+        surface_config.present_mode = if dev_mode
+            || surface_caps.present_modes.contains(&requested_present_mode)
+        {
+            requested_present_mode
+        } else {
+            let fallback = if surface_caps.present_modes.contains(&wgpu::PresentMode::Fifo) {
+                wgpu::PresentMode::Fifo
+            } else {
+                surface_caps
+                    .present_modes
+                    .first()
+                    .copied()
+                    .unwrap_or(wgpu::PresentMode::Fifo)
+            };
+            log::warn!(
+                "Requested present mode {:?} for {:?} is not supported by this surface; falling back to {:?}",
+                requested_present_mode,
+                startup_settings.vsync_mode,
+                fallback
+            );
+            fallback
         };
         surface.configure(&device, &surface_config);
         self.last_vsync = Some(startup_settings.vsync_mode);
@@ -596,6 +624,7 @@ impl winit::application::ApplicationHandler for WinitApp {
         self.queue = Some(queue);
         self.surface = Some(surface);
         self.surface_config = Some(surface_config);
+        self.adapter = Some(adapter);
         self.egui_ctx = Some(egui_ctx);
         self.egui_winit_state = Some(egui_winit_state);
         self.egui_renderer = Some(egui_renderer);
@@ -689,16 +718,45 @@ impl WinitApp {
         {
             let new_vsync = self.app.as_ref().map(|a| a.settings.vsync_mode);
             if new_vsync != self.last_vsync {
-                if let (Some(vsync_mode), Some(surface), Some(device), Some(config)) = (
+                let dev_mode = DEV_MODE_ENABLED
+                    && self
+                        .app
+                        .as_ref()
+                        .map(|a| a.settings.developer_mode)
+                        .unwrap_or(false);
+                if let (Some(vsync_mode), Some(surface), Some(adapter), Some(device), Some(config)) = (
                     new_vsync,
                     self.surface.as_ref(),
+                    self.adapter.as_ref(),
                     self.device.as_ref(),
                     self.surface_config.as_mut(),
                 ) {
-                    config.present_mode = match vsync_mode {
+                    let requested_present_mode = match vsync_mode {
                         VsyncMode::On => wgpu::PresentMode::Fifo,
                         VsyncMode::Adaptive => wgpu::PresentMode::FifoRelaxed,
                         VsyncMode::Off => wgpu::PresentMode::AutoNoVsync,
+                    };
+                    let caps = surface.get_capabilities(adapter);
+                    config.present_mode = if dev_mode
+                        || caps.present_modes.contains(&requested_present_mode)
+                    {
+                        requested_present_mode
+                    } else {
+                        let fallback = if caps.present_modes.contains(&wgpu::PresentMode::Fifo) {
+                            wgpu::PresentMode::Fifo
+                        } else {
+                            caps.present_modes
+                                .first()
+                                .copied()
+                                .unwrap_or(config.present_mode)
+                        };
+                        log::warn!(
+                            "Requested present mode {:?} for {:?} is not supported; falling back to {:?}",
+                            requested_present_mode,
+                            vsync_mode,
+                            fallback
+                        );
+                        fallback
                     };
                     surface.configure(device, config);
                     self.last_vsync = Some(vsync_mode);
