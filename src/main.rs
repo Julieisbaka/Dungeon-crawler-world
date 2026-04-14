@@ -12,7 +12,7 @@ use logger::init_logger;
 use dungeon_crawler_world::console::{
     console_ui, read_player_skills_from_path, ConsoleCommandContext, ConsoleRegistry, ConsoleState,
 };
-use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, Settings};
+use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, VsyncMode};
 use dungeon_crawler_world::logic::skills_logic::read_player_skills_for_save;
 use dungeon_crawler_world::ui::main_menu::MainMenu;
 
@@ -116,6 +116,10 @@ impl ConsoleCommandContext for AppConsoleContext<'_> {
             "console_max_lines" => Ok(self.settings.console_max_lines.to_string()),
             "show_fps_graph" => Ok(self.settings.show_fps_graph.to_string()),
             "developer_mode" => Ok(self.settings.developer_mode.to_string()),
+            "target_fps" => Ok(self.settings.target_fps.to_string()),
+            "vsync_mode" => Ok(vsync_mode_name(self.settings.vsync_mode).to_string()),
+            "show_fps_counter" => Ok(self.settings.show_fps_counter.to_string()),
+            "power_preference" => Ok(power_preference_name(self.settings.power_preference).to_string()),
             other => Err(format!("Unknown setting: {}", other)),
         }
     }
@@ -146,6 +150,22 @@ impl ConsoleCommandContext for AppConsoleContext<'_> {
                 "developer_mode".to_string(),
                 self.settings.developer_mode.to_string(),
             ),
+            (
+                "target_fps".to_string(),
+                self.settings.target_fps.to_string(),
+            ),
+            (
+                "vsync_mode".to_string(),
+                vsync_mode_name(self.settings.vsync_mode).to_string(),
+            ),
+            (
+                "show_fps_counter".to_string(),
+                self.settings.show_fps_counter.to_string(),
+            ),
+            (
+                "power_preference".to_string(),
+                power_preference_name(self.settings.power_preference).to_string(),
+            ),
         ]
     }
 
@@ -171,6 +191,20 @@ impl ConsoleCommandContext for AppConsoleContext<'_> {
             }
             "developer_mode" => {
                 self.settings.developer_mode = parse_bool_setting(value)?;
+            }
+            "target_fps" => {
+                self.settings.target_fps = value
+                    .parse::<u32>()
+                    .map_err(|_| format!("Invalid u32 value: {}", value))?;
+            }
+            "vsync_mode" => {
+                self.settings.vsync_mode = parse_vsync_mode(value)?;
+            }
+            "show_fps_counter" => {
+                self.settings.show_fps_counter = parse_bool_setting(value)?;
+            }
+            "power_preference" => {
+                self.settings.power_preference = parse_power_preference(value)?;
             }
             _ => return Err(format!("Unknown setting: {}", key)),
         }
@@ -215,6 +249,40 @@ fn log_verbosity_name(value: LogVerbosity) -> &'static str {
         LogVerbosity::Info => "info",
         LogVerbosity::Debug => "debug",
         LogVerbosity::Trace => "trace",
+    }
+}
+
+fn power_preference_name(value: PowerPreference) -> &'static str {
+    match value {
+        PowerPreference::Default => "default",
+        PowerPreference::LowPower => "low_power",
+        PowerPreference::HighPerformance => "high_performance",
+    }
+}
+
+fn parse_power_preference(value: &str) -> Result<PowerPreference, String> {
+    match value.to_ascii_lowercase().as_str() {
+        "default" | "0" => Ok(PowerPreference::Default),
+        "low_power" | "low" | "1" => Ok(PowerPreference::LowPower),
+        "high_performance" | "high" | "2" => Ok(PowerPreference::HighPerformance),
+        _ => Err(format!("Invalid power preference: {}. Use default, low_power, or high_performance", value)),
+    }
+}
+
+fn vsync_mode_name(value: VsyncMode) -> &'static str {
+    match value {
+        VsyncMode::Off => "off",
+        VsyncMode::On => "on",
+        VsyncMode::Adaptive => "adaptive",
+    }
+}
+
+fn parse_vsync_mode(value: &str) -> Result<VsyncMode, String> {
+    match value.to_ascii_lowercase().as_str() {
+        "off" | "0" => Ok(VsyncMode::Off),
+        "on" | "1" | "true" => Ok(VsyncMode::On),
+        "adaptive" | "2" => Ok(VsyncMode::Adaptive),
+        _ => Err(format!("Invalid VSync mode: {}. Use off, on, or adaptive", value)),
     }
 }
 
@@ -374,6 +442,21 @@ impl DungeonCrawlerworld {
                     });
             }
         }
+
+        // Simple FPS counter overlay — available to all users (no developer mode required).
+        if self.settings.show_fps_counter {
+            let current_fps = self.fps.current_fps();
+            egui::Area::new(egui::Id::new("fps_counter_area"))
+                .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-8.0, 8.0))
+                .interactable(false)
+                .show(ctx, |ui: &mut egui::Ui| {
+                    ui.label(
+                        egui::RichText::new(format!("FPS: {:.0}", current_fps))
+                            .monospace()
+                            .color(egui::Color32::from_rgb(180, 220, 180)),
+                    );
+                });
+        }
     }
 
     /// Check if the app should quit
@@ -392,6 +475,12 @@ struct WinitApp {
     egui_winit_state: Option<egui_winit::State>,
     egui_renderer: Option<egui_wgpu::Renderer>,
     app: Option<DungeonCrawlerworld>,
+    /// Time the most recent frame was rendered (for FPS-cap frame pacing).
+    last_frame_time: Option<Instant>,
+    /// wgpu adapter — kept alive so live VSync reconfiguration can query surface capabilities.
+    adapter: Option<egui_wgpu::wgpu::Adapter>,
+    /// Last applied VSync setting (to detect changes and reconfigure the surface).
+    last_vsync: Option<VsyncMode>,
 }
 
 impl WinitApp {
@@ -406,7 +495,18 @@ impl WinitApp {
             egui_winit_state: None,
             egui_renderer: None,
             app: None,
+            last_frame_time: None,
+            adapter: None,
+            last_vsync: None,
         }
+    }
+
+    /// Returns the configured FPS cap (0 = unlimited).
+    fn target_fps(&self) -> u32 {
+        self.app
+            .as_ref()
+            .map(|a| a.settings.target_fps)
+            .unwrap_or(0)
     }
 }
 
@@ -435,9 +535,16 @@ impl winit::application::ApplicationHandler for WinitApp {
 
         let surface: wgpu::Surface<'_> = instance.create_surface(window.clone()).unwrap();
 
+        // Load settings early to apply the GPU power preference when selecting the adapter.
+        let startup_settings = Settings::load();
+
         let adapter: wgpu::Adapter =
             pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::default(),
+                power_preference: match startup_settings.power_preference {
+                    PowerPreference::LowPower => wgpu::PowerPreference::LowPower,
+                    PowerPreference::HighPerformance => wgpu::PowerPreference::HighPerformance,
+                    PowerPreference::Default => wgpu::PowerPreference::default(),
+                },
                 compatible_surface: Some(&surface),
                 force_fallback_adapter: false,
             }))
@@ -453,10 +560,42 @@ impl winit::application::ApplicationHandler for WinitApp {
         .unwrap();
 
         let size: winit::dpi::PhysicalSize<u32> = window.inner_size();
-        let surface_config: wgpu::wgt::SurfaceConfiguration<Vec<wgpu::TextureFormat>> = surface
+        let mut surface_config: wgpu::wgt::SurfaceConfiguration<Vec<wgpu::TextureFormat>> = surface
             .get_default_config(&adapter, size.width, size.height)
             .unwrap();
+        // Apply VSync setting from the loaded settings, gated against surface capabilities.
+        // In developer mode all present modes are allowed even if unsupported, for testing.
+        let surface_caps = surface.get_capabilities(&adapter);
+        let requested_present_mode = match startup_settings.vsync_mode {
+            VsyncMode::On => wgpu::PresentMode::Fifo,
+            VsyncMode::Adaptive => wgpu::PresentMode::FifoRelaxed,
+            VsyncMode::Off => wgpu::PresentMode::AutoNoVsync,
+        };
+        let dev_mode = DEV_MODE_ENABLED && startup_settings.developer_mode;
+        surface_config.present_mode = if dev_mode
+            || surface_caps.present_modes.contains(&requested_present_mode)
+        {
+            requested_present_mode
+        } else {
+            let fallback = if surface_caps.present_modes.contains(&wgpu::PresentMode::Fifo) {
+                wgpu::PresentMode::Fifo
+            } else {
+                surface_caps
+                    .present_modes
+                    .first()
+                    .copied()
+                    .unwrap_or(wgpu::PresentMode::Fifo)
+            };
+            log::warn!(
+                "Requested present mode {:?} for {:?} is not supported by this surface; falling back to {:?}",
+                requested_present_mode,
+                startup_settings.vsync_mode,
+                fallback
+            );
+            fallback
+        };
         surface.configure(&device, &surface_config);
+        self.last_vsync = Some(startup_settings.vsync_mode);
 
         // Initialize egui
         let egui_ctx: Context = egui::Context::default();
@@ -485,6 +624,7 @@ impl winit::application::ApplicationHandler for WinitApp {
         self.queue = Some(queue);
         self.surface = Some(surface);
         self.surface_config = Some(surface_config);
+        self.adapter = Some(adapter);
         self.egui_ctx = Some(egui_ctx);
         self.egui_winit_state = Some(egui_winit_state);
         self.egui_renderer = Some(egui_renderer);
@@ -524,22 +664,46 @@ impl winit::application::ApplicationHandler for WinitApp {
             WindowEvent::RedrawRequested => {
                 self.render();
 
+                // Record the time this frame was completed for FPS-cap frame pacing.
+                self.last_frame_time = Some(Instant::now());
+
                 // Check if app wants to quit
                 if self.app.as_ref().unwrap().should_quit() {
                     event_loop.exit();
                     return;
                 }
 
-                // Request continuous repaints
-                if let Some(win) = &self.window {
-                    win.request_redraw();
+                // When no FPS cap is active, keep requesting redraws immediately for
+                // maximum throughput.  When a cap is set, about_to_wait() handles the
+                // timing and requests the next redraw once the deadline has passed.
+                if self.target_fps() == 0 {
+                    if let Some(win) = &self.window {
+                        win.request_redraw();
+                    }
                 }
             }
             _ => {}
         }
     }
 
-    fn about_to_wait(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        let target_fps = self.target_fps();
+
+        if target_fps > 0 {
+            let frame_duration = Duration::from_secs_f64(1.0 / target_fps as f64);
+            let next_frame = self
+                .last_frame_time
+                .unwrap_or_else(Instant::now)
+                .checked_add(frame_duration)
+                .unwrap_or_else(Instant::now);
+            if next_frame > Instant::now() {
+                event_loop.set_control_flow(
+                    winit::event_loop::ControlFlow::WaitUntil(next_frame),
+                );
+                return;
+            }
+        }
+
         if let Some(window) = &self.window {
             window.request_redraw();
         }
@@ -548,13 +712,64 @@ impl winit::application::ApplicationHandler for WinitApp {
 
 impl WinitApp {
     fn render(&mut self) {
+        use egui_wgpu::wgpu;
+
+        // Reconfigure the surface if the VSync setting has changed.
+        {
+            let new_vsync = self.app.as_ref().map(|a| a.settings.vsync_mode);
+            if new_vsync != self.last_vsync {
+                let dev_mode = DEV_MODE_ENABLED
+                    && self
+                        .app
+                        .as_ref()
+                        .map(|a| a.settings.developer_mode)
+                        .unwrap_or(false);
+                if let (Some(vsync_mode), Some(surface), Some(adapter), Some(device), Some(config)) = (
+                    new_vsync,
+                    self.surface.as_ref(),
+                    self.adapter.as_ref(),
+                    self.device.as_ref(),
+                    self.surface_config.as_mut(),
+                ) {
+                    let requested_present_mode = match vsync_mode {
+                        VsyncMode::On => wgpu::PresentMode::Fifo,
+                        VsyncMode::Adaptive => wgpu::PresentMode::FifoRelaxed,
+                        VsyncMode::Off => wgpu::PresentMode::AutoNoVsync,
+                    };
+                    let caps = surface.get_capabilities(adapter);
+                    config.present_mode = if dev_mode
+                        || caps.present_modes.contains(&requested_present_mode)
+                    {
+                        requested_present_mode
+                    } else {
+                        let fallback = if caps.present_modes.contains(&wgpu::PresentMode::Fifo) {
+                            wgpu::PresentMode::Fifo
+                        } else {
+                            caps.present_modes
+                                .first()
+                                .copied()
+                                .unwrap_or(config.present_mode)
+                        };
+                        log::warn!(
+                            "Requested present mode {:?} for {:?} is not supported; falling back to {:?}",
+                            requested_present_mode,
+                            vsync_mode,
+                            fallback
+                        );
+                        fallback
+                    };
+                    surface.configure(device, config);
+                    self.last_vsync = Some(vsync_mode);
+                }
+            }
+        }
+
         let window: &Arc<Window> = self.window.as_ref().unwrap();
-        let device: &egui_wgpu::wgpu::Device = self.device.as_ref().unwrap();
-        let queue: &egui_wgpu::wgpu::Queue = self.queue.as_ref().unwrap();
-        let surface: &egui_wgpu::wgpu::Surface<'_> = self.surface.as_ref().unwrap();
-        let surface_config: &egui_wgpu::wgpu::wgt::SurfaceConfiguration<
-            Vec<egui_wgpu::wgpu::TextureFormat>,
-        > = self.surface_config.as_ref().unwrap();
+        let device: &wgpu::Device = self.device.as_ref().unwrap();
+        let queue: &wgpu::Queue = self.queue.as_ref().unwrap();
+        let surface: &wgpu::Surface<'_> = self.surface.as_ref().unwrap();
+        let surface_config: &wgpu::wgt::SurfaceConfiguration<Vec<wgpu::TextureFormat>> =
+            self.surface_config.as_ref().unwrap();
         let egui_ctx: &Context = self.egui_ctx.as_ref().unwrap();
         let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
         let egui_renderer: &mut egui_wgpu::Renderer = self.egui_renderer.as_mut().unwrap();

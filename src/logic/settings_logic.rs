@@ -17,21 +17,49 @@ pub struct Settings {
     pub console_max_lines: usize,
     /// Show save creation date in saves menu
     pub show_save_creation_date: bool,
+    /// Target FPS cap (0 = unlimited).
+    pub target_fps: u32,
+    /// VSync mode (Off, On, or Adaptive).
+    pub vsync_mode: VsyncMode,
+    /// Show a simple FPS counter overlay for all users.
+    pub show_fps_counter: bool,
+    /// GPU power preference. Takes effect on next application start.
+    pub power_preference: PowerPreference,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+/// Controls vertical synchronisation behaviour.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
+pub enum VsyncMode {
+    /// No VSync — frames are presented as fast as possible; may exhibit tearing.
+    Off = 0,
+    /// Standard VSync — frames are synchronised to the display refresh rate (no tearing).
+    #[default]
+    On = 1,
+    /// Adaptive VSync — syncs to the display when possible; allows tearing when the
+    /// frame rate falls below the refresh rate to avoid stutter (FifoRelaxed).
+    Adaptive = 2,
+}
+
+/// GPU power preference used when selecting a graphics adapter.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
+pub enum PowerPreference {
+    /// Let the driver/OS decide.
+    #[default]
+    Default = 0,
+    /// Prefer the integrated / low-power GPU.
+    LowPower = 1,
+    /// Prefer the discrete / high-performance GPU.
+    HighPerformance = 2,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
 pub enum LogVerbosity {
     Error = 0,
     Warn = 1,
+    #[default]
     Info = 2,
     Debug = 3,
     Trace = 4,
-}
-
-impl Default for LogVerbosity {
-    fn default() -> Self {
-        LogVerbosity::Info
-    }
 }
 
 const SETTINGS_FILE: &str = "settings.json";
@@ -76,6 +104,10 @@ impl Settings {
             log_verbosity: LogVerbosity::Info,
             console_max_lines: 300,
             show_save_creation_date: true,
+            target_fps: 0,
+            vsync_mode: VsyncMode::On,
+            show_fps_counter: false,
+            power_preference: PowerPreference::Default,
         }
     }
 }
