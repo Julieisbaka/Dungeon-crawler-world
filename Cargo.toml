@@ -29,7 +29,7 @@ image = "0.25"
 log = "0.4"
 env_logger = "0.11"
 chrono = { version = "0.4", features = ["serde"] }
-rand = "0.8"
+rand = "0.10"
 rapier3d = { version = "0.28.0", features = ["simd-stable"] }
 parry3d = "0.23.0"
 egui_commonmark = "0.21"
