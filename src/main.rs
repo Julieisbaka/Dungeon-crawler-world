@@ -14,16 +14,17 @@ use dungeon_crawler_world::console::{
 };
 use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, VsyncMode};
 use dungeon_crawler_world::logic::skills_logic::read_player_skills_for_save;
-use dungeon_crawler_world::ui::main_menu::MainMenu;
+use dungeon_crawler_world::save_game::SaveGame;
+use dungeon_crawler_world::ui::main_menu::{MainMenu, MenuState};
 
-mod new_save;
-mod player;
 mod ui_preview;
 use ui_preview::UiPreviewManager;
+mod rendering;
+use rendering::Terrain3dRenderer;
 mod fps;
 use fps::FpsGraph;
 
-use winit::event::WindowEvent;
+use winit::event::{DeviceEvent, WindowEvent};
 use winit::event_loop::EventLoop;
 use winit::window::Window;
 
@@ -61,6 +62,10 @@ struct DungeonCrawlerworld {
     last_console_redraw: Option<Instant>,
     /// Flag indicating the app should quit.
     should_quit: bool,
+    /// Raw mouse movement accumulated since the previous frame for first-person look.
+    pending_mouse_delta: egui::Vec2,
+    /// Whether the OS cursor is currently grabbed for gameplay.
+    cursor_grabbed: bool,
 }
 
 struct AppConsoleContext<'a> {
@@ -303,7 +308,13 @@ impl DungeonCrawlerworld {
             log_rx: Some(log_rx),
             last_console_redraw: None,
             should_quit: false,
+            pending_mouse_delta: egui::Vec2::ZERO,
+            cursor_grabbed: false,
         }
+    }
+
+    fn push_mouse_delta(&mut self, delta: (f64, f64)) {
+        self.pending_mouse_delta += egui::vec2(delta.0 as f32, delta.1 as f32);
     }
 
     /// Updates the application state and renders the UI for each frame.
@@ -326,10 +337,17 @@ impl DungeonCrawlerworld {
         let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { i.stable_dt }) * 1000.0;
         self.fps.push_frame_time(dt_ms);
 
+        let raw_mouse_delta = self.pending_mouse_delta;
+        self.pending_mouse_delta = egui::Vec2::ZERO;
+
         // Render the main menu UI and check if user wants to quit
-        if self.menu.show(ctx, &mut self.settings, DEV_MODE_ENABLED) {
+        if self
+            .menu
+            .show(ctx, &mut self.settings, DEV_MODE_ENABLED, raw_mouse_delta)
+        {
             self.should_quit = true;
         }
+        self.update_cursor_grab(window);
 
         // Developer Console window: follow the setting on both rising and falling edges.
         // Only react when the setting value actually changes (edge detection), so we avoid
@@ -463,6 +481,39 @@ impl DungeonCrawlerworld {
     fn should_quit(&self) -> bool {
         self.should_quit
     }
+
+    fn active_save_game(&self) -> Option<&SaveGame> {
+        if self.menu.state == MenuState::Game {
+            self.menu.save_menu_state.loaded_save.as_ref()
+        } else {
+            None
+        }
+    }
+
+    fn update_cursor_grab(&mut self, window: &Window) {
+        let should_grab = self.menu.state == MenuState::Game;
+        if self.cursor_grabbed == should_grab {
+            return;
+        }
+
+        if should_grab {
+            let grab_result = window
+                .set_cursor_grab(winit::window::CursorGrabMode::Locked)
+                .or_else(|_| window.set_cursor_grab(winit::window::CursorGrabMode::Confined));
+            if let Err(error) = grab_result {
+                log::warn!("Failed to grab cursor for gameplay: {}", error);
+                return;
+            }
+            window.set_cursor_visible(false);
+        } else {
+            if let Err(error) = window.set_cursor_grab(winit::window::CursorGrabMode::None) {
+                log::warn!("Failed to release cursor after gameplay: {}", error);
+            }
+            window.set_cursor_visible(true);
+        }
+
+        self.cursor_grabbed = should_grab;
+    }
 }
 
 struct WinitApp {
@@ -474,6 +525,7 @@ struct WinitApp {
     egui_ctx: Option<egui::Context>,
     egui_winit_state: Option<egui_winit::State>,
     egui_renderer: Option<egui_wgpu::Renderer>,
+    terrain_renderer: Option<Terrain3dRenderer>,
     app: Option<DungeonCrawlerworld>,
     /// Time the most recent frame was rendered (for FPS-cap frame pacing).
     last_frame_time: Option<Instant>,
@@ -494,6 +546,7 @@ impl WinitApp {
             egui_ctx: None,
             egui_winit_state: None,
             egui_renderer: None,
+            terrain_renderer: None,
             app: None,
             last_frame_time: None,
             adapter: None,
@@ -615,6 +668,12 @@ impl winit::application::ApplicationHandler for WinitApp {
 
         let egui_renderer: egui_wgpu::Renderer =
             egui_wgpu::Renderer::new(&device, surface_config.format, None, 1, true);
+        let terrain_renderer = Terrain3dRenderer::new(
+            &device,
+            surface_config.format,
+            surface_config.width,
+            surface_config.height,
+        );
 
         // Create app
         let app: DungeonCrawlerworld = DungeonCrawlerworld::new();
@@ -628,6 +687,7 @@ impl winit::application::ApplicationHandler for WinitApp {
         self.egui_ctx = Some(egui_ctx);
         self.egui_winit_state = Some(egui_winit_state);
         self.egui_renderer = Some(egui_renderer);
+        self.terrain_renderer = Some(terrain_renderer);
         self.app = Some(app);
     }
 
@@ -683,6 +743,19 @@ impl winit::application::ApplicationHandler for WinitApp {
                 }
             }
             _ => {}
+        }
+    }
+
+    fn device_event(
+        &mut self,
+        _event_loop: &winit::event_loop::ActiveEventLoop,
+        _device_id: winit::event::DeviceId,
+        event: DeviceEvent,
+    ) {
+        if let DeviceEvent::MouseMotion { delta } = event {
+            if let Some(app) = self.app.as_mut() {
+                app.push_mouse_delta(delta);
+            }
         }
     }
 
@@ -773,6 +846,7 @@ impl WinitApp {
         let egui_ctx: &Context = self.egui_ctx.as_ref().unwrap();
         let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
         let egui_renderer: &mut egui_wgpu::Renderer = self.egui_renderer.as_mut().unwrap();
+        let terrain_renderer: &mut Terrain3dRenderer = self.terrain_renderer.as_mut().unwrap();
         let app: &mut DungeonCrawlerworld = self.app.as_mut().unwrap();
 
         let output_frame: egui_wgpu::wgpu::SurfaceTexture = match surface.get_current_texture() {
@@ -818,6 +892,20 @@ impl WinitApp {
         // Update buffers
         egui_renderer.update_buffers(device, queue, &mut encoder, &paint_jobs, &screen_descriptor);
 
+        let terrain_rendered = if let Some(save) = app.active_save_game() {
+            terrain_renderer.render(
+                device,
+                queue,
+                &mut encoder,
+                &output_view,
+                surface_config,
+                save,
+            );
+            true
+        } else {
+            false
+        };
+
         // Render to texture
         // Use wgpu's safe forget_lifetime() method to convert the RenderPass lifetime to 'static.
         // This is safe because CommandEncoder is in a locked state while the pass is active.
@@ -829,7 +917,11 @@ impl WinitApp {
                         view: &output_view,
                         resolve_target: None,
                         ops: egui_wgpu::wgpu::Operations {
-                            load: egui_wgpu::wgpu::LoadOp::Clear(egui_wgpu::wgpu::Color::BLACK),
+                            load: if terrain_rendered {
+                                egui_wgpu::wgpu::LoadOp::Load
+                            } else {
+                                egui_wgpu::wgpu::LoadOp::Clear(egui_wgpu::wgpu::Color::BLACK)
+                            },
                             store: egui_wgpu::wgpu::StoreOp::Store,
                         },
                     })],

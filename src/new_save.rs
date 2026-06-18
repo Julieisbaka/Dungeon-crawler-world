@@ -1,4 +1,6 @@
-use crate::player::{Player, PlayerStats};
+use crate::player::{Player, PlayerLook, PlayerStats};
+use crate::save_game::{player_position_from_terrain, write_world};
+use crate::terrain3d::FloorOneTerrain;
 use egui::{TextBuffer, TextEdit, Ui};
 use rand::Rng;
 use serde_json::{json, Value};
@@ -212,7 +214,23 @@ pub fn generate_stats<R: Rng + ?Sized>(rng: &mut R) -> (i8, i8, i8, i16, i16, i1
     )
 }
 
-fn create_new_save(
+pub fn create_new_save(
+    save_name: &str,
+    difficulty: &Difficulty,
+    online_mode: bool,
+    real_time: bool,
+) -> Result<(), String> {
+    create_new_save_in(
+        Path::new("saves"),
+        save_name,
+        difficulty,
+        online_mode,
+        real_time,
+    )
+}
+
+pub fn create_new_save_in(
+    saves_dir: &Path,
     save_name: &str,
     difficulty: &Difficulty,
     online_mode: bool,
@@ -231,7 +249,6 @@ fn create_new_save(
     if !is_safe_folder_name(&folder_name) {
         return Err("Save name must not reference relative paths".to_string());
     }
-    let saves_dir: &Path = Path::new("saves");
     let save_path: std::path::PathBuf = saves_dir.join(&folder_name);
     // Check if save already exists
     if save_path.exists() {
@@ -249,6 +266,7 @@ fn create_new_save(
     })?;
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     let floor_one_time: u32 = generate_floor_one_time(real_time, &mut rng);
+    let world = FloorOneTerrain::generate();
 
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();
@@ -267,6 +285,7 @@ fn create_new_save(
             "is_cleared": false,
             "time": floor_one_time
         },
+        "world_file": "world.json",
         "gamerules": gamerules
     });
     let save_file_path: std::path::PathBuf = save_path.join("save.json");
@@ -297,6 +316,8 @@ fn create_new_save(
         inventory: HashMap::new(),
         skills,
         coins: 0,
+        position: player_position_from_terrain(world.temporary_character.position),
+        look: PlayerLook::forward(),
         sub_classes: Vec::new(),
         class: "".to_string(),
         race: "".to_string(),
@@ -310,6 +331,7 @@ fn create_new_save(
         serde_json::to_string_pretty(&player).unwrap(),
     )
     .map_err(|e: std::io::Error| -> String { format!("Failed to create player file: {}", e) })?;
+    write_world(&save_path, &world)?;
     Ok(())
 }
 

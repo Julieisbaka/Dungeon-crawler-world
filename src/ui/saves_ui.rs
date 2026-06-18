@@ -1,6 +1,7 @@
 use crate::logic::saves_logic::{SaveMenuState, SaveEntryCache};
 use crate::logic::settings_logic::Settings;
 use crate::new_save::{has_invalid_save_characters, is_safe_folder_name, show_new_save_ui};
+use crate::save_game::load_save;
 use egui::Ui;
 
 /// Loads save entries from disk and caches them in the state.
@@ -196,6 +197,23 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
 
     ui.add_space(20.0);
 
+    if let Some(error) = state.load_error.as_ref() {
+        ui.colored_label(egui::Color32::RED, error);
+        ui.add_space(8.0);
+    }
+
+    if let Some(save) = state.loaded_save.as_ref() {
+        ui.label(format!(
+            "Loaded: {} | Floor {} | Player position: {:.1}, {:.1}, {:.1}",
+            save.folder_name,
+            save.player.current_floor,
+            save.player.position.x,
+            save.player.position.y,
+            save.player.position.z
+        ));
+        ui.add_space(8.0);
+    }
+
     // Load save cache if not already loaded
     if !state.cache_loaded {
         load_save_cache(ui, state);
@@ -227,10 +245,21 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                     }
                     ui.horizontal(|ui: &mut Ui| {
                         if ui.button("Load Save").clicked() {
-                            // Update the library's current save tracker
-                            if let Ok(mut g) = crate::CURRENT_SAVE.lock() {
-                                *g = Some(entry.folder_name.clone());
-                                log::info!("Current save set to: {}", entry.folder_name);
+                            match load_save(Path::new("saves"), &entry.folder_name) {
+                                Ok(save_game) => {
+                                    if let Ok(mut g) = crate::CURRENT_SAVE.lock() {
+                                        *g = Some(entry.folder_name.clone());
+                                        log::info!("Current save set to: {}", entry.folder_name);
+                                    }
+                                    state.loaded_save = Some(save_game);
+                                    state.enter_loaded_save_requested = true;
+                                    state.load_error = None;
+                                }
+                                Err(error) => {
+                                    state.loaded_save = None;
+                                    state.enter_loaded_save_requested = false;
+                                    state.load_error = Some(error);
+                                }
                             }
                         }
                         if ui.button("Edit").clicked() {

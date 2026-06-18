@@ -1,9 +1,44 @@
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct PlayerPosition {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+}
+
+impl PlayerPosition {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z }
+    }
+
+    pub fn spawn() -> Self {
+        Self::new(0.0, 0.0, 0.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct PlayerLook {
+    pub yaw: f32,
+    pub pitch: f32,
+}
+
+impl PlayerLook {
+    pub fn new(yaw: f32, pitch: f32) -> Self {
+        Self { yaw, pitch }
+    }
+
+    pub fn forward() -> Self {
+        Self::new(0.0, 0.0)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Player {
     pub name: String,
     pub level: u32,
+    pub position: PlayerPosition,
+    pub look: PlayerLook,
     pub spells: HashMap<String, i32>,
     pub inventory: HashMap<String, i32>,
     pub skills: HashMap<String, i8>,
@@ -43,6 +78,8 @@ impl Player {
         Self {
             name,
             level,
+            position: PlayerPosition::spawn(),
+            look: PlayerLook::forward(),
             spells,
             inventory,
             skills,

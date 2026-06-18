@@ -1,4 +1,5 @@
 use crate::new_save::NewSaveState;
+use crate::save_game::SaveGame;
 use egui::TextureHandle;
 use indexmap::IndexMap;
 
@@ -29,6 +30,12 @@ pub struct SaveMenuState {
     pub save_cache: IndexMap<String, SaveEntryCache>,
     /// Whether the save cache has been loaded.
     pub cache_loaded: bool,
+    /// The currently loaded save data, including the 3D world and player state.
+    pub loaded_save: Option<SaveGame>,
+    /// One-shot request to enter the loaded 3D terrain view.
+    pub enter_loaded_save_requested: bool,
+    /// Most recent load error, if opening a save failed.
+    pub load_error: Option<String>,
 }
 
 impl Default for SaveMenuState {
@@ -46,6 +53,9 @@ impl Default for SaveMenuState {
             back_requested: false,
             save_cache: IndexMap::new(),
             cache_loaded: false,
+            loaded_save: None,
+            enter_loaded_save_requested: false,
+            load_error: None,
         }
     }
 }

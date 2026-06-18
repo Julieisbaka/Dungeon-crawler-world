@@ -3,6 +3,9 @@
 
 use egui::{Context, RichText};
 use crate::logic::saves_logic::SaveMenuState;
+use crate::player::PlayerPosition;
+use crate::save_game::save_player_state;
+use crate::terrain3d::TerrainPoint;
 use crate::ui::saves_ui::show_save_ui;
 use crate::logic::settings_logic::{Settings, SettingsResult};
 use crate::ui::settings_ui::settings_ui;
@@ -16,6 +19,8 @@ pub enum MenuState {
     Settings,
     /// Currently showing saves menu
     Saves,
+    /// Active loaded 3D terrain gameplay view
+    Game,
 }
 
 /// Main menu UI state and logic
@@ -26,6 +31,8 @@ pub struct MainMenu {
     pub save_menu_state: SaveMenuState,
     /// Quit confirmation dialog state.
     pub quit_confirm: bool,
+    last_player_state_save: Option<std::time::Instant>,
+    player_state_dirty: bool,
 }
 
 impl MainMenu {
@@ -35,6 +42,8 @@ impl MainMenu {
             state: MenuState::Main,
             save_menu_state: SaveMenuState::default(),
             quit_confirm: false,
+            last_player_state_save: None,
+            player_state_dirty: false,
         }
     }
 
@@ -47,11 +56,22 @@ impl MainMenu {
     ///
     /// # Returns
     /// `true` if the application should quit, `false` otherwise.
-    pub fn show(&mut self, ctx: &Context, settings: &mut Settings, dev_mode_enabled: bool) -> bool {
+    pub fn show(
+        &mut self,
+        ctx: &Context,
+        settings: &mut Settings,
+        dev_mode_enabled: bool,
+        raw_mouse_delta: egui::Vec2,
+    ) -> bool {
         let mut should_quit = false;
         
         let escape_pressed: bool =
             ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
+
+        if self.state == MenuState::Game {
+            self.show_game_overlay(ctx, escape_pressed, raw_mouse_delta);
+            return false;
+        }
 
         egui::CentralPanel::default()
             .frame(
@@ -97,6 +117,10 @@ impl MainMenu {
                                     show_save_ui(ui, &mut self.save_menu_state, settings);
                                 },
                             );
+                            if self.save_menu_state.enter_loaded_save_requested {
+                                self.save_menu_state.enter_loaded_save_requested = false;
+                                self.state = MenuState::Game;
+                            }
                             // Only close saves menu on explicit back, escape, or sub-menu exit
                             if self.save_menu_state.back_requested || escape_pressed {
                                 self.save_menu_state.back_requested = false;
@@ -148,6 +172,147 @@ impl MainMenu {
 
         should_quit
     }
+
+    fn show_game_overlay(
+        &mut self,
+        ctx: &Context,
+        escape_pressed: bool,
+        raw_mouse_delta: egui::Vec2,
+    ) {
+        let save_status = {
+            let Some(save) = self.save_menu_state.loaded_save.as_mut() else {
+                self.state = MenuState::Main;
+                return;
+            };
+
+            if apply_game_controls(ctx, raw_mouse_delta, save) {
+                self.player_state_dirty = true;
+            }
+
+            format!(
+                "{} | Floor {} | {:.1}, {:.1}, {:.1}",
+                save.folder_name,
+                save.player.current_floor,
+                save.player.position.x,
+                save.player.position.y,
+                save.player.position.z
+            )
+        };
+
+        self.flush_player_state_if_due(false);
+
+        let mut exit_to_menu = escape_pressed;
+        egui::Area::new(egui::Id::new("game_overlay"))
+            .anchor(egui::Align2::LEFT_TOP, egui::vec2(12.0, 12.0))
+            .show(ctx, |ui| {
+                egui::Frame::NONE
+                    .fill(egui::Color32::from_black_alpha(150))
+                    .inner_margin(egui::Margin::same(8))
+                    .show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            if ui.button("Menu").clicked() {
+                                exit_to_menu = true;
+                            }
+                            ui.label(&save_status);
+                        });
+                    });
+            });
+
+        if exit_to_menu {
+            self.flush_player_state_if_due(true);
+            self.state = MenuState::Main;
+        }
+    }
+
+    fn flush_player_state_if_due(&mut self, force: bool) {
+        if !self.player_state_dirty {
+            return;
+        }
+
+        let now = std::time::Instant::now();
+        if !force
+            && self
+                .last_player_state_save
+                .is_some_and(|last_save| now.duration_since(last_save) < std::time::Duration::from_millis(300))
+        {
+            return;
+        }
+
+        let Some(save) = self.save_menu_state.loaded_save.as_ref() else {
+            return;
+        };
+        if let Err(error) = save_player_state(
+            std::path::Path::new("saves"),
+            &save.folder_name,
+            &save.player,
+        ) {
+            self.save_menu_state.load_error = Some(error);
+            return;
+        }
+
+        self.last_player_state_save = Some(now);
+        self.player_state_dirty = false;
+    }
+}
+
+fn apply_game_controls(
+    ctx: &Context,
+    raw_mouse_delta: egui::Vec2,
+    save: &mut crate::save_game::SaveGame,
+) -> bool {
+    let mut strafe: f32 = 0.0;
+    let mut forward_amount: f32 = 0.0;
+    ctx.input(|input| {
+        if input.key_down(egui::Key::W) || input.key_down(egui::Key::ArrowUp) {
+            forward_amount += 1.0;
+        }
+        if input.key_down(egui::Key::S) || input.key_down(egui::Key::ArrowDown) {
+            forward_amount -= 1.0;
+        }
+        if input.key_down(egui::Key::A) || input.key_down(egui::Key::ArrowLeft) {
+            strafe -= 1.0;
+        }
+        if input.key_down(egui::Key::D) || input.key_down(egui::Key::ArrowRight) {
+            strafe += 1.0;
+        }
+    });
+
+    let mut changed = false;
+    if raw_mouse_delta != egui::Vec2::ZERO {
+        let sensitivity = 0.0012;
+        save.player.look.yaw += raw_mouse_delta.x * sensitivity;
+        save.player.look.pitch = (save.player.look.pitch - raw_mouse_delta.y * sensitivity)
+            .clamp(-1.2, 1.2);
+        changed = true;
+    }
+
+    if strafe != 0.0 || forward_amount != 0.0 {
+        let yaw = save.player.look.yaw;
+        let forward_x = yaw.sin();
+        let forward_z = -yaw.cos();
+        let right_x = yaw.cos();
+        let right_z = yaw.sin();
+        let move_x = right_x * strafe + forward_x * forward_amount;
+        let move_z = right_z * strafe + forward_z * forward_amount;
+        let length = f32::sqrt(move_x * move_x + move_z * move_z);
+        let speed = save.world.temporary_character.speed;
+        let requested = PlayerPosition::new(
+            save.player.position.x + move_x / length * speed,
+            save.player.position.y,
+            save.player.position.z + move_z / length * speed,
+        );
+        save.player.position = save
+            .collision_map
+            .constrain_movement(save.player.position, requested);
+        save.world.temporary_character.position = TerrainPoint::new(
+            save.player.position.x,
+            save.player.position.y,
+            save.player.position.z,
+        );
+        changed = true;
+    }
+
+    changed
 }
 
 impl Default for MainMenu {

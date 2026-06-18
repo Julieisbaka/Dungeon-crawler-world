@@ -2,7 +2,10 @@ pub mod logic;
 pub mod ui;
 pub mod new_save;
 pub mod console;
+pub mod game;
 pub mod grid;
+pub mod save_game;
+pub mod terrain3d;
 
 pub use new_save::{generate_floor_one_time, generate_stats};
 

@@ -6,12 +6,14 @@ version = 4
 name = "Dungeon-Crawler-World"
 version = "0.0.7"
 dependencies = [
+ "bytemuck",
  "chrono",
  "egui",
  "egui-wgpu",
  "egui-winit",
  "egui_commonmark",
  "env_logger",
+ "glam 0.30.5",
  "image",
  "indexmap",
  "log",

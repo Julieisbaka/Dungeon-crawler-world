@@ -1,4 +1,4 @@
-use dungeon_crawler_world::player::{Player, PlayerStats};
+use dungeon_crawler_world::player::{Player, PlayerLook, PlayerPosition, PlayerStats};
 use std::collections::HashMap;
 
 #[test]
@@ -45,6 +45,8 @@ fn test_player_new_creates_valid_instance() {
     // Assert
     assert_eq!(player.name, "TestHero");
     assert_eq!(player.level, 5);
+    assert_eq!(player.position, PlayerPosition::spawn());
+    assert_eq!(player.look, PlayerLook::forward());
     assert_eq!(player.spells, spells);
     assert_eq!(player.inventory, inventory);
     assert_eq!(player.skills, skills);
@@ -99,6 +101,11 @@ fn test_player_to_json_serialization() {
     assert!(json.is_object());
     assert_eq!(json["name"], "TestHero");
     assert_eq!(json["level"], 5);
+    assert_eq!(json["position"]["x"], 0.0);
+    assert_eq!(json["position"]["y"], 0.0);
+    assert_eq!(json["position"]["z"], 0.0);
+    assert_eq!(json["look"]["yaw"], 0.0);
+    assert_eq!(json["look"]["pitch"], 0.0);
     assert_eq!(json["coins"], 100);
     assert_eq!(json["class"], "Fighter");
     assert_eq!(json["race"], "Human");
@@ -117,6 +124,15 @@ fn test_player_from_json_deserialization() {
     let json_str = r#"{
         "name": "TestHero",
         "level": 5,
+        "position": {
+            "x": 12.5,
+            "y": 0.0,
+            "z": 40.25
+        },
+        "look": {
+            "yaw": 1.25,
+            "pitch": -0.2
+        },
         "spells": {
             "Fireball": 3
         },
@@ -151,6 +167,8 @@ fn test_player_from_json_deserialization() {
     let player = player.unwrap();
     assert_eq!(player.name, "TestHero");
     assert_eq!(player.level, 5);
+    assert_eq!(player.position, PlayerPosition::new(12.5, 0.0, 40.25));
+    assert_eq!(player.look, PlayerLook::new(1.25, -0.2));
     assert_eq!(player.spells.get("Fireball"), Some(&3));
     assert_eq!(player.inventory.get("Health Potion"), Some(&5));
     assert_eq!(player.skills.get("Swordsmanship"), Some(&7));

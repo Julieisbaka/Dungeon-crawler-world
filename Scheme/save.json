@@ -42,6 +42,11 @@
                 "Online", 
                 "Real-time"
             ]    
+        },
+        "world_file": {
+            "type": "string",
+            "description": "Relative save file containing the generated 3D world state",
+            "default": "world.json"
         } 
             
     }

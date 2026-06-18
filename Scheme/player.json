@@ -8,6 +8,35 @@
             "type": "number",
             "minimum": 0
         },
+        "position": {
+            "type": "object",
+            "description": "The player's current 3D position in meters",
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                },
+                "z": {
+                    "type": "number"
+                }
+            },
+            "required": ["x", "y", "z"]
+        },
+        "look": {
+            "type": "object",
+            "description": "The player's current camera look direction in radians",
+            "properties": {
+                "yaw": {
+                    "type": "number"
+                },
+                "pitch": {
+                    "type": "number"
+                }
+            },
+            "required": ["yaw", "pitch"]
+        },
         "spells": {
             "type": "object"
         },

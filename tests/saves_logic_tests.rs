@@ -15,6 +15,9 @@ fn test_save_menu_state_default_values() {
     assert!(!state.back_requested);
     assert!(state.save_cache.is_empty());
     assert!(!state.cache_loaded);
+    assert!(state.loaded_save.is_none());
+    assert!(!state.enter_loaded_save_requested);
+    assert!(state.load_error.is_none());
 }
 
 // ── SaveMenuState::invalidate_cache ───────────────────────────────────────────

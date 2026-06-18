@@ -33,6 +33,8 @@ rand = "0.8"
 rapier3d = { version = "0.28.0", features = ["simd-stable"] }
 parry3d = "0.23.0"
 egui_commonmark = "0.21"
+bytemuck = { version = "1.23", features = ["derive"] }
+glam = "0.30"
 
 [build-dependencies]
 pkg-config = "0.3"
