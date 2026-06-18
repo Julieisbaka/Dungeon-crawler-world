@@ -7,5 +7,4 @@ This enchanted shield offers both offensive and defensive crowd control options.
 * \+ 5% to Constitution.
 * \+ 5 to the Rooted in Place Skill
 * Upgrades the Rush ability to the Crowd Blast Skill.
-
-**Rooted in Place:** This skill makes it much more difficult to knock you over or back. That’s not necessarily a good thing, physics being what they are. Be careful with this one.
+* **Rooted in Place:** This skill makes it much more difficult to knock you over or back. That’s not necessarily a good thing, physics being what they are. Be careful with this one.
