@@ -27,4 +27,4 @@ Run these commands before finalizing:
 ## Data compatibility reminders
 
 - If a Rust type mirrors JSON data, confirm compatibility with files in content directories.
-- If structure changes are required, update corresponding files under `Scheme/`.
+- If structure changes are required, update corresponding schema files under `Scheme/`.

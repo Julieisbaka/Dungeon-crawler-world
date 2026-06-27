@@ -12,7 +12,7 @@ These instructions apply to Copilot agents and chat-based coding flows in this r
 
 - Rust source code is under `src/`.
 - Game data JSON is stored in domain folders such as `Items/`, `Skills/`, `Classes_and_Races/`, `Floor/`, `Magic/`, and related content folders.
-- JSON schemas live in `Scheme/`.
+- JSON schema files live in `Scheme/`.
 
 ## Required validation
 
