@@ -2,12 +2,14 @@
 pub enum GameCommand {
     Skills,
     Inventory,
+    Stats,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyBindings {
     pub skills: egui::Key,
     pub inventory: egui::Key,
+    pub stats: egui::Key,
 }
 
 impl Default for KeyBindings {
@@ -15,6 +17,7 @@ impl Default for KeyBindings {
         Self {
             skills: egui::Key::H,
             inventory: egui::Key::E,
+            stats: egui::Key::C,
         }
     }
 }
@@ -24,6 +27,7 @@ impl KeyBindings {
         match command {
             GameCommand::Skills => self.skills,
             GameCommand::Inventory => self.inventory,
+            GameCommand::Stats => self.stats,
         }
     }
 
@@ -31,6 +35,7 @@ impl KeyBindings {
         match command {
             GameCommand::Skills => self.skills = key,
             GameCommand::Inventory => self.inventory = key,
+            GameCommand::Stats => self.stats = key,
         }
     }
 }

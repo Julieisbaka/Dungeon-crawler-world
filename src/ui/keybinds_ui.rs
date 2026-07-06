@@ -44,6 +44,7 @@ pub fn keybinds_ui(ui: &mut Ui, keybindings: &mut KeyBindings, state: &mut Keybi
     ui.add_space(8.0);
     keybind_row(ui, keybindings, state, GameCommand::Skills, "Skills");
     keybind_row(ui, keybindings, state, GameCommand::Inventory, "Inventory");
+    keybind_row(ui, keybindings, state, GameCommand::Stats, "Stats");
 
     if let Some(command) = state.waiting_for_key {
         ui.add_space(8.0);

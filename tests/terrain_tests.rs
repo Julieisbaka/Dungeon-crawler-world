@@ -169,13 +169,13 @@ fn player_marker_is_part_of_terrain_mesh_space() {
 
 #[test]
 fn camera_builds_perspective_view_projection_matrix() {
-    let camera = Camera3d::follow_player([30.0, 30.0, 0.0], [30.0, 30.0, 10.0]);
+    let camera = Camera3d::follow_player([30.0, 30.0, 0.0], [30.0, 30.0, 10.0], 0.0, 0.25);
     let matrix = camera.view_projection_matrix(16.0 / 9.0);
 
     assert_eq!(matrix.len(), 4);
     assert!(matrix.iter().flatten().all(|value| value.is_finite()));
     assert_ne!(matrix[3][3], 1.0);
-    assert!(camera.eye[2] > camera.target[2]);
+    assert!(camera.target[2] > camera.eye[2]);
 }
 
 #[test]

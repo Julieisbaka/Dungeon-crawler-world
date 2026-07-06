@@ -167,14 +167,22 @@ fn handle_world_input(ctx: &Context, world: &mut WorldSession, ui_state: &mut Ga
     if ctx.input(|input| input.key_pressed(ui_state.keybindings.key_for(GameCommand::Inventory))) {
         ui_state.open_panel(GamePanel::Inventory);
     }
+    if ctx.input(|input| input.key_pressed(ui_state.keybindings.key_for(GameCommand::Stats))) {
+        ui_state.open_panel(GamePanel::Stats);
+    }
+
+    let pointer_delta = ctx.input(|input| input.pointer.delta());
+    if pointer_delta.x.abs() > 0.0 || pointer_delta.y.abs() > 0.0 {
+        world.turn_camera(pointer_delta.x, pointer_delta.y);
+    }
 
     let movement = ctx.input(|input| {
         let mut movement = [0.0, 0.0];
         if input.key_down(egui::Key::W) || input.key_down(egui::Key::ArrowUp) {
-            movement[1] -= 1.0;
+            movement[1] += 1.0;
         }
         if input.key_down(egui::Key::S) || input.key_down(egui::Key::ArrowDown) {
-            movement[1] += 1.0;
+            movement[1] -= 1.0;
         }
         if input.key_down(egui::Key::A) || input.key_down(egui::Key::ArrowLeft) {
             movement[0] -= 1.0;
@@ -184,7 +192,7 @@ fn handle_world_input(ctx: &Context, world: &mut WorldSession, ui_state: &mut Ga
         }
         movement
     });
-    world.move_player_planar(movement, dt_seconds);
+    world.move_player_relative(movement, dt_seconds);
 
     if ctx.input(|input| input.key_pressed(egui::Key::Space)) {
         world.jump();

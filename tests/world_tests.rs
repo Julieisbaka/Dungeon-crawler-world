@@ -1,5 +1,6 @@
 use dungeon_crawler_world::input::{GameCommand, KeyBindings};
 use dungeon_crawler_world::player::{Player, PlayerStats};
+use dungeon_crawler_world::terrain::Direction3d;
 use dungeon_crawler_world::world::WorldSession;
 use serde_json::json;
 use std::collections::HashMap;
@@ -75,6 +76,7 @@ fn keybinds_default_to_skills_h_and_inventory_e() {
 
     assert_eq!(keybinds.key_for(GameCommand::Skills), egui::Key::H);
     assert_eq!(keybinds.key_for(GameCommand::Inventory), egui::Key::E);
+    assert_eq!(keybinds.key_for(GameCommand::Stats), egui::Key::C);
 }
 
 #[test]
@@ -100,6 +102,86 @@ fn movement_is_continuous_and_jump_returns_to_ground() {
         world.update_physics(0.1);
     }
     assert_eq!(world.player_position[2], start[2]);
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn movement_is_camera_relative_and_camera_can_turn() {
+    let root = unique_temp_dir("world_camera_relative_movement");
+    let save = root.join("Crawler_Camera");
+    fs::create_dir_all(&save).unwrap();
+    write_save_json(&save, 790);
+    write_player_json(&save);
+
+    let mut world = WorldSession::load_from_root(&root, "Crawler_Camera").unwrap();
+    let start = world.player_position;
+
+    world.move_player_relative([0.0, 1.0], 0.25);
+    assert!(world.player_position[1] > start[1]);
+
+    world.turn_camera(
+        std::f32::consts::FRAC_PI_2
+            / dungeon_crawler_world::world::CAMERA_YAW_RADIANS_PER_POINTER_POINT,
+        0.0,
+    );
+    let turned_start = world.player_position;
+    world.move_player_relative([0.0, 1.0], 0.25);
+    assert!(world.player_position[0] > turned_start[0]);
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn movement_hit_box_blocks_closed_cell_boundaries() {
+    let root = unique_temp_dir("world_hit_box");
+    let save = root.join("Crawler_HitBox");
+    fs::create_dir_all(&save).unwrap();
+    write_save_json(&save, 791);
+    write_player_json(&save);
+
+    let mut world = WorldSession::load_from_root(&root, "Crawler_HitBox").unwrap();
+    let cell_size = world.terrain.config().cell_size;
+    let mut test_case = None;
+
+    'outer: for chunk in world.terrain.chunks() {
+        for cell in &chunk.cells {
+            for direction in [
+                Direction3d::North,
+                Direction3d::South,
+                Direction3d::East,
+                Direction3d::West,
+            ] {
+                if !cell
+                    .passages
+                    .iter()
+                    .any(|passage| passage.direction == direction)
+                {
+                    test_case = Some((cell.coord, direction));
+                    break 'outer;
+                }
+            }
+        }
+    }
+
+    let (coord, direction) = test_case.expect("expected at least one closed boundary");
+    world.player_position = [
+        coord.x as f32 * cell_size[0] + cell_size[0] / 2.0,
+        coord.y as f32 * cell_size[1] + cell_size[1] / 2.0,
+        coord.z as f32 * cell_size[2],
+    ];
+    let before_cell = world.current_cell();
+    let movement = match direction {
+        Direction3d::North => [0.0, -1.0],
+        Direction3d::South => [0.0, 1.0],
+        Direction3d::East => [1.0, 0.0],
+        Direction3d::West => [-1.0, 0.0],
+        Direction3d::Up | Direction3d::Down => unreachable!(),
+    };
+
+    world.move_player_planar(movement, 1.0);
+
+    assert_eq!(world.current_cell(), before_cell);
 
     let _ = fs::remove_dir_all(root);
 }

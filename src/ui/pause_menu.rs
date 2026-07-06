@@ -7,6 +7,7 @@ pub enum PauseMenuAction {
     OpenKeybinds,
     OpenSkills,
     OpenInventory,
+    OpenStats,
     ExitToMenu,
 }
 
@@ -30,6 +31,9 @@ pub fn pause_menu_ui(ctx: &Context) -> PauseMenuAction {
             }
             if ui.button("Inventory").clicked() {
                 action = PauseMenuAction::OpenInventory;
+            }
+            if ui.button("Stats").clicked() {
+                action = PauseMenuAction::OpenStats;
             }
             ui.separator();
             if ui.button("Exit to Menu").clicked() {

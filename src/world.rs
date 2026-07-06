@@ -9,6 +9,9 @@ use std::path::{Path, PathBuf};
 pub const PLAYER_MOVEMENT_SPEED_UNITS_PER_SECOND: f32 = 18.0;
 pub const PLAYER_JUMP_VELOCITY_UNITS_PER_SECOND: f32 = 10.0;
 pub const PLAYER_GRAVITY_UNITS_PER_SECOND_SQUARED: f32 = 28.0;
+pub const CAMERA_YAW_RADIANS_PER_POINTER_POINT: f32 = 0.008;
+pub const CAMERA_PITCH_RADIANS_PER_POINTER_POINT: f32 = 0.006;
+pub const PLAYER_COLLISION_RADIUS_FRACTION_OF_CELL: f32 = 0.22;
 
 #[derive(Debug)]
 pub struct WorldSession {
@@ -17,6 +20,8 @@ pub struct WorldSession {
     pub player: Player,
     pub player_position: [f32; 3],
     pub player_vertical_velocity: f32,
+    pub camera_yaw_radians: f32,
+    pub camera_pitch_radians: f32,
     pub terrain: Terrain3dGenerator,
     pub paused: bool,
 }
@@ -47,6 +52,8 @@ impl WorldSession {
             player,
             player_position,
             player_vertical_velocity: 0.0,
+            camera_yaw_radians: 0.0,
+            camera_pitch_radians: 0.0,
             terrain,
             paused: false,
         })
@@ -88,6 +95,23 @@ impl WorldSession {
         self.try_move_axis(1, step[1]);
         self.terrain
             .ensure_chunks_around_player(self.player_position);
+    }
+
+    pub fn move_player_relative(&mut self, movement: [f32; 2], dt_seconds: f32) {
+        let forward = [self.camera_yaw_radians.sin(), self.camera_yaw_radians.cos()];
+        let right = [forward[1], -forward[0]];
+        let world_movement = [
+            right[0] * movement[0] + forward[0] * movement[1],
+            right[1] * movement[0] + forward[1] * movement[1],
+        ];
+        self.move_player_planar(world_movement, dt_seconds);
+    }
+
+    pub fn turn_camera(&mut self, pointer_delta_x: f32, pointer_delta_y: f32) {
+        self.camera_yaw_radians += pointer_delta_x * CAMERA_YAW_RADIANS_PER_POINTER_POINT;
+        self.camera_pitch_radians = (self.camera_pitch_radians
+            - pointer_delta_y * CAMERA_PITCH_RADIANS_PER_POINTER_POINT)
+            .clamp(-1.2, 1.2);
     }
 
     pub fn jump(&mut self) {
@@ -137,7 +161,12 @@ impl WorldSession {
     }
 
     pub fn camera(&self) -> Camera3d {
-        Camera3d::follow_player(self.player_position, self.terrain.config().cell_size)
+        Camera3d::follow_player(
+            self.player_position,
+            self.terrain.config().cell_size,
+            self.camera_yaw_radians,
+            self.camera_pitch_radians,
+        )
     }
 
     fn try_move_axis(&mut self, axis: usize, amount: f32) {
@@ -153,6 +182,24 @@ impl WorldSession {
     }
 
     fn can_occupy_position(&self, position: [f32; 3]) -> bool {
+        let radius = self.player_collision_radius();
+        let sample_offsets = [
+            [0.0, 0.0],
+            [radius, 0.0],
+            [-radius, 0.0],
+            [0.0, radius],
+            [0.0, -radius],
+        ];
+        sample_offsets.into_iter().all(|offset| {
+            self.can_occupy_point([
+                position[0] + offset[0],
+                position[1] + offset[1],
+                position[2],
+            ])
+        })
+    }
+
+    fn can_occupy_point(&self, position: [f32; 3]) -> bool {
         let current = self.current_cell();
         let target = CellCoord3d::new(
             (position[0] / self.terrain.config().cell_size[0]).floor() as i32,
@@ -180,9 +227,13 @@ impl WorldSession {
         self.can_move(direction)
     }
 
+    fn player_collision_radius(&self) -> f32 {
+        self.terrain.config().cell_size[0].min(self.terrain.config().cell_size[1])
+            * PLAYER_COLLISION_RADIUS_FRACTION_OF_CELL
+    }
+
     fn ground_z(&self) -> f32 {
-        let cell_height = self.terrain.config().cell_size[2];
-        (self.player_position[2] / cell_height).floor().max(0.0) * cell_height
+        0.0
     }
 
     fn is_on_ground(&self) -> bool {

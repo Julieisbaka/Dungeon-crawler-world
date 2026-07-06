@@ -9,18 +9,32 @@ pub struct Camera3d {
 }
 
 impl Camera3d {
-    pub fn follow_player(player_position: [f32; 3], cell_size: [f32; 3]) -> Self {
+    pub fn follow_player(
+        player_position: [f32; 3],
+        cell_size: [f32; 3],
+        yaw_radians: f32,
+        pitch_radians: f32,
+    ) -> Self {
         let height = cell_size[2].max(1.0);
+        let eye_height = height * 0.62;
+        let pitch_cos = pitch_radians.cos();
+        let forward = [
+            yaw_radians.sin() * pitch_cos,
+            yaw_radians.cos() * pitch_cos,
+            pitch_radians.sin(),
+        ];
+        let eye = [
+            player_position[0],
+            player_position[1],
+            player_position[2] + eye_height,
+        ];
+        let look_distance = cell_size[0].max(cell_size[1]) * 1.6;
         Self {
-            eye: [
-                player_position[0] - cell_size[0] * 1.15,
-                player_position[1] - cell_size[1] * 1.85,
-                player_position[2] + height * 1.35,
-            ],
+            eye,
             target: [
-                player_position[0],
-                player_position[1] + cell_size[1] * 0.65,
-                player_position[2] + height * 0.45,
+                eye[0] + forward[0] * look_distance,
+                eye[1] + forward[1] * look_distance,
+                eye[2] + forward[2] * look_distance,
             ],
             up: [0.0, 0.0, 1.0],
             fovy_radians: 65.0_f32.to_radians(),
