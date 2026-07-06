@@ -12,10 +12,6 @@ pub struct SkillsState {
     pub catalog: Vec<SkillMeta>,
     pub selected: Option<usize>,
     pub loaded: bool,
-    /// When true, show all discovered skills as 'owned' for previewing
-    pub show_all: bool,
-    /// When true, show a dev-only Show All toggle
-    pub dev_controls: bool,
     /// When true, hide non-owned skills from the grid
     pub only_owned: bool,
     /// Markdown render cache for images/assets
@@ -26,18 +22,6 @@ pub struct SkillsState {
     pub sort_mode: u8,
     /// Current page number for pagination
     pub page: usize,
-}
-
-impl SkillsState {
-    /// Enables preview mode, showing all discovered skills regardless of ownership.
-    pub fn enable_preview(&mut self) {
-        self.show_all = true;
-    }
-
-    /// Enables developer controls, exposing the Show All toggle button in the UI.
-    pub fn enable_dev_controls(&mut self) {
-        self.dev_controls = true;
-    }
 }
 
 #[derive(Clone)]

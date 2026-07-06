@@ -16,36 +16,10 @@ fn test_skills_state_default_values() {
     assert!(state.catalog.is_empty());
     assert!(state.selected.is_none());
     assert!(!state.loaded);
-    assert!(!state.show_all);
-    assert!(!state.dev_controls);
     assert!(!state.only_owned);
     assert_eq!(state.search, "");
     assert_eq!(state.sort_mode, 0);
     assert_eq!(state.page, 0);
-}
-
-// ── SkillsState::enable_preview ───────────────────────────────────────────────
-
-#[test]
-fn test_enable_preview_sets_show_all() {
-    let mut state = SkillsState::default();
-    assert!(!state.show_all);
-
-    state.enable_preview();
-
-    assert!(state.show_all);
-}
-
-// ── SkillsState::enable_dev_controls ──────────────────────────────────────────
-
-#[test]
-fn test_enable_dev_controls_sets_flag() {
-    let mut state = SkillsState::default();
-    assert!(!state.dev_controls);
-
-    state.enable_dev_controls();
-
-    assert!(state.dev_controls);
 }
 
 // ── read_player_skills_for_save ────────────────────────────────────────────────
