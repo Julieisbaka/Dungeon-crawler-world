@@ -30,8 +30,7 @@ impl Log for Logger {
 
 pub fn init_logger() -> (Sender<String>, Receiver<String>) {
     let (tx, rx) = channel();
-    LOG_SENDER
-        .get_or_init(|| -> Mutex<Option<Sender<String>>> { Mutex::new(Some(tx.clone())) });
+    LOG_SENDER.get_or_init(|| -> Mutex<Option<Sender<String>>> { Mutex::new(Some(tx.clone())) });
     log::set_logger(&LOGGER)
         .map(|()| log::set_max_level(log::LevelFilter::Trace))
         .ok();

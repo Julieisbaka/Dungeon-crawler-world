@@ -1,11 +1,10 @@
+use crate::logic::saves_logic::SaveMenuState;
+use crate::logic::settings_logic::{Settings, SettingsResult};
+use crate::ui::saves_ui::{show_save_ui, SaveUiAction};
+use crate::ui::settings_ui::settings_ui;
 /// Main menu UI module for the Dungeon Crawler World application.
 /// Handles rendering the main menu, settings, saves, and quit confirmation dialogs.
-
 use egui::{Context, RichText};
-use crate::logic::saves_logic::SaveMenuState;
-use crate::ui::saves_ui::show_save_ui;
-use crate::logic::settings_logic::{Settings, SettingsResult};
-use crate::ui::settings_ui::settings_ui;
 
 /// Represents the current state of the main menu.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -16,6 +15,13 @@ pub enum MenuState {
     Settings,
     /// Currently showing saves menu
     Saves,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MainMenuAction {
+    None,
+    Quit,
+    LoadSave(String),
 }
 
 /// Main menu UI state and logic
@@ -43,13 +49,11 @@ impl MainMenu {
     /// # Arguments
     /// * `ctx` - The egui context for UI rendering.
     /// * `settings` - Mutable reference to application settings.
-    /// * `dev_mode_enabled` - Whether developer mode is enabled.
-    ///
     /// # Returns
-    /// `true` if the application should quit, `false` otherwise.
-    pub fn show(&mut self, ctx: &Context, settings: &mut Settings, dev_mode_enabled: bool) -> bool {
-        let mut should_quit = false;
-        
+    /// `MainMenuAction` describing what the app should do after this frame.
+    pub fn show(&mut self, ctx: &Context, settings: &mut Settings) -> MainMenuAction {
+        let mut action = MainMenuAction::None;
+
         let escape_pressed: bool =
             ctx.input(|i: &egui::InputState| -> bool { i.key_pressed(egui::Key::Escape) });
 
@@ -73,8 +77,7 @@ impl MainMenu {
                                 ui,
                                 |ui: &mut egui::Ui| {
                                     ui.set_max_width(700.0);
-                                    let res: SettingsResult =
-                                        settings_ui(ui, settings, dev_mode_enabled);
+                                    let res: SettingsResult = settings_ui(ui, settings);
                                     if res.request_save {
                                         settings.save();
                                         self.state = MenuState::Main;
@@ -94,7 +97,12 @@ impl MainMenu {
                                 ui,
                                 |ui: &mut egui::Ui| {
                                     ui.set_max_width(900.0);
-                                    show_save_ui(ui, &mut self.save_menu_state, settings);
+                                    match show_save_ui(ui, &mut self.save_menu_state, settings) {
+                                        SaveUiAction::None => {}
+                                        SaveUiAction::LoadSave(save_name) => {
+                                            action = MainMenuAction::LoadSave(save_name);
+                                        }
+                                    }
                                 },
                             );
                             // Only close saves menu on explicit back, escape, or sub-menu exit
@@ -108,18 +116,24 @@ impl MainMenu {
                             ui.add_space(8.0);
                             ui.heading(RichText::new("Game Menu").size(30.0));
                             ui.add_space(24.0);
-                            if ui.add_sized([220.0, 36.0], egui::Button::new("Saves")).clicked()
+                            if ui
+                                .add_sized([220.0, 36.0], egui::Button::new("Saves"))
+                                .clicked()
                             {
                                 self.state = MenuState::Saves;
                             }
                             ui.add_space(8.0);
-                            if ui.add_sized([220.0, 36.0], egui::Button::new("Settings"))
+                            if ui
+                                .add_sized([220.0, 36.0], egui::Button::new("Settings"))
                                 .clicked()
                             {
                                 self.state = MenuState::Settings;
                             }
                             ui.add_space(8.0);
-                            if ui.add_sized([220.0, 36.0], egui::Button::new("Quit")).clicked() {
+                            if ui
+                                .add_sized([220.0, 36.0], egui::Button::new("Quit"))
+                                .clicked()
+                            {
                                 self.quit_confirm = true;
                             }
                         }
@@ -133,7 +147,7 @@ impl MainMenu {
                                     ui.label("Are you sure you want to quit?");
                                     ui.horizontal(|ui: &mut egui::Ui| {
                                         if ui.button("Yes").clicked() {
-                                            should_quit = true;
+                                            action = MainMenuAction::Quit;
                                             self.quit_confirm = false;
                                         }
                                         if ui.button("No").clicked() {
@@ -146,7 +160,7 @@ impl MainMenu {
                 );
             });
 
-        should_quit
+        action
     }
 }
 

@@ -249,6 +249,7 @@ fn create_new_save(
     })?;
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     let floor_one_time: u32 = generate_floor_one_time(real_time, &mut rng);
+    let terrain_seed: u64 = rng.gen();
 
     // Create save.json file including floor_one section
     let mut gamerules: Vec<&str> = Vec::new();
@@ -263,6 +264,7 @@ fn create_new_save(
         "save_name": save_name.trim(),
         "difficulty": difficulty.to_string(),
         "created_at": chrono::Utc::now().to_rfc3339(),
+        "terrain_seed": terrain_seed,
         "floor_one": {
             "is_cleared": false,
             "time": floor_one_time

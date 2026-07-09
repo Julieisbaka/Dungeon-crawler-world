@@ -6,6 +6,7 @@ version = 4
 name = "Dungeon-Crawler-World"
 version = "0.0.7"
 dependencies = [
+ "bytemuck",
  "chrono",
  "egui",
  "egui-wgpu",

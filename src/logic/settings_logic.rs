@@ -7,14 +7,8 @@ pub struct Settings {
     pub fog: i8,
     pub lighting: i8,
     pub sound: bool,
-    pub developer_mode: bool,
     pub verbose_logging: bool,
-    pub show_console: bool,
-    pub show_fps_graph: bool,
-    pub log_to_console: bool,
-    pub log_verbosity: LogVerbosity,
     pub fullscreen: bool,
-    pub console_max_lines: usize,
     /// Show save creation date in saves menu
     pub show_save_creation_date: bool,
     /// Target FPS cap (0 = unlimited).
@@ -52,16 +46,6 @@ pub enum PowerPreference {
     HighPerformance = 2,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
-pub enum LogVerbosity {
-    Error = 0,
-    Warn = 1,
-    #[default]
-    Info = 2,
-    Debug = 3,
-    Trace = 4,
-}
-
 const SETTINGS_FILE: &str = "settings.json";
 
 impl Settings {
@@ -95,14 +79,8 @@ impl Settings {
             fog: 2,
             lighting: 3,
             sound: true,
-            developer_mode: false,
             verbose_logging: false,
-            show_console: false,
-            show_fps_graph: false,
             fullscreen: false,
-            log_to_console: false,
-            log_verbosity: LogVerbosity::Info,
-            console_max_lines: 300,
             show_save_creation_date: true,
             target_fps: 0,
             vsync_mode: VsyncMode::On,
