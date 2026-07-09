@@ -1,6 +1,5 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
-use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 // Import necessary crates and modules
@@ -9,28 +8,22 @@ use egui::{Context, Style, ViewportId, Visuals};
 use logger::init_logger;
 
 // Import saves and settings from library modules
-use dungeon_crawler_world::console::{
-    console_ui, read_player_skills_from_path, ConsoleCommandContext, ConsoleRegistry, ConsoleState,
+use dungeon_crawler_world::input::GameCommand;
+use dungeon_crawler_world::logic::settings_logic::{PowerPreference, Settings, VsyncMode};
+use dungeon_crawler_world::ui::game_view::{
+    show_game_view, GamePanel, GameViewAction, GameViewState,
 };
-use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, VsyncMode};
-use dungeon_crawler_world::logic::skills_logic::read_player_skills_for_save;
-use dungeon_crawler_world::ui::main_menu::MainMenu;
+use dungeon_crawler_world::ui::main_menu::{MainMenu, MainMenuAction};
+use dungeon_crawler_world::world::WorldSession;
 
-mod new_save;
-mod player;
-mod ui_preview;
-use ui_preview::UiPreviewManager;
 mod fps;
 use fps::FpsGraph;
+mod render;
+use render::terrain::TerrainRenderer;
 
 use winit::event::WindowEvent;
 use winit::event_loop::EventLoop;
 use winit::window::Window;
-
-/// Developer mode flag is controlled via Cargo feature `dev-mode`.
-/// Enabled in debug builds by default via `Cargo.toml` [features].
-/// For release builds in CI, we pass `--no-default-features` to disable it.
-const DEV_MODE_ENABLED: bool = cfg!(feature = "dev-mode");
 
 /// Main app struct with settings state
 use std::time::{Duration, Instant};
@@ -41,267 +34,29 @@ struct DungeonCrawlerworld {
     menu: MainMenu,
     /// Current application settings.
     settings: Settings,
-    /// State for the developer console.
-    console_state: ConsoleState,
-    /// Immutable command registry for the developer console.
-    console_registry: ConsoleRegistry,
-    /// Manager for UI previews (dev mode only).
-    ui_preview: UiPreviewManager,
+    /// Active world session when a save is loaded.
+    world: Option<WorldSession>,
+    /// UI state for windows owned by the active world session.
+    game_view: GameViewState,
     /// Last known fullscreen state (for toggling fullscreen mode).
     last_fullscreen: Option<bool>,
     /// FPS graph data and rendering.
     fps: FpsGraph,
-    /// Whether the console is currently open in this session.
-    console_open: bool,
-    /// Last value of the show_console setting (to detect toggles).
-    last_show_console: bool,
-    /// Receiver for log messages to display in the in-game console.
-    log_rx: Option<std::sync::mpsc::Receiver<String>>,
-    /// Last time the console was redrawn (for throttling redraws).
-    last_console_redraw: Option<Instant>,
     /// Flag indicating the app should quit.
     should_quit: bool,
-}
-
-struct AppConsoleContext<'a> {
-    console_state: &'a mut ConsoleState,
-    settings: &'a mut Settings,
-    ui_preview: &'a mut UiPreviewManager,
-    saves_root: PathBuf,
-}
-
-impl ConsoleCommandContext for AppConsoleContext<'_> {
-    fn clear_console(&mut self) {
-        self.console_state.clear();
-    }
-
-    fn open_preview(&mut self, name: &str) -> Result<(), String> {
-        self.ui_preview.open_preview(name)
-    }
-
-    fn list_previews(&self) -> Vec<String> {
-        self.ui_preview.list_preview_names()
-    }
-
-    fn current_save(&self) -> Option<String> {
-        dungeon_crawler_world::CURRENT_SAVE
-            .lock()
-            .ok()
-            .and_then(|guard| guard.clone())
-    }
-
-    fn saves_root(&self) -> &Path {
-        &self.saves_root
-    }
-
-    fn read_owned_skills(&self) -> Result<Vec<(String, i8)>, String> {
-        let current_save = self.current_save();
-        if let Some(save) = current_save.as_deref() {
-            let skills = read_player_skills_for_save(self.saves_root(), save);
-            if skills.is_empty() {
-                return read_player_skills_from_path(self.saves_root(), current_save);
-            }
-            let mut skills: Vec<(String, i8)> = skills.into_iter().collect();
-            skills.sort_by(|left, right| left.0.cmp(&right.0));
-            return Ok(skills);
-        }
-        Err("No current save selected.".to_string())
-    }
-
-    fn get_setting_value(&self, key: &str) -> Result<String, String> {
-        match key.to_ascii_lowercase().as_str() {
-            "show_console" => Ok(self.settings.show_console.to_string()),
-            "log_to_console" => Ok(self.settings.log_to_console.to_string()),
-            "log_verbosity" => Ok(log_verbosity_name(self.settings.log_verbosity).to_string()),
-            "console_max_lines" => Ok(self.settings.console_max_lines.to_string()),
-            "show_fps_graph" => Ok(self.settings.show_fps_graph.to_string()),
-            "developer_mode" => Ok(self.settings.developer_mode.to_string()),
-            "target_fps" => Ok(self.settings.target_fps.to_string()),
-            "vsync_mode" => Ok(vsync_mode_name(self.settings.vsync_mode).to_string()),
-            "show_fps_counter" => Ok(self.settings.show_fps_counter.to_string()),
-            "power_preference" => Ok(power_preference_name(self.settings.power_preference).to_string()),
-            other => Err(format!("Unknown setting: {}", other)),
-        }
-    }
-
-    fn list_setting_values(&self) -> Vec<(String, String)> {
-        vec![
-            (
-                "show_console".to_string(),
-                self.settings.show_console.to_string(),
-            ),
-            (
-                "log_to_console".to_string(),
-                self.settings.log_to_console.to_string(),
-            ),
-            (
-                "log_verbosity".to_string(),
-                log_verbosity_name(self.settings.log_verbosity).to_string(),
-            ),
-            (
-                "console_max_lines".to_string(),
-                self.settings.console_max_lines.to_string(),
-            ),
-            (
-                "show_fps_graph".to_string(),
-                self.settings.show_fps_graph.to_string(),
-            ),
-            (
-                "developer_mode".to_string(),
-                self.settings.developer_mode.to_string(),
-            ),
-            (
-                "target_fps".to_string(),
-                self.settings.target_fps.to_string(),
-            ),
-            (
-                "vsync_mode".to_string(),
-                vsync_mode_name(self.settings.vsync_mode).to_string(),
-            ),
-            (
-                "show_fps_counter".to_string(),
-                self.settings.show_fps_counter.to_string(),
-            ),
-            (
-                "power_preference".to_string(),
-                power_preference_name(self.settings.power_preference).to_string(),
-            ),
-        ]
-    }
-
-    fn set_setting_value(&mut self, key: &str, value: &str) -> Result<String, String> {
-        let key = key.to_ascii_lowercase();
-        match key.as_str() {
-            "show_console" => {
-                self.settings.show_console = parse_bool_setting(value)?;
-            }
-            "log_to_console" => {
-                self.settings.log_to_console = parse_bool_setting(value)?;
-            }
-            "log_verbosity" => {
-                self.settings.log_verbosity = parse_log_verbosity(value)?;
-            }
-            "console_max_lines" => {
-                self.settings.console_max_lines = value
-                    .parse::<usize>()
-                    .map_err(|_| format!("Invalid usize value: {}", value))?;
-            }
-            "show_fps_graph" => {
-                self.settings.show_fps_graph = parse_bool_setting(value)?;
-            }
-            "developer_mode" => {
-                self.settings.developer_mode = parse_bool_setting(value)?;
-            }
-            "target_fps" => {
-                self.settings.target_fps = value
-                    .parse::<u32>()
-                    .map_err(|_| format!("Invalid u32 value: {}", value))?;
-            }
-            "vsync_mode" => {
-                self.settings.vsync_mode = parse_vsync_mode(value)?;
-            }
-            "show_fps_counter" => {
-                self.settings.show_fps_counter = parse_bool_setting(value)?;
-            }
-            "power_preference" => {
-                self.settings.power_preference = parse_power_preference(value)?;
-            }
-            _ => return Err(format!("Unknown setting: {}", key)),
-        }
-        self.settings.save();
-        Ok(format!("Set {} = {}", key, self.get_setting_value(&key)?))
-    }
-
-    fn regenerate_grid_preview(&mut self) -> Result<String, String> {
-        self.ui_preview.regenerate_grid_preview()?;
-        Ok("Regenerated grid preview.".to_string())
-    }
-
-    fn reset_grid_preview(&mut self) -> Result<String, String> {
-        self.ui_preview.reset_grid_preview_view()?;
-        Ok("Reset grid preview view.".to_string())
-    }
-}
-
-fn parse_bool_setting(value: &str) -> Result<bool, String> {
-    match value.to_ascii_lowercase().as_str() {
-        "true" | "1" | "yes" | "on" => Ok(true),
-        "false" | "0" | "no" | "off" => Ok(false),
-        _ => Err(format!("Invalid boolean value: {}", value)),
-    }
-}
-
-fn parse_log_verbosity(value: &str) -> Result<LogVerbosity, String> {
-    match value.to_ascii_lowercase().as_str() {
-        "error" => Ok(LogVerbosity::Error),
-        "warn" | "warning" => Ok(LogVerbosity::Warn),
-        "info" => Ok(LogVerbosity::Info),
-        "debug" => Ok(LogVerbosity::Debug),
-        "trace" => Ok(LogVerbosity::Trace),
-        _ => Err(format!("Invalid log verbosity: {}", value)),
-    }
-}
-
-fn log_verbosity_name(value: LogVerbosity) -> &'static str {
-    match value {
-        LogVerbosity::Error => "error",
-        LogVerbosity::Warn => "warn",
-        LogVerbosity::Info => "info",
-        LogVerbosity::Debug => "debug",
-        LogVerbosity::Trace => "trace",
-    }
-}
-
-fn power_preference_name(value: PowerPreference) -> &'static str {
-    match value {
-        PowerPreference::Default => "default",
-        PowerPreference::LowPower => "low_power",
-        PowerPreference::HighPerformance => "high_performance",
-    }
-}
-
-fn parse_power_preference(value: &str) -> Result<PowerPreference, String> {
-    match value.to_ascii_lowercase().as_str() {
-        "default" | "0" => Ok(PowerPreference::Default),
-        "low_power" | "low" | "1" => Ok(PowerPreference::LowPower),
-        "high_performance" | "high" | "2" => Ok(PowerPreference::HighPerformance),
-        _ => Err(format!("Invalid power preference: {}. Use default, low_power, or high_performance", value)),
-    }
-}
-
-fn vsync_mode_name(value: VsyncMode) -> &'static str {
-    match value {
-        VsyncMode::Off => "off",
-        VsyncMode::On => "on",
-        VsyncMode::Adaptive => "adaptive",
-    }
-}
-
-fn parse_vsync_mode(value: &str) -> Result<VsyncMode, String> {
-    match value.to_ascii_lowercase().as_str() {
-        "off" | "0" => Ok(VsyncMode::Off),
-        "on" | "1" | "true" => Ok(VsyncMode::On),
-        "adaptive" | "2" => Ok(VsyncMode::Adaptive),
-        _ => Err(format!("Invalid VSync mode: {}. Use off, on, or adaptive", value)),
-    }
 }
 
 impl DungeonCrawlerworld {
     /// Creates a new default instance of the main application struct, initializing all state.
     fn new() -> Self {
-        let (_log_tx, log_rx) = init_logger();
+        let _ = init_logger();
         Self {
             menu: MainMenu::new(),
             settings: Settings::default(),
-            console_state: ConsoleState::default(),
-            console_registry: ConsoleRegistry::new(),
-            ui_preview: UiPreviewManager::new(),
+            world: None,
+            game_view: GameViewState::default(),
             last_fullscreen: None,
             fps: FpsGraph::default(),
-            console_open: false,
-            last_show_console: Settings::default().show_console,
-            log_rx: Some(log_rx),
-            last_console_redraw: None,
             should_quit: false,
         }
     }
@@ -326,120 +81,13 @@ impl DungeonCrawlerworld {
         let dt_ms: f32 = ctx.input(|i: &egui::InputState| -> f32 { i.stable_dt }) * 1000.0;
         self.fps.push_frame_time(dt_ms);
 
-        // Render the main menu UI and check if user wants to quit
-        if self.menu.show(ctx, &mut self.settings, DEV_MODE_ENABLED) {
-            self.should_quit = true;
-        }
-
-        // Developer Console window: follow the setting on both rising and falling edges.
-        // Only react when the setting value actually changes (edge detection), so we avoid
-        // unnecessary updates every frame and preserve the prior bidirectional behavior.
-        if self.settings.show_console != self.last_show_console {
-            self.console_open = self.settings.show_console;
-            self.last_show_console = self.settings.show_console;
-        }
-
-        // Poll logger and write to in-game console if enabled, filter by verbosity
-        if self.settings.log_to_console {
-            if let Some(rx) = &self.log_rx {
-                // Convert verbosity to numeric threshold for efficient comparison
-                // Higher number = more verbose (show more messages)
-                let threshold = match self.settings.log_verbosity {
-                    LogVerbosity::Error => 0,
-                    LogVerbosity::Warn => 1,
-                    LogVerbosity::Info => 2,
-                    LogVerbosity::Debug => 3,
-                    LogVerbosity::Trace => 4,
-                };
-                while let Ok(msg) = rx.try_recv() {
-                    // Extract log level from message and convert to numeric value
-                    // Lower number = higher priority (ERROR=0, TRACE=4)
-                    let msg_level = if msg.starts_with("[ERROR]") {
-                        0
-                    } else if msg.starts_with("[WARN]") {
-                        1
-                    } else if msg.starts_with("[INFO]") {
-                        2
-                    } else if msg.starts_with("[DEBUG]") {
-                        3
-                    } else {
-                        4 // TRACE or unrecognized
-                    };
-                    // Show message if its level is <= threshold
-                    if msg_level <= threshold {
-                        self.console_state.log_line(msg);
-                    }
-                }
-            }
-        }
-
-        if DEV_MODE_ENABLED && self.settings.developer_mode && self.console_open {
-            let mut open: bool = true;
-            let now: Instant = Instant::now();
-            let redraw_interval: Duration = Duration::from_millis(33); // ~30 FPS max
-            let should_redraw: bool = self.console_state.is_dirty()
-                && self
-                    .last_console_redraw
-                    .is_none_or(|last: Instant| -> bool {
-                        now.duration_since(last) >= redraw_interval
-                    });
-            egui::Window::new("Console")
-                .open(&mut open)
-                .resizable(true)
-                .vscroll(true)
-                .hscroll(false)
-                .default_size(egui::vec2(500.0, 250.0))
-                .show(ctx, |ui: &mut egui::Ui| {
-                    // Always render the console UI so input is processed
-                    console_ui(ui, &mut self.console_state, self.settings.console_max_lines);
-                    // Only clear dirty and update redraw time if log area changed
-                    if should_redraw {
-                        self.console_state.clear_dirty();
-                        self.last_console_redraw = Some(now);
-                    }
-                });
-            if !open {
-                // Closing the window hides the console until re-enabled in settings
-                self.settings.show_console = false;
-                self.console_open = false;
-                self.settings.save();
-            }
-            // After UI event handling, process any queued commands
-            let pending_commands = self.console_state.take_pending();
-            let mut all_lines: Vec<String> = Vec::new();
-            if !pending_commands.is_empty() {
-                let saves_root = PathBuf::from("saves");
-                let mut context = AppConsoleContext {
-                    console_state: &mut self.console_state,
-                    settings: &mut self.settings,
-                    ui_preview: &mut self.ui_preview,
-                    saves_root,
-                };
-                for cmd in &pending_commands {
-                    all_lines.extend(self.console_registry.execute(cmd, &mut context));
-                }
-            }
-            self.console_state.log_lines(all_lines);
-        }
-
-        // Render any active preview windows (gated by dev mode so previews are a dev tool)
-        if DEV_MODE_ENABLED && self.settings.developer_mode {
-            self.ui_preview.render(ctx, DEV_MODE_ENABLED);
-
-            // FPS graph overlay in the bottom-right corner when enabled
-            if self.settings.show_fps_graph {
-                egui::TopBottomPanel::bottom("fps_graph_panel")
-                    .resizable(false)
-                    .min_height(90.0)
-                    .show_separator_line(false)
-                    .show(ctx, |ui: &mut egui::Ui| {
-                        ui.with_layout(
-                            egui::Layout::right_to_left(egui::Align::Min),
-                            |ui: &mut egui::Ui| {
-                                self.fps.ui(ui);
-                            },
-                        );
-                    });
+        if self.world.is_some() {
+            self.update_world(ctx);
+        } else {
+            match self.menu.show(ctx, &mut self.settings) {
+                MainMenuAction::None => {}
+                MainMenuAction::Quit => self.should_quit = true,
+                MainMenuAction::LoadSave(save_name) => self.load_world(save_name),
             }
         }
 
@@ -463,6 +111,92 @@ impl DungeonCrawlerworld {
     fn should_quit(&self) -> bool {
         self.should_quit
     }
+
+    fn load_world(&mut self, save_name: String) {
+        match WorldSession::load(save_name) {
+            Ok(world) => {
+                if let Ok(mut current_save) = dungeon_crawler_world::CURRENT_SAVE.lock() {
+                    *current_save = Some(world.save_name.clone());
+                }
+                self.world = Some(world);
+                self.game_view = GameViewState::default();
+            }
+            Err(error) => {
+                log::error!("Failed to load world: {error}");
+            }
+        }
+    }
+
+    fn update_world(&mut self, ctx: &Context) {
+        let Some(world) = self.world.as_mut() else {
+            return;
+        };
+
+        handle_world_input(ctx, world, &mut self.game_view);
+
+        if show_game_view(ctx, world, &mut self.game_view) == GameViewAction::ExitToMenu {
+            self.world = None;
+            self.game_view = GameViewState::default();
+        }
+    }
+}
+
+fn handle_world_input(ctx: &Context, world: &mut WorldSession, ui_state: &mut GameViewState) {
+    let wants_keyboard = ctx.wants_keyboard_input();
+    let dt_seconds = ctx.input(|input| input.stable_dt).max(0.0);
+    world.update_physics(dt_seconds);
+
+    let escape_pressed = ctx.input(|input| input.key_pressed(egui::Key::Escape));
+
+    if escape_pressed {
+        if ui_state.active_panel != GamePanel::None {
+            ui_state.close_panel();
+        } else {
+            world.toggle_pause();
+        }
+        return;
+    }
+
+    if wants_keyboard || world.paused {
+        return;
+    }
+
+    if ctx.input(|input| input.key_pressed(ui_state.keybindings.key_for(GameCommand::Skills))) {
+        ui_state.open_panel(GamePanel::Skills);
+    }
+    if ctx.input(|input| input.key_pressed(ui_state.keybindings.key_for(GameCommand::Inventory))) {
+        ui_state.open_panel(GamePanel::Inventory);
+    }
+    if ctx.input(|input| input.key_pressed(ui_state.keybindings.key_for(GameCommand::Stats))) {
+        ui_state.open_panel(GamePanel::Stats);
+    }
+
+    let pointer_delta = ctx.input(|input| input.pointer.delta());
+    if pointer_delta.x.abs() > 0.0 || pointer_delta.y.abs() > 0.0 {
+        world.turn_camera(pointer_delta.x, pointer_delta.y);
+    }
+
+    let movement = ctx.input(|input| {
+        let mut movement = [0.0, 0.0];
+        if input.key_down(egui::Key::W) || input.key_down(egui::Key::ArrowUp) {
+            movement[1] += 1.0;
+        }
+        if input.key_down(egui::Key::S) || input.key_down(egui::Key::ArrowDown) {
+            movement[1] -= 1.0;
+        }
+        if input.key_down(egui::Key::A) || input.key_down(egui::Key::ArrowLeft) {
+            movement[0] -= 1.0;
+        }
+        if input.key_down(egui::Key::D) || input.key_down(egui::Key::ArrowRight) {
+            movement[0] += 1.0;
+        }
+        movement
+    });
+    world.move_player_relative(movement, dt_seconds);
+
+    if ctx.input(|input| input.key_pressed(egui::Key::Space)) {
+        world.jump();
+    }
 }
 
 struct WinitApp {
@@ -474,6 +208,7 @@ struct WinitApp {
     egui_ctx: Option<egui::Context>,
     egui_winit_state: Option<egui_winit::State>,
     egui_renderer: Option<egui_wgpu::Renderer>,
+    terrain_renderer: Option<TerrainRenderer>,
     app: Option<DungeonCrawlerworld>,
     /// Time the most recent frame was rendered (for FPS-cap frame pacing).
     last_frame_time: Option<Instant>,
@@ -494,6 +229,7 @@ impl WinitApp {
             egui_ctx: None,
             egui_winit_state: None,
             egui_renderer: None,
+            terrain_renderer: None,
             app: None,
             last_frame_time: None,
             adapter: None,
@@ -564,20 +300,22 @@ impl winit::application::ApplicationHandler for WinitApp {
             .get_default_config(&adapter, size.width, size.height)
             .unwrap();
         // Apply VSync setting from the loaded settings, gated against surface capabilities.
-        // In developer mode all present modes are allowed even if unsupported, for testing.
         let surface_caps = surface.get_capabilities(&adapter);
         let requested_present_mode = match startup_settings.vsync_mode {
             VsyncMode::On => wgpu::PresentMode::Fifo,
             VsyncMode::Adaptive => wgpu::PresentMode::FifoRelaxed,
             VsyncMode::Off => wgpu::PresentMode::AutoNoVsync,
         };
-        let dev_mode = DEV_MODE_ENABLED && startup_settings.developer_mode;
-        surface_config.present_mode = if dev_mode
-            || surface_caps.present_modes.contains(&requested_present_mode)
+        surface_config.present_mode = if surface_caps
+            .present_modes
+            .contains(&requested_present_mode)
         {
             requested_present_mode
         } else {
-            let fallback = if surface_caps.present_modes.contains(&wgpu::PresentMode::Fifo) {
+            let fallback = if surface_caps
+                .present_modes
+                .contains(&wgpu::PresentMode::Fifo)
+            {
                 wgpu::PresentMode::Fifo
             } else {
                 surface_caps
@@ -615,6 +353,7 @@ impl winit::application::ApplicationHandler for WinitApp {
 
         let egui_renderer: egui_wgpu::Renderer =
             egui_wgpu::Renderer::new(&device, surface_config.format, None, 1, true);
+        let terrain_renderer = TerrainRenderer::new(&device, surface_config.format);
 
         // Create app
         let app: DungeonCrawlerworld = DungeonCrawlerworld::new();
@@ -628,6 +367,7 @@ impl winit::application::ApplicationHandler for WinitApp {
         self.egui_ctx = Some(egui_ctx);
         self.egui_winit_state = Some(egui_winit_state);
         self.egui_renderer = Some(egui_renderer);
+        self.terrain_renderer = Some(terrain_renderer);
         self.app = Some(app);
     }
 
@@ -697,9 +437,7 @@ impl winit::application::ApplicationHandler for WinitApp {
                 .checked_add(frame_duration)
                 .unwrap_or_else(Instant::now);
             if next_frame > Instant::now() {
-                event_loop.set_control_flow(
-                    winit::event_loop::ControlFlow::WaitUntil(next_frame),
-                );
+                event_loop.set_control_flow(winit::event_loop::ControlFlow::WaitUntil(next_frame));
                 return;
             }
         }
@@ -718,13 +456,13 @@ impl WinitApp {
         {
             let new_vsync = self.app.as_ref().map(|a| a.settings.vsync_mode);
             if new_vsync != self.last_vsync {
-                let dev_mode = DEV_MODE_ENABLED
-                    && self
-                        .app
-                        .as_ref()
-                        .map(|a| a.settings.developer_mode)
-                        .unwrap_or(false);
-                if let (Some(vsync_mode), Some(surface), Some(adapter), Some(device), Some(config)) = (
+                if let (
+                    Some(vsync_mode),
+                    Some(surface),
+                    Some(adapter),
+                    Some(device),
+                    Some(config),
+                ) = (
                     new_vsync,
                     self.surface.as_ref(),
                     self.adapter.as_ref(),
@@ -737,9 +475,7 @@ impl WinitApp {
                         VsyncMode::Off => wgpu::PresentMode::AutoNoVsync,
                     };
                     let caps = surface.get_capabilities(adapter);
-                    config.present_mode = if dev_mode
-                        || caps.present_modes.contains(&requested_present_mode)
-                    {
+                    config.present_mode = if caps.present_modes.contains(&requested_present_mode) {
                         requested_present_mode
                     } else {
                         let fallback = if caps.present_modes.contains(&wgpu::PresentMode::Fifo) {
@@ -773,6 +509,7 @@ impl WinitApp {
         let egui_ctx: &Context = self.egui_ctx.as_ref().unwrap();
         let egui_winit_state: &mut egui_winit::State = self.egui_winit_state.as_mut().unwrap();
         let egui_renderer: &mut egui_wgpu::Renderer = self.egui_renderer.as_mut().unwrap();
+        let terrain_renderer: &mut TerrainRenderer = self.terrain_renderer.as_mut().unwrap();
         let app: &mut DungeonCrawlerworld = self.app.as_mut().unwrap();
 
         let output_frame: egui_wgpu::wgpu::SurfaceTexture = match surface.get_current_texture() {
@@ -807,8 +544,21 @@ impl WinitApp {
 
         let mut encoder: egui_wgpu::wgpu::CommandEncoder =
             device.create_command_encoder(&egui_wgpu::wgpu::CommandEncoderDescriptor {
-                label: Some("egui encoder"),
+                label: Some("main frame encoder"),
             });
+
+        if let Some(world) = app.world.as_ref() {
+            terrain_renderer.render_world(
+                device,
+                queue,
+                &mut encoder,
+                &output_view,
+                surface_config,
+                world,
+            );
+        } else {
+            terrain_renderer.clear(&mut encoder, &output_view, None);
+        }
 
         // Upload egui textures
         for (id, image_delta) in &full_output.textures_delta.set {
@@ -829,7 +579,7 @@ impl WinitApp {
                         view: &output_view,
                         resolve_target: None,
                         ops: egui_wgpu::wgpu::Operations {
-                            load: egui_wgpu::wgpu::LoadOp::Clear(egui_wgpu::wgpu::Color::BLACK),
+                            load: egui_wgpu::wgpu::LoadOp::Load,
                             store: egui_wgpu::wgpu::StoreOp::Store,
                         },
                     })],
