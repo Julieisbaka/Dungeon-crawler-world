@@ -1,7 +1,13 @@
-use crate::logic::saves_logic::{SaveMenuState, SaveEntryCache};
+use crate::logic::saves_logic::{SaveEntryCache, SaveMenuState};
 use crate::logic::settings_logic::Settings;
 use crate::new_save::{has_invalid_save_characters, is_safe_folder_name, show_new_save_ui};
 use egui::Ui;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SaveUiAction {
+    None,
+    LoadSave(String),
+}
 
 /// Loads save entries from disk and caches them in the state.
 /// Only called when the cache is empty or invalidated.
@@ -14,12 +20,14 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
 
     state.save_cache.clear();
     let saves_dir = Path::new("saves");
-    
+
     if let Ok(entries) = fs::read_dir(saves_dir) {
         for entry in entries.flatten() {
             let path = entry.path();
             if path.is_dir() {
-                let Some(folder_name_osstr) = path.file_name() else { continue; };
+                let Some(folder_name_osstr) = path.file_name() else {
+                    continue;
+                };
                 let folder_name = folder_name_osstr.to_string_lossy().to_string();
                 let save_name = folder_name.replace('_', " ");
 
@@ -28,13 +36,19 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
                 let mut difficulty_text = String::new();
                 let mut created_at_text = String::new();
                 if let Ok(save_content) = fs::read_to_string(&save_json_path) {
-                    if let Ok(save_data) = serde_json::from_str::<serde_json::Value>(&save_content) {
-                        if let Some(difficulty) = save_data.get("difficulty").and_then(|d| d.as_str()) {
+                    if let Ok(save_data) = serde_json::from_str::<serde_json::Value>(&save_content)
+                    {
+                        if let Some(difficulty) =
+                            save_data.get("difficulty").and_then(|d| d.as_str())
+                        {
                             difficulty_text = format!("Difficulty: {}", difficulty);
                         }
-                        if let Some(created_at) = save_data.get("created_at").and_then(|d| d.as_str()) {
+                        if let Some(created_at) =
+                            save_data.get("created_at").and_then(|d| d.as_str())
+                        {
                             if let Ok(datetime) = chrono::DateTime::parse_from_rfc3339(created_at) {
-                                created_at_text = format!("Created: {}", datetime.format("%Y-%m-%d %H:%M"));
+                                created_at_text =
+                                    format!("Created: {}", datetime.format("%Y-%m-%d %H:%M"));
                             }
                         }
                     }
@@ -51,16 +65,20 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
                                 let pixels = rgba.as_flat_samples();
                                 let color_image = ColorImage::from_rgba_unmultiplied(
                                     [size.0 as usize, size.1 as usize],
-                                    pixels.as_slice()
+                                    pixels.as_slice(),
                                 );
                                 Some(ui.ctx().load_texture(
                                     format!("{}_icon", folder_name),
                                     color_image,
-                                    egui::TextureOptions::default()
+                                    egui::TextureOptions::default(),
                                 ))
                             }
                             Err(e) => {
-                                log::warn!("Failed to decode icon for save '{}': {}", folder_name, e);
+                                log::warn!(
+                                    "Failed to decode icon for save '{}': {}",
+                                    folder_name,
+                                    e
+                                );
                                 None
                             }
                         },
@@ -73,13 +91,16 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
                     None
                 };
 
-                state.save_cache.insert(folder_name.clone(), SaveEntryCache {
-                    folder_name,
-                    save_name,
-                    difficulty_text,
-                    created_at_text,
-                    icon,
-                });
+                state.save_cache.insert(
+                    folder_name.clone(),
+                    SaveEntryCache {
+                        folder_name,
+                        save_name,
+                        difficulty_text,
+                        created_at_text,
+                        icon,
+                    },
+                );
             }
         }
     }
@@ -92,9 +113,11 @@ fn load_save_cache(ui: &mut Ui, state: &mut SaveMenuState) {
 /// * `ui` - The egui UI to render into.
 /// * `state` - The mutable state for the save menu.
 /// * `settings` - The application settings (passed from parent to avoid disk I/O).
-pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings) {
+pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings) -> SaveUiAction {
     use std::fs;
     use std::path::Path;
+
+    let mut action = SaveUiAction::None;
 
     // Handle delete confirmation dialog
     if state.confirm_delete {
@@ -128,7 +151,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
             state.new_save_state.reset();
             state.invalidate_cache(); // Invalidate cache after creating new save
         }
-        return;
+        return action;
     }
 
     // Edit save UI
@@ -185,7 +208,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                     }
                 });
             });
-        return;
+        return action;
     }
 
     if ui.button("Create New Save").clicked() {
@@ -208,7 +231,7 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
         // Collect edit request to apply after iteration
         // (mutating state.editing_save would conflict with the borrow of state.save_cache)
         let mut edit_request: Option<(String, String)> = None;
-        
+
         // Iterate directly over cache values to avoid cloning
         for entry in state.save_cache.values() {
             ui.horizontal(|ui: &mut Ui| {
@@ -232,16 +255,18 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
                                 *g = Some(entry.folder_name.clone());
                                 log::info!("Current save set to: {}", entry.folder_name);
                             }
+                            action = SaveUiAction::LoadSave(entry.folder_name.clone());
                         }
                         if ui.button("Edit").clicked() {
-                            edit_request = Some((entry.folder_name.clone(), entry.save_name.clone()));
+                            edit_request =
+                                Some((entry.folder_name.clone(), entry.save_name.clone()));
                         }
                     });
                 });
             });
             ui.add_space(16.0); // Space between saves
         }
-        
+
         // Apply edit request after iteration to avoid borrow conflicts
         if let Some((folder_name, save_name)) = edit_request {
             state.editing_save = Some(folder_name);
@@ -252,11 +277,16 @@ pub fn show_save_ui(ui: &mut Ui, state: &mut SaveMenuState, settings: &Settings)
 
     // Bottom Back button: below the list of saves
     ui.add_space(16.0);
-    if ui.add_sized([120.0, 30.0], egui::Button::new("Back")).clicked() {
+    if ui
+        .add_sized([120.0, 30.0], egui::Button::new("Back"))
+        .clicked()
+    {
         state.in_new_save_menu = false;
         state.editing_save = None;
         state.confirm_delete = false;
         state.delete_target = None;
         state.back_requested = true;
     }
+
+    action
 }

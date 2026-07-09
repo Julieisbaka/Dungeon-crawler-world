@@ -1,6 +1,8 @@
 mod common;
 
-use dungeon_crawler_world::logic::settings_logic::{LogVerbosity, PowerPreference, Settings, SettingsResult, VsyncMode};
+use dungeon_crawler_world::logic::settings_logic::{
+    PowerPreference, Settings, SettingsResult, VsyncMode,
+};
 use std::fs;
 use std::sync::Mutex;
 
@@ -15,21 +17,6 @@ impl Drop for RestoreCwd {
     fn drop(&mut self) {
         let _ = std::env::set_current_dir(&self.0);
     }
-}
-
-// ── LogVerbosity ───────────────────────────────────────────────────────────────
-
-#[test]
-fn test_log_verbosity_default_is_info() {
-    assert_eq!(LogVerbosity::default(), LogVerbosity::Info);
-}
-
-#[test]
-fn test_log_verbosity_variants_are_distinct() {
-    assert_ne!(LogVerbosity::Error, LogVerbosity::Warn);
-    assert_ne!(LogVerbosity::Warn, LogVerbosity::Info);
-    assert_ne!(LogVerbosity::Info, LogVerbosity::Debug);
-    assert_ne!(LogVerbosity::Debug, LogVerbosity::Trace);
 }
 
 // ── SettingsResult ─────────────────────────────────────────────────────────────
@@ -53,13 +40,8 @@ fn test_settings_default_values() {
     assert_eq!(json["fog"], 2);
     assert_eq!(json["lighting"], 3);
     assert!(json["sound"].as_bool().unwrap());
-    assert!(!json["developer_mode"].as_bool().unwrap());
     assert!(!json["verbose_logging"].as_bool().unwrap());
-    assert!(!json["show_console"].as_bool().unwrap());
-    assert!(!json["show_fps_graph"].as_bool().unwrap());
     assert!(!json["fullscreen"].as_bool().unwrap());
-    assert!(!json["log_to_console"].as_bool().unwrap());
-    assert_eq!(json["console_max_lines"], 300);
     assert!(json["show_save_creation_date"].as_bool().unwrap());
 }
 
@@ -71,14 +53,8 @@ fn test_settings_serialize_deserialize_round_trip() {
         fog: 1,
         lighting: 5,
         sound: false,
-        developer_mode: true,
         verbose_logging: true,
-        show_console: true,
-        show_fps_graph: true,
-        log_to_console: true,
-        log_verbosity: LogVerbosity::Debug,
         fullscreen: true,
-        console_max_lines: 500,
         show_save_creation_date: false,
         target_fps: 60,
         vsync_mode: VsyncMode::Off,
@@ -107,14 +83,8 @@ fn test_settings_save_and_load_round_trip() {
         fog: 0,
         lighting: 1,
         sound: false,
-        developer_mode: false,
         verbose_logging: false,
-        show_console: false,
-        show_fps_graph: false,
-        log_to_console: false,
-        log_verbosity: LogVerbosity::Warn,
         fullscreen: false,
-        console_max_lines: 100,
         show_save_creation_date: false,
         target_fps: 0,
         vsync_mode: VsyncMode::On,
@@ -148,9 +118,7 @@ fn test_settings_load_returns_defaults_for_missing_file() {
 
     assert_eq!(defaults.fog, 2);
     assert_eq!(defaults.lighting, 3);
-    assert_eq!(defaults.console_max_lines, 300);
     assert!(defaults.sound);
-    assert!(!defaults.developer_mode);
 }
 
 /// Verifies that `Settings::load()` returns hard-coded defaults when
@@ -171,7 +139,6 @@ fn test_settings_load_returns_defaults_for_malformed_json() {
 
     assert_eq!(defaults.fog, 2);
     assert_eq!(defaults.lighting, 3);
-    assert_eq!(defaults.console_max_lines, 300);
 }
 
 // ── Settings equality ──────────────────────────────────────────────────────────
@@ -198,14 +165,8 @@ fn build_default_settings() -> Settings {
         fog: 2,
         lighting: 3,
         sound: true,
-        developer_mode: false,
         verbose_logging: false,
-        show_console: false,
-        show_fps_graph: false,
-        log_to_console: false,
-        log_verbosity: LogVerbosity::Info,
         fullscreen: false,
-        console_max_lines: 300,
         show_save_creation_date: true,
         target_fps: 0,
         vsync_mode: VsyncMode::On,
